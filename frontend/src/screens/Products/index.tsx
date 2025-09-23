@@ -48,10 +48,12 @@ import {
 import DataTable, { SortableTH } from "@/components/shared/tabel/tabel";
 import Title from "@/components/shared/Title";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { FormField } from "@/components/shared/FormField";
 
 import { Label } from "@/components/ui/label";
 import { useCrud } from "@/hooks/useCrud";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import { toast } from "react-hot-toast";
 import axiosInstance from "@/helper/axiosInstance";
 import {
@@ -217,6 +219,19 @@ export default function ProductsPage() {
   // Processing states for code validation
   const [checkingEditCode, setCheckingEditCode] = useState(false);
 
+  // Confirmation Dialogs
+  const editConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setEditOpen(false);
+      setEditing(null);
+      setEditImageFile(null);
+      setEditImagePreview("");
+    },
+    onCancel: () => {
+      // Handle cancel - stay in dialog
+    }
+  });
+
   // Function to check if product code exists
   const checkProductCode = async (
     productCode: string,
@@ -239,6 +254,29 @@ export default function ProductsPage() {
       console.error("Error checking product code:", error);
       return false;
     }
+  };
+
+  // Check if edit form has changes
+  const hasEditFormChanges = () => {
+    if (!editing) return false;
+
+    return (
+      editForm.productName !== editing.productName ||
+      editForm.productDescription !== editing.productDescription ||
+      editForm.productCode !== editing.productCode ||
+      editForm.productPrice !== editing.productPrice ||
+      editForm.productCategory !== (typeof editing.productCategory === "object" 
+        ? editing.productCategory._id 
+        : editing.productCategory) ||
+      editForm.productStatus !== Boolean(editing.productStatus) ||
+      editForm.productPurity !== (editing.productPurity || 0) ||
+      editForm.productGrade !== (editing.productGrade || "Technical") ||
+      editForm.productForm !== (editing.productForm || "Solid") ||
+      editForm.productDiscount !== (editing.productDiscount || 0) ||
+      JSON.stringify(editForm.discountTiers) !== JSON.stringify(editing.discountTiers || []) ||
+      editImageFile !== null ||
+      editImagePreview !== (editing.productImage || "")
+    );
   };
 
   const handleEdit = (p: Product) => {
@@ -268,6 +306,18 @@ export default function ProductsPage() {
   const handleView = (p: Product) => {
     setViewing(p);
     setViewOpen(true);
+  };
+
+  // Handle edit dialog close with confirmation
+  const handleEditDialogClose = (open: boolean) => {
+    if (!open && hasEditFormChanges()) {
+      editConfirmDialog.showDialog();
+    } else {
+      setEditOpen(false);
+      setEditing(null);
+      setEditImageFile(null);
+      setEditImagePreview("");
+    }
   };
 
   // Helper function to get category name
@@ -327,7 +377,10 @@ export default function ProductsPage() {
       return response.data.newImageUrl;
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error?.response?.data?.message || intl.formatMessage({ id: 'products.upload_image_failed' }));
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: 'products.upload_image_failed' });
+      toast.error(errorMessage);
       throw error;
     } finally {
       setUploadingImage(false);
@@ -347,7 +400,10 @@ export default function ProductsPage() {
       list.refetch();
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error?.response?.data?.message || intl.formatMessage({ id: 'products.remove_image_failed' }));
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: 'products.remove_image_failed' });
+      toast.error(errorMessage);
     }
   };
 
@@ -390,7 +446,10 @@ export default function ProductsPage() {
       toast.success(intl.formatMessage({ id: 'products.export_success' }));
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error.message || intl.formatMessage({ id: 'products.export_failed' }));
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: 'products.export_failed' });
+      toast.error(errorMessage);
       console.error("Export error:", error);
     }
   };
@@ -431,7 +490,10 @@ export default function ProductsPage() {
       toast.success(intl.formatMessage({ id: 'products.template_downloaded' }));
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error.message || intl.formatMessage({ id: 'products.template_download_failed' }));
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: 'products.template_download_failed' });
+      toast.error(errorMessage);
       console.error("Download error:", error);
     }
   };
@@ -1086,7 +1148,7 @@ export default function ProductsPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+      <Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
         <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="edit-product-description">
           <DialogHeader>
             <DialogTitle>{intl.formatMessage({ id: 'products.edit.title' })}</DialogTitle>
@@ -1172,10 +1234,10 @@ export default function ProductsPage() {
                     setEditImagePreview("");
                   },
                   onError: (error: any) => {
-                    toast.error(
-                      error?.response?.data?.message ||
-                        intl.formatMessage({ id: 'products.edit.failed' })
-                    );
+                    const errorMessage = error?.response?.data?.message ||
+                                        error?.message ||
+                                        intl.formatMessage({ id: 'products.edit.failed' });
+                    toast.error(errorMessage);
                   },
                 }
               );
@@ -1671,12 +1733,34 @@ export default function ProductsPage() {
           setOpen={setDeleteOpen}
           itemName={toDelete?.productName}
           onConfirm={() => {
-            if (toDelete) del.mutate(toDelete._id);
+            if (toDelete) {
+              del.mutate(toDelete._id, {
+                onSuccess: () => {
+                  toast.success(intl.formatMessage({ id: 'products.delete.success' }));
+                },
+                onError: (error: any) => {
+                  const errorMessage = error?.response?.data?.message ||
+                                      error?.message ||
+                                      intl.formatMessage({ id: 'products.delete.failed' });
+                  toast.error(errorMessage);
+                }
+              });
+            }
             setDeleteOpen(false);
             setToDelete(null);
           }}
         />
       )}
+
+      {/* Edit Confirmation Dialog */}
+      <ConfirmationDialog
+        open={editConfirmDialog.isOpen}
+        onOpenChange={editConfirmDialog.setIsOpen}
+        variant="edit"
+        onConfirm={editConfirmDialog.handleConfirm}
+        onCancel={editConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
     </div>
   );
 }
@@ -1719,6 +1803,17 @@ function AddProduct({
     discountTiers: [] as DiscountTier[],
   });
 
+  // Add Dialog Confirmation
+  const addConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setOpen(false);
+      resetForm();
+    },
+    onCancel: () => {
+      // Stay in dialog
+    }
+  });
+
   const canSubmit =
     form.productCode.trim() &&
     form.productName.trim() &&
@@ -1726,6 +1821,53 @@ function AddProduct({
     form.productCategory.trim() &&
     form.productPrice > 0 &&
     form.productPurity > 0;
+
+  // Check if form has changes
+  const hasFormChanges = () => {
+    return (
+      form.productName !== "" ||
+      form.productDescription !== "" ||
+      form.productCode !== "" ||
+      form.productPrice !== 0 ||
+      form.productCategory !== "" ||
+      form.productPurity !== 0 ||
+      form.productGrade !== "Technical" ||
+      form.productForm !== "Solid" ||
+      form.productDiscount !== 0 ||
+      form.discountTiers.length > 0 ||
+      imageFile !== null ||
+      imagePreview !== ""
+    );
+  };
+
+  // Handle dialog close with confirmation
+  const handleDialogClose = (isOpen: boolean) => {
+    if (!isOpen && hasFormChanges()) {
+      addConfirmDialog.showDialog();
+    } else {
+      setOpen(isOpen);
+      if (!isOpen) resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      productName: "",
+      productDescription: "",
+      productCode: "",
+      productPrice: 0,
+      productCategory: "",
+      productImage: "",
+      productStatus: true,
+      productPurity: 0,
+      productGrade: "Technical",
+      productForm: "Solid",
+      productDiscount: 0,
+      discountTiers: [],
+    });
+    setImageFile(null);
+    setImagePreview("");
+  };
 
   const handleImageFileChange = (file: File | null) => {
     setImageFile(file);
@@ -1821,398 +1963,411 @@ function AddProduct({
         setOpen(false);
       },
       onError: (error: any) => {
-        toast.error(
-          error?.response?.data?.message || intl.formatMessage({ id: 'products.create.failed' })
-        );
+        const errorMessage = error?.response?.data?.message || 
+                            error?.message || 
+                            intl.formatMessage({ id: 'products.create.failed' });
+        toast.error(errorMessage);
       },
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="text-white cursor-pointer">
-          {intl.formatMessage({ id: 'products.add_product' })} <Plus className="w-4 h-4 ml-2" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="add-product-description">
-        <DialogHeader>
-          <DialogTitle>{intl.formatMessage({ id: 'products.create.title' })}</DialogTitle>
-          <DialogDescription id="add-product-description">
-            {intl.formatMessage({ id: 'products.create.description' })}
-          </DialogDescription>
-        </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Image Upload Section */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              {intl.formatMessage({ id: 'products.form.image' })}
-            </Label>
-            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
+    <>
+      <Dialog open={open} onOpenChange={handleDialogClose}>
+        <DialogTrigger asChild>
+          <Button className="text-white cursor-pointer">
+            {intl.formatMessage({ id: 'products.add_product' })} <Plus className="w-4 h-4 ml-2" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="add-product-description">
+          <DialogHeader>
+            <DialogTitle>{intl.formatMessage({ id: 'products.create.title' })}</DialogTitle>
+            <DialogDescription id="add-product-description">
+              {intl.formatMessage({ id: 'products.create.description' })}
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {intl.formatMessage({ id: 'products.form.image' })}
+              </Label>
+              <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      handleImageFileChange(file);
+                    }}
+                    className="hidden"
+                    id="image-input"
                   />
-                ) : (
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
-                )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      document.getElementById("image-input")?.click()
+                    }
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {imageFile 
+                      ? intl.formatMessage({ id: 'products.change_image' })
+                      : intl.formatMessage({ id: 'products.upload_image' })
+                    }
+                  </Button>
+                  {(imagePreview || imageFile) && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="text-white"
+                      size="sm"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview("");
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-2 text-white" />
+                      {intl.formatMessage({ id: 'products.remove_image' })}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    handleImageFileChange(file);
-                  }}
-                  className="hidden"
-                  id="image-input"
-                />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                id="productCode"
+                label={intl.formatMessage({ id: 'products.form.code' })}
+                value={form.productCode}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    productCode: e.target.value,
+                    discountTiers: f.discountTiers.map((tier) => ({
+                      ...tier,
+                      code: e.target.value,
+                    })),
+                  }))
+                }
+                required
+              />
+
+              <FormField
+                id="productName"
+                label={intl.formatMessage({ id: 'products.form.name' })}
+                value={form.productName}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, productName: e.target.value }))
+                }
+                required
+              />
+
+              {/* Category Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="productCategory">
+                  {intl.formatMessage({ id: 'products.form.category' })} <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={form.productCategory}
+                  onValueChange={(value) =>
+                    setForm((f) => ({ ...f, productCategory: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_category' })} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.categoryName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <FormField
+                id="productPrice"
+                label={intl.formatMessage({ id: 'products.form.price' })}
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.productPrice}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    productPrice: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                required
+              />
+
+              <FormField
+                id="productPurity"
+                label={intl.formatMessage({ id: 'products.form.purity_percent' })}
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={form.productPurity}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    productPurity: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                required
+              />
+
+              {/* Grade Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="productGrade">
+                  {intl.formatMessage({ id: 'products.form.grade' })} <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={form.productGrade}
+                  onValueChange={(value) =>
+                    setForm((f) => ({ ...f, productGrade: value as any }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_grade' })} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gradeOptions.map((grade) => (
+                      <SelectItem key={grade.value} value={grade.value}>
+                        {grade.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Form Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="productForm">
+                  {intl.formatMessage({ id: 'products.form.form' })} <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={form.productForm}
+                  onValueChange={(value) =>
+                    setForm((f) => ({ ...f, productForm: value as any }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_form' })} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formOptions.map((formOption) => (
+                      <SelectItem key={formOption.value} value={formOption.value}>
+                        {formOption.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <FormField
+                id="productDiscount"
+                label={intl.formatMessage({ id: 'products.form.general_discount_percent' })}
+                type="number"
+                min="0"
+                max="100"
+                value={form.productDiscount}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    productDiscount: parseFloat(e.target.value) || 0,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="col-span-full">
+              <FormField
+                id="productDescription"
+                label={intl.formatMessage({ id: 'products.form.description' })}
+                variant="textarea"
+                rows={4}
+                value={form.productDescription}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, productDescription: e.target.value }))
+                }
+                required
+              />
+            </div>
+
+            {/* Discount Tiers Section */}
+            <div className="col-span-full space-y-2">
+              <Label className="text-sm font-medium">
+                {intl.formatMessage({ id: 'products.form.tiered_discounts_optional' })}
+              </Label>
+              <div className="border rounded-md p-4 space-y-3">
+                {form.discountTiers.map((tier, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                    {/* Quantity */}
+                    <div className="col-span-5 space-y-1">
+                      <Label
+                        htmlFor={`quantity-${index}`}
+                        className="text-xs font-medium text-gray-700"
+                      >
+                        {intl.formatMessage({ id: 'products.form.quantity' })}
+                      </Label>
+                      <Input
+                        id={`quantity-${index}`}
+                        type="number"
+                        placeholder={intl.formatMessage({ id: 'products.form.quantity' })}
+                        min="1"
+                        value={tier.quantity}
+                        onChange={(e) => {
+                          const newTiers = [...form.discountTiers];
+                          newTiers[index] = {
+                            ...newTiers[index],
+                            quantity: parseInt(e.target.value) || 0,
+                          };
+                          setForm((f) => ({ ...f, discountTiers: newTiers }));
+                        }}
+                      />
+                    </div>
+
+                    {/* Discount */}
+                    <div className="col-span-5 space-y-1">
+                      <Label
+                        htmlFor={`discount-${index}`}
+                        className="text-xs font-medium text-gray-700"
+                      >
+                        {intl.formatMessage({ id: 'products.form.discount_percent' })}
+                      </Label>
+                      <Input
+                        id={`discount-${index}`}
+                        type="number"
+                        placeholder={intl.formatMessage({ id: 'products.form.discount_percent' })}
+                        min="0"
+                        max="100"
+                        value={tier.discount}
+                        onChange={(e) => {
+                          const newTiers = [...form.discountTiers];
+                          newTiers[index] = {
+                            ...newTiers[index],
+                            discount: parseFloat(e.target.value) || 0,
+                          };
+                          setForm((f) => ({ ...f, discountTiers: newTiers }));
+                        }}
+                      />
+                    </div>
+
+                    {/* Remove button */}
+                    <div className="col-span-2 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          const newTiers = form.discountTiers.filter(
+                            (_, i) => i !== index
+                          );
+                          setForm((f) => ({ ...f, discountTiers: newTiers }));
+                        }}
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add new tier */}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    document.getElementById("image-input")?.click()
-                  }
+                  onClick={() => {
+                    setForm((f) => ({
+                      ...f,
+                      discountTiers: [
+                        ...f.discountTiers,
+                        { quantity: 0, discount: 0, code: f.productCode },
+                      ],
+                    }));
+                  }}
+                  className="w-full"
                 >
-                  <Camera className="w-4 h-4 mr-2" />
-                  {imageFile 
-                    ? intl.formatMessage({ id: 'products.change_image' })
-                    : intl.formatMessage({ id: 'products.upload_image' })
-                  }
+                  <Plus className="w-4 h-4 mr-2" />
+                  {intl.formatMessage({ id: 'products.form.add_discount_tier' })}
                 </Button>
-                {(imagePreview || imageFile) && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="text-white"
-                    size="sm"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview("");
-                    }}
-                  >
-                    <X className="w-4 h-4 mr-2 text-white" />
-                    {intl.formatMessage({ id: 'products.remove_image' })}
-                  </Button>
-                )}
               </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              id="productCode"
-              label={intl.formatMessage({ id: 'products.form.code' })}
-              value={form.productCode}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  productCode: e.target.value,
-                  discountTiers: f.discountTiers.map((tier) => ({
-                    ...tier,
-                    code: e.target.value,
-                  })),
-                }))
-              }
-              required
-            />
-
-            <FormField
-              id="productName"
-              label={intl.formatMessage({ id: 'products.form.name' })}
-              value={form.productName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, productName: e.target.value }))
-              }
-              required
-            />
-
-            {/* Category Selector */}
-            <div className="space-y-2">
-              <Label htmlFor="productCategory">
-                {intl.formatMessage({ id: 'products.form.category' })} <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={form.productCategory}
-                onValueChange={(value) =>
-                  setForm((f) => ({ ...f, productCategory: value }))
+            <div className="col-span-full flex items-center justify-between border rounded-md p-3">
+              <div>
+                <Label htmlFor="productStatus">
+                  {intl.formatMessage({ id: 'products.form.stock_status' })}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {intl.formatMessage({ id: 'products.form.stock_status_description' })}
+                </p>
+              </div>
+              <Switch
+                id="productStatus"
+                checked={form.productStatus}
+                onCheckedChange={(checked) =>
+                  setForm((f) => ({ ...f, productStatus: checked }))
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_category' })} />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category._id} value={category._id}>
-                      {category.categoryName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
-            <FormField
-              id="productPrice"
-              label={intl.formatMessage({ id: 'products.form.price' })}
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.productPrice}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  productPrice: parseFloat(e.target.value) || 0,
-                }))
-              }
-              required
-            />
-
-            <FormField
-              id="productPurity"
-              label={intl.formatMessage({ id: 'products.form.purity_percent' })}
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={form.productPurity}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  productPurity: parseFloat(e.target.value) || 0,
-                }))
-              }
-              required
-            />
-
-            {/* Grade Selector */}
-            <div className="space-y-2">
-              <Label htmlFor="productGrade">
-                {intl.formatMessage({ id: 'products.form.grade' })} <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={form.productGrade}
-                onValueChange={(value) =>
-                  setForm((f) => ({ ...f, productGrade: value as any }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_grade' })} />
-                </SelectTrigger>
-                <SelectContent>
-                  {gradeOptions.map((grade) => (
-                    <SelectItem key={grade.value} value={grade.value}>
-                      {grade.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Form Selector */}
-            <div className="space-y-2">
-              <Label htmlFor="productForm">
-                {intl.formatMessage({ id: 'products.form.form' })} <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={form.productForm}
-                onValueChange={(value) =>
-                  setForm((f) => ({ ...f, productForm: value as any }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_form' })} />
-                </SelectTrigger>
-                <SelectContent>
-                  {formOptions.map((formOption) => (
-                    <SelectItem key={formOption.value} value={formOption.value}>
-                      {formOption.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <FormField
-              id="productDiscount"
-              label={intl.formatMessage({ id: 'products.form.general_discount_percent' })}
-              type="number"
-              min="0"
-              max="100"
-              value={form.productDiscount}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  productDiscount: parseFloat(e.target.value) || 0,
-                }))
-              }
-            />
-          </div>
-
-          <div className="col-span-full">
-            <FormField
-              id="productDescription"
-              label={intl.formatMessage({ id: 'products.form.description' })}
-              variant="textarea"
-              rows={4}
-              value={form.productDescription}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, productDescription: e.target.value }))
-              }
-              required
-            />
-          </div>
-
-          {/* Discount Tiers Section */}
-          <div className="col-span-full space-y-2">
-            <Label className="text-sm font-medium">
-              {intl.formatMessage({ id: 'products.form.tiered_discounts_optional' })}
-            </Label>
-            <div className="border rounded-md p-4 space-y-3">
-              {form.discountTiers.map((tier, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  {/* Quantity */}
-                  <div className="col-span-5 space-y-1">
-                    <Label
-                      htmlFor={`quantity-${index}`}
-                      className="text-xs font-medium text-gray-700"
-                    >
-                      {intl.formatMessage({ id: 'products.form.quantity' })}
-                    </Label>
-                    <Input
-                      id={`quantity-${index}`}
-                      type="number"
-                      placeholder={intl.formatMessage({ id: 'products.form.quantity' })}
-                      min="1"
-                      value={tier.quantity}
-                      onChange={(e) => {
-                        const newTiers = [...form.discountTiers];
-                        newTiers[index] = {
-                          ...newTiers[index],
-                          quantity: parseInt(e.target.value) || 0,
-                        };
-                        setForm((f) => ({ ...f, discountTiers: newTiers }));
-                      }}
-                    />
-                  </div>
-
-                  {/* Discount */}
-                  <div className="col-span-5 space-y-1">
-                    <Label
-                      htmlFor={`discount-${index}`}
-                      className="text-xs font-medium text-gray-700"
-                    >
-                      {intl.formatMessage({ id: 'products.form.discount_percent' })}
-                    </Label>
-                    <Input
-                      id={`discount-${index}`}
-                      type="number"
-                      placeholder={intl.formatMessage({ id: 'products.form.discount_percent' })}
-                      min="0"
-                      max="100"
-                      value={tier.discount}
-                      onChange={(e) => {
-                        const newTiers = [...form.discountTiers];
-                        newTiers[index] = {
-                          ...newTiers[index],
-                          discount: parseFloat(e.target.value) || 0,
-                        };
-                        setForm((f) => ({ ...f, discountTiers: newTiers }));
-                      }}
-                    />
-                  </div>
-
-                  {/* Remove button */}
-                  <div className="col-span-2 flex justify-end">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        const newTiers = form.discountTiers.filter(
-                          (_, i) => i !== index
-                        );
-                        setForm((f) => ({ ...f, discountTiers: newTiers }));
-                      }}
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Add new tier */}
+            <DialogFooter className="mt-4">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {intl.formatMessage({ id: 'common.cancel' })}
+                </Button>
+              </DialogClose>
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setForm((f) => ({
-                    ...f,
-                    discountTiers: [
-                      ...f.discountTiers,
-                      { quantity: 0, discount: 0, code: f.productCode },
-                    ],
-                  }));
-                }}
-                className="w-full"
+                type="submit"
+                className="text-white"
+                disabled={!canSubmit || checkingCode || isLoading}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                {intl.formatMessage({ id: 'products.form.add_discount_tier' })}
+                {checkingCode ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {intl.formatMessage({ id: 'products.checking_code' })}
+                  </>
+                ) : isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {intl.formatMessage({ id: 'products.creating' })}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: 'products.create_product' })
+                )}
               </Button>
-            </div>
-          </div>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-          <div className="col-span-full flex items-center justify-between border rounded-md p-3">
-            <div>
-              <Label htmlFor="productStatus">
-                {intl.formatMessage({ id: 'products.form.stock_status' })}
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {intl.formatMessage({ id: 'products.form.stock_status_description' })}
-              </p>
-            </div>
-            <Switch
-              id="productStatus"
-              checked={form.productStatus}
-              onCheckedChange={(checked) =>
-                setForm((f) => ({ ...f, productStatus: checked }))
-              }
-            />
-          </div>
-
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                {intl.formatMessage({ id: 'common.cancel' })}
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              className="text-white"
-              disabled={!canSubmit || checkingCode || isLoading}
-            >
-              {checkingCode ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {intl.formatMessage({ id: 'products.checking_code' })}
-                </>
-              ) : isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {intl.formatMessage({ id: 'products.creating' })}
-                </>
-              ) : (
-                intl.formatMessage({ id: 'products.create_product' })
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      {/* Add Product Confirmation Dialog */}
+      <ConfirmationDialog
+        open={addConfirmDialog.isOpen}
+        onOpenChange={addConfirmDialog.setIsOpen}
+        variant="add"
+        onConfirm={addConfirmDialog.handleConfirm}
+        onCancel={addConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
+    </>
   );
 }

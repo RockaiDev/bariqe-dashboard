@@ -1,12 +1,9 @@
+// helper/axiosInstance.ts
 import axios, { AxiosError } from "axios";
-import type {
-  AxiosRequestConfig,
-
-  InternalAxiosRequestConfig,
-} from "axios";
+import type { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
+import { useAuthStore } from "@/stores/authStore";
 
 const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
 
 const axiosInstance = axios.create({
   baseURL: BASE,
@@ -15,6 +12,9 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// متغير لمنع multiple redirects
+let isRedirecting = false;
 
 // متغير لحفظ دالة navigate
 let navigateFunction: ((path: string) => void) | null = null;
@@ -33,31 +33,40 @@ axiosInstance.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-
-// 🟢 Response Interceptor
-// 🟢 Response Interceptor
+// 🟢 Response Interceptor المحسن
 axiosInstance.interceptors.response.use(
   (response) => {
+    // Reset redirect flag on successful response
+    isRedirecting = false;
+    
     // Skip transforming blob responses
     if (response.config.responseType === 'blob') {
       return response;
     }
-    // For regular JSON responses
     return response.data;
   },
   (error) => {
-    // Handle errors
     if (error.response) {
       // Authentication errors
-      if (error.response.status === 401) {
+      if (error.response.status === 401 && !isRedirecting) {
+        isRedirecting = true;
+        
+        // Clear auth state immediately
+        useAuthStore.getState().clearAuth();
+        
+        // Navigate to login
         if (navigateFunction && !window.location.pathname.includes('/login')) {
           navigateFunction('/login');
         } else if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
+        
+        // Reset redirect flag after a delay
+        setTimeout(() => {
+          isRedirecting = false;
+        }, 1000);
       }
       
-      console.error("API Error:", error.response.data);
       return Promise.reject(error.response.data);
     }
     return Promise.reject(error.message);

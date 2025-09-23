@@ -454,46 +454,50 @@ export const createOrderSearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   return (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+    if (e.key === "Enter") {
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
-      if (searchValue.startsWith("status:")) {
-        const status = searchValue.replace("status:", "").toLowerCase();
-        return changeFilterFn([["orderStatus", "==", status]], "queries"); // Fixed typo
-      } else if (searchValue.startsWith("customer:")) {
-        const customerName = searchValue.replace("customer:", "");
-        return changeFilterFn([["customer.customerName", "contains", customerName]], "queries");
-      } else if (searchValue.startsWith("product:")) {
-        const productName = searchValue.replace("product:", "");
-        return changeFilterFn([["product.productName", "contains", productName]], "queries");
-      } else if (searchValue.startsWith("email:")) {
-        const email = searchValue.replace("email:", "");
-        return changeFilterFn([["customer.customerEmail", "contains", email]], "queries");
-      } else if (searchValue.startsWith("phone:")) {
-        const phone = searchValue.replace("phone:", "");
-        return changeFilterFn([["customer.customerPhone", "contains", phone]], "queries");
-      } else if (searchValue.startsWith("quantity:")) {
-        const quantity = parseInt(searchValue.replace("quantity:", ""));
-        if (!isNaN(quantity)) {
-          return changeFilterFn([["quantity", ">=", quantity]], "queries");
-        }
-      } else if (searchValue.startsWith("total:")) {
-        const total = parseFloat(searchValue.replace("total:", ""));
-        if (!isNaN(total)) {
-          return changeFilterFn([["product.productPrice", ">=", total]], "queries");
+      if (searchValue) {
+        if (searchValue.startsWith("status:")) {
+          const status = searchValue.replace("status:", "").toLowerCase();
+          return changeFilterFn([["orderStatus", "==", status]], "queries");
+        } else if (searchValue.startsWith("customer:")) {
+          const customerName = searchValue.replace("customer:", "");
+          return changeFilterFn([["customer.customerName", "contains", customerName]], "queries");
+        } else if (searchValue.startsWith("product:")) {
+          const productName = searchValue.replace("product:", "");
+          return changeFilterFn([["product.productName", "contains", productName]], "queries");
+        } else if (searchValue.startsWith("email:")) {
+          const email = searchValue.replace("email:", "");
+          return changeFilterFn([["customer.customerEmail", "contains", email]], "queries");
+        } else if (searchValue.startsWith("phone:")) {
+          const phone = searchValue.replace("phone:", "");
+          return changeFilterFn([["customer.customerPhone", "contains", phone]], "queries");
+        } else if (searchValue.startsWith("quantity:")) {
+          const quantity = parseInt(searchValue.replace("quantity:", ""));
+          if (!isNaN(quantity)) {
+            return changeFilterFn([["quantity", ">=", quantity]], "queries");
+          }
+        } else if (searchValue.startsWith("total:")) {
+          const total = parseFloat(searchValue.replace("total:", ""));
+          if (!isNaN(total)) {
+            return changeFilterFn([["product.productPrice", ">=", total]], "queries");
+          }
+        } else {
+          return changeFilterFn([
+            [
+              "$or",
+              "custom",
+              [
+                ["customer.customerName", "contains", searchValue],
+                ["customer.customerEmail", "contains", searchValue],
+                ["product.productName", "contains", searchValue],
+              ],
+            ],
+          ], "queries");
         }
       } else {
-        return changeFilterFn([
-          [
-            "$or",
-            "custom",
-            [
-              ["customer.customerName", "contains", searchValue],
-              ["customer.customerEmail", "contains", searchValue],
-              ["product.productName", "contains", searchValue],
-            ],
-          ],
-        ], "queries");
+        changeFilterFn([], "queries");
       }
     }
   };
@@ -503,45 +507,49 @@ export const createMaterialRequestSearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   return (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+    if (e.key === "Enter") {
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
-      if (searchValue.startsWith("status:")) {
-        const status = searchValue.replace("status:", "").toLowerCase();
-        if (status === "pending") {
-          return changeFilterFn([["materialActions", "==", null]], "queries");
-        } else if (status === "approved") {
-          return changeFilterFn([["materialActions", "==", "approve"]], "queries");
-        } else if (status === "denied") {
-          return changeFilterFn([["materialActions", "==", "denied"]], "queries");
-        }
-      } else if (searchValue.startsWith("email:")) {
-        const email = searchValue.replace("email:", "");
-        return changeFilterFn([["materialEmail", "contains", email]], "queries"); // Fixed typo: materialEmail -> materialEmail
-      } else if (searchValue.startsWith("phone:")) {
-        const phone = searchValue.replace("phone:", "");
-        return changeFilterFn([["materialPhone", "contains", phone]], "queries");
-      } else if (searchValue.startsWith("material:")) {
-        const material = searchValue.replace("material:", "");
-        return changeFilterFn([["materialName", "contains", material]], "queries");
-      } else if (searchValue.startsWith("quantity:")) {
-        const quantity = parseInt(searchValue.replace("quantity:", ""));
-        if (!isNaN(quantity)) {
-          return changeFilterFn([["materialQuantity", ">=", quantity]], "queries");
+      if (searchValue) {
+        if (searchValue.startsWith("status:")) {
+          const status = searchValue.replace("status:", "").toLowerCase();
+          if (status === "pending") {
+            return changeFilterFn([["materialActions", "==", null]], "queries");
+          } else if (status === "approved") {
+            return changeFilterFn([["materialActions", "==", "approve"]], "queries");
+          } else if (status === "denied") {
+            return changeFilterFn([["materialActions", "==", "denied"]], "queries");
+          }
+        } else if (searchValue.startsWith("email:")) {
+          const email = searchValue.replace("email:", "");
+          return changeFilterFn([["materialEmail", "contains", email]], "queries"); // Fixed typo: materialEmail -> materialEmail
+        } else if (searchValue.startsWith("phone:")) {
+          const phone = searchValue.replace("phone:", "");
+          return changeFilterFn([["materialPhone", "contains", phone]], "queries");
+        } else if (searchValue.startsWith("material:")) {
+          const material = searchValue.replace("material:", "");
+          return changeFilterFn([["materialName", "contains", material]], "queries");
+        } else if (searchValue.startsWith("quantity:")) {
+          const quantity = parseInt(searchValue.replace("quantity:", ""));
+          if (!isNaN(quantity)) {
+            return changeFilterFn([["materialQuantity", ">=", quantity]], "queries");
+          }
+        } else {
+          return changeFilterFn([
+            [
+              "$or",
+              "custom",
+              [
+                ["materialName", "contains", searchValue],
+                ["materialEmail", "contains", searchValue], // Fixed typo
+                ["materialPhone", "contains", searchValue],
+                ["materialIntendedUse", "contains", searchValue],
+              ],
+            ],
+          ], "queries");
         }
       } else {
-        return changeFilterFn([
-          [
-            "$or",
-            "custom",
-            [
-              ["materialName", "contains", searchValue],
-              ["materialEmail", "contains", searchValue], // Fixed typo
-              ["materialPhone", "contains", searchValue],
-              ["materialIntendedUse", "contains", searchValue],
-            ],
-          ],
-        ], "queries");
+        changeFilterFn([], "queries");
       }
     }
   };
@@ -551,30 +559,34 @@ export const createCategorySearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   return (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+    if (e.key === "Enter") {
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
-      if (searchValue.startsWith("status:")) {
-        const status = searchValue.replace("status:", "").toLowerCase();
-        const isActive = status === "active";
-        return changeFilterFn([["categoryStatus", "==", isActive]], "queries");
-      } else if (searchValue.startsWith("name:")) {
-        const name = searchValue.replace("name:", "");
-        return changeFilterFn([["categoryName", "contains", name]], "queries");
-      } else if (searchValue.startsWith("desc:")) {
-        const desc = searchValue.replace("desc:", "");
-        return changeFilterFn([["categoryDescription", "contains", desc]], "queries");
-      } else {
-        return changeFilterFn([
-          [
-            "$or",
-            "custom",
+      if (searchValue) {
+        if (searchValue.startsWith("status:")) {
+          const status = searchValue.replace("status:", "").toLowerCase();
+          const isActive = status === "active";
+          return changeFilterFn([["categoryStatus", "==", isActive]], "queries");
+        } else if (searchValue.startsWith("name:")) {
+          const name = searchValue.replace("name:", "");
+          return changeFilterFn([["categoryName", "contains", name]], "queries");
+        } else if (searchValue.startsWith("desc:")) {
+          const desc = searchValue.replace("desc:", "");
+          return changeFilterFn([["categoryDescription", "contains", desc]], "queries");
+        } else {
+          return changeFilterFn([
             [
-              ["categoryName", "contains", searchValue],
-              ["categoryDescription", "contains", searchValue],
+              "$or",
+              "custom",
+              [
+                ["categoryName", "contains", searchValue],
+                ["categoryDescription", "contains", searchValue],
+              ],
             ],
-          ],
-        ], "queries");
+          ], "queries");
+        }
+      } else {
+        changeFilterFn([], "queries");
       }
     }
   };
@@ -657,41 +669,45 @@ export const createConsultationRequestSearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   return (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+    if (e.key === "Enter") {
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
-      if (searchValue.startsWith("status:")) {
-        const status = searchValue.replace("status:", "").toLowerCase();
-        return changeFilterFn([["ConsultationRequestsStatus", "==", status]], "queries");
-      } else if (searchValue.startsWith("name:")) {
-        const name = searchValue.replace("name:", "");
-        return changeFilterFn([["ConsultationRequestsName", "contains", name]], "queries");
-      } else if (searchValue.startsWith("email:")) {
-        const email = searchValue.replace("email:", "");
-        return changeFilterFn([["ConsultationRequestsEmail", "contains", email]], "queries");
-      } else if (searchValue.startsWith("phone:")) {
-        const phone = searchValue.replace("phone:", "");
-        return changeFilterFn([["ConsultationRequestsPhone", "contains", phone]], "queries");
-      } else if (searchValue.startsWith("area:")) {
-        const area = searchValue.replace("area:", "");
-        return changeFilterFn([["consultationRequestsArea", "contains", area]], "queries");
-      } else if (searchValue.startsWith("message:")) {
-        const message = searchValue.replace("message:", "");
-        return changeFilterFn([["ConsultationRequestsMessage", "contains", message]], "queries");
-      } else {
-        return changeFilterFn([
-          [
-            "$or",
-            "custom",
+      if (searchValue) {
+        if (searchValue.startsWith("status:")) {
+          const status = searchValue.replace("status:", "").toLowerCase();
+          return changeFilterFn([["ConsultationRequestsStatus", "==", status]], "queries");
+        } else if (searchValue.startsWith("name:")) {
+          const name = searchValue.replace("name:", "");
+          return changeFilterFn([["ConsultationRequestsName", "contains", name]], "queries");
+        } else if (searchValue.startsWith("email:")) {
+          const email = searchValue.replace("email:", "");
+          return changeFilterFn([["ConsultationRequestsEmail", "contains", email]], "queries");
+        } else if (searchValue.startsWith("phone:")) {
+          const phone = searchValue.replace("phone:", "");
+          return changeFilterFn([["ConsultationRequestsPhone", "contains", phone]], "queries");
+        } else if (searchValue.startsWith("area:")) {
+          const area = searchValue.replace("area:", "");
+          return changeFilterFn([["consultationRequestsArea", "contains", area]], "queries");
+        } else if (searchValue.startsWith("message:")) {
+          const message = searchValue.replace("message:", "");
+          return changeFilterFn([["ConsultationRequestsMessage", "contains", message]], "queries");
+        } else {
+          return changeFilterFn([
             [
-              ["ConsultationRequestsName", "contains", searchValue],
-              ["ConsultationRequestsEmail", "contains", searchValue],
-              ["ConsultationRequestsPhone", "contains", searchValue],
-              ["consultationRequestsArea", "contains", searchValue],
-              ["ConsultationRequestsMessage", "contains", searchValue],
+              "$or",
+              "custom",
+              [
+                ["ConsultationRequestsName", "contains", searchValue],
+                ["ConsultationRequestsEmail", "contains", searchValue],
+                ["ConsultationRequestsPhone", "contains", searchValue],
+                ["consultationRequestsArea", "contains", searchValue],
+                ["ConsultationRequestsMessage", "contains", searchValue],
+              ],
             ],
-          ],
-        ], "queries");
+          ], "queries");
+        }
+      } else {
+        changeFilterFn([], "queries");
       }
     }
   };
@@ -777,43 +793,47 @@ export const createCustomerSearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   return (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+    if (e.key === "Enter") {
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
-      if (searchValue.startsWith("source:")) {
-        const source = searchValue.replace("source:", "").toLowerCase();
-        return changeFilterFn([["customerSource", "==", source]], "queries");
-      } else if (searchValue.startsWith("name:")) {
-        const name = searchValue.replace("name:", "");
-        return changeFilterFn([["customerName", "contains", name]], "queries");
-      } else if (searchValue.startsWith("email:")) {
-        const email = searchValue.replace("email:", "");
-        return changeFilterFn([["customerEmail", "contains", email]], "queries");
-      } else if (searchValue.startsWith("phone:")) {
-        const phone = searchValue.replace("phone:", "");
-        return changeFilterFn([["customerPhone", "contains", phone]], "queries");
-      } else if (searchValue.startsWith("address:")) {
-        const address = searchValue.replace("address:", "");
-        return changeFilterFn([["customerAddress", "contains", address]], "queries");
-      } else if (searchValue.startsWith("notes:")) {
-        const notes = searchValue.replace("notes:", "");
-        return changeFilterFn([["customerNotes", "contains", notes]], "queries");
-      } else {
-        return changeFilterFn([
-          [
-            "$or",
-            "custom",
+      if (searchValue) {
+        if (searchValue.startsWith("source:")) {
+          const source = searchValue.replace("source:", "").toLowerCase();
+          return changeFilterFn([["customerSource", "==", source]], "queries");
+        } else if (searchValue.startsWith("name:")) {
+          const name = searchValue.replace("name:", "");
+          return changeFilterFn([["customerName", "contains", name]], "queries");
+        } else if (searchValue.startsWith("email:")) {
+          const email = searchValue.replace("email:", "");
+          return changeFilterFn([["customerEmail", "contains", email]], "queries");
+        } else if (searchValue.startsWith("phone:")) {
+          const phone = searchValue.replace("phone:", "");
+          return changeFilterFn([["customerPhone", "contains", phone]], "queries");
+        } else if (searchValue.startsWith("address:")) {
+          const address = searchValue.replace("address:", "");
+          return changeFilterFn([["customerAddress", "contains", address]], "queries");
+        } else if (searchValue.startsWith("notes:")) {
+          const notes = searchValue.replace("notes:", "");
+          return changeFilterFn([["customerNotes", "contains", notes]], "queries");
+        } else {
+          return changeFilterFn([
             [
-              ["customerName", "contains", searchValue],
-              ["customerEmail", "contains", searchValue],
-              ["customerPhone", "contains", searchValue],
-              ["customerSource", "contains", searchValue],
-              ["customerAddress", "contains", searchValue],
-              ["customerNotes", "contains", searchValue],
+              "$or",
+              "custom",
+              [
+                ["customerName", "contains", searchValue],
+                ["customerEmail", "contains", searchValue],
+                ["customerPhone", "contains", searchValue],
+                ["customerSource", "contains", searchValue],
+                ["customerAddress", "contains", searchValue],
+                ["customerNotes", "contains", searchValue],
+              ],
             ],
-          ],
-        ], "queries");
+          ], "queries");
+        }
+      } else {
+        changeFilterFn([], "queries");
       }
     }
   };
-};
+}

@@ -100,6 +100,7 @@ export default class DatabaseController extends BaseApi {
       this.createCategoriesBackupSheet(workbook, categories);
       this.createCustomersBackupSheet(workbook, customers);
       this.createProductsBackupSheet(workbook, products);
+      this.createDiscountTiersBackupSheet(workbook, products);
       this.createOrdersBackupSheet(workbook, orders);
       this.createMaterialRequestsBackupSheet(workbook, materialRequests);
       this.createConsultationRequestsBackupSheet(workbook, consultationRequests);
@@ -157,6 +158,7 @@ export default class DatabaseController extends BaseApi {
         await this.restoreCategories(workbook, restoreResults);
         await this.restoreCustomers(workbook, restoreResults);
         await this.restoreProducts(workbook, restoreResults);
+        await this.restoreDiscountTiers(workbook, restoreResults);
         await this.restoreOrders(workbook, restoreResults);
         await this.restoreMaterialRequests(workbook, restoreResults);
         await this.restoreConsultationRequests(workbook, restoreResults);
@@ -206,6 +208,7 @@ export default class DatabaseController extends BaseApi {
       this.createCategoriesTemplateSheet(workbook);
       this.createCustomersTemplateSheet(workbook);
       this.createProductsTemplateSheet(workbook);
+      this.createDiscountTiersTemplateSheet(workbook);
       this.createOrdersTemplateSheet(workbook);
       this.createMaterialRequestsTemplateSheet(workbook);
       this.createConsultationRequestsTemplateSheet(workbook);
@@ -294,7 +297,7 @@ export default class DatabaseController extends BaseApi {
         categoryName: category.categoryName,
         categoryDescription: category.categoryDescription,
         // Service already returns "Active" or "Inactive" string, no need to convert
-        categoryStatus: category.categoryStatus || "Inactive",
+        categoryStatus: category.categoryStatus ,
         createdAt: category.createdAt ? new Date(category.createdAt) : new Date(),
         updatedAt: category.updatedAt ? new Date(category.updatedAt) : new Date(),
       });
@@ -372,7 +375,7 @@ export default class DatabaseController extends BaseApi {
         productGrade: product.productGrade,
         productForm: product.productForm,
         // Service already returns "Active" or "Inactive" string, no need to convert
-        productStatus: product.productStatus || "Inactive",
+        productStatus: product.productStatus ,
         productDiscount: product.productDiscount || 0,
         createdAt: product.createdAt ? new Date(product.createdAt) : new Date(),
         updatedAt: product.updatedAt ? new Date(product.updatedAt) : new Date(),
@@ -382,6 +385,43 @@ export default class DatabaseController extends BaseApi {
       row.getCell("updatedAt").numFmt = "yyyy-mm-dd hh:mm:ss";
     });
     
+    this.addBordersToSheet(sheet);
+  }
+
+  private createDiscountTiersBackupSheet(workbook: ExcelJS.Workbook, products: any[]) {
+    if (!products?.length) return;
+
+    const sheet = workbook.addWorksheet("Discount Tiers", {
+      properties: { tabColor: { argb: "00FF00" } },
+    });
+
+    // Define columns for discount sheet
+    sheet.columns = [
+      { header: "Product Code", key: "productCode", width: 20 },
+      { header: "Product Name", key: "productName", width: 30 },
+      { header: "Quantity", key: "quantity", width: 15 },
+      { header: "Discount %", key: "discount", width: 15 },
+    ];
+
+    // Style header row
+    this.styleSheetHeader(sheet, "FF70AD47");
+
+    // Add discount tiers data
+    products.forEach((product) => {
+      if (product.discountTiers && product.discountTiers.length > 0) {
+        product.discountTiers.forEach((tier: any) => {
+          const row = sheet.addRow({
+            productCode: product.productCode,
+            productName: product.productName,
+            quantity: tier.quantity,
+            discount: tier.discount / 100, // Convert to percentage format
+          });
+          row.getCell("discount").numFmt = "0%";
+        });
+      }
+    });
+
+    // Add borders to discount sheet
     this.addBordersToSheet(sheet);
   }
 
@@ -574,10 +614,10 @@ export default class DatabaseController extends BaseApi {
       if (categoriesData.length > 0) {
         const processedCategories = categoriesData.map(cat => ({
           ...cat,
-          // 🔧 FIXED: Proper boolean conversion
-          categoryStatus: cat.categoryStatus === "Active" || cat.categoryStatus === true || cat.categoryStatus === "true"
+          // 🔧 FIXED: Proper boolean conversion - "Active" -> true, "Inactive" -> false
+          categoryStatus: cat.categoryStatus === "Active" || cat.categoryStatus === true,
         }));
-        
+
         results.categories = await categoryService.ImportCategories(processedCategories);
       }
     } catch (error) {
@@ -617,8 +657,8 @@ export default class DatabaseController extends BaseApi {
       if (productsData.length > 0) {
         const processedProducts = productsData.map(product => ({
           ...product,
-          // 🔧 FIXED: Proper boolean conversion
-          productStatus: product.productStatus === "Active" || product.productStatus === true || product.productStatus === "true",
+          // 🔧 FIXED: Proper boolean conversion - "Active" -> true, "Inactive" -> false
+          productStatus: product.productStatus === "Active" || product.productStatus === true,
           productPrice: Number(product.productPrice) || 0,
           productPurity: Number(product.productPurity) || 0,
           productDiscount: Number(product.productDiscount) || 0
@@ -629,6 +669,32 @@ export default class DatabaseController extends BaseApi {
     } catch (error) {
       console.error("Error restoring products:", error);
       results.productError = error;
+    }
+  }
+
+  private async restoreDiscountTiers(workbook: ExcelJS.Workbook, results: any) {
+    const sheet = workbook.getWorksheet("Discount Tiers");
+    if (!sheet) return;
+
+    try {
+      const discountTiersData = this.extractSheetData(sheet, [
+        "productCode", "productName", "quantity", "discount"
+      ]);
+
+      if (discountTiersData.length > 0) {
+        const processedDiscountTiers = discountTiersData.map(tier => ({
+          productCode: tier.productCode,
+          discountTiers: [{
+            quantity: Number(tier.quantity) || 0,
+            discount: Number(tier.discount) || 0
+          }]
+        }));
+
+        results.discountTiers = await productService.BulkUpdateDiscountTiers(processedDiscountTiers);
+      }
+    } catch (error) {
+      console.error("Error restoring discount tiers:", error);
+      results.discountTiersError = error;
     }
   }
 
@@ -765,7 +831,7 @@ export default class DatabaseController extends BaseApi {
     sheet.addRow({
       categoryName: "Laboratory Chemicals",
       categoryDescription: "High-purity chemicals for laboratory use",
-      categoryStatus: "Active",
+      categoryStatus: true,
     });
     
     sheet.getCell("C2").dataValidation = {
@@ -834,7 +900,7 @@ export default class DatabaseController extends BaseApi {
       productPurity: 99.5,
       productGrade: "Analytical",
       productForm: "Solid",
-      productStatus: "Active",
+      productStatus: true,
       productDiscount: 5,
     });
     
@@ -855,6 +921,37 @@ export default class DatabaseController extends BaseApi {
       formulae: ['"Active,Inactive"'],
     };
     
+    this.addBordersToSheet(sheet);
+  }
+
+  private createDiscountTiersTemplateSheet(workbook: ExcelJS.Workbook) {
+    const sheet = workbook.addWorksheet("Discount Tiers", {
+      properties: { tabColor: { argb: "00FF00" } },
+    });
+
+    sheet.columns = [
+      { header: "Product Code", key: "productCode", width: 20 },
+      { header: "Product Name", key: "productName", width: 30 },
+      { header: "Quantity", key: "quantity", width: 15 },
+      { header: "Discount %", key: "discount", width: 15 },
+    ];
+
+    this.styleSheetHeader(sheet, "FF70AD47");
+
+    sheet.addRow({
+      productCode: "NACL001",
+      productName: "Sodium Chloride",
+      quantity: 10,
+      discount: 5,
+    });
+
+    sheet.addRow({
+      productCode: "NACL001",
+      productName: "Sodium Chloride",
+      quantity: 50,
+      discount: 10,
+    });
+
     this.addBordersToSheet(sheet);
   }
 

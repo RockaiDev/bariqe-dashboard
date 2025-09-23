@@ -45,6 +45,9 @@ import {
   createCategorySearchHandler,
   handleCategoryFilters,
 } from "@/components/shared/filters";
+// إضافة هذه imports
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 interface Category {
   _id: string;
@@ -132,146 +135,192 @@ export default function CategoryPage() {
     setViewOpen(true);
   };
 
+  // Confirmation Dialogs
+const editConfirmDialog = useConfirmationDialog({
+  onConfirm: () => {
+    setEditOpen(false);
+    setEditing(null);
+  },
+  onCancel: () => {
+    // Handle cancel - stay in dialog
+  }
+});
+
+// Check if edit form has changes
+const hasEditFormChanges = () => {
+  if (!editing) return false;
+
+  return (
+    editForm.categoryName !== editing.categoryName ||
+    editForm.categoryDescription !== editing.categoryDescription ||
+    editForm.categoryStatus !== Boolean(editing.categoryStatus)
+  );
+};
+
+// Handle edit dialog close with confirmation
+const handleEditDialogClose = (open: boolean) => {
+  if (!open && hasEditFormChanges()) {
+    editConfirmDialog.showDialog();
+  } else {
+    setEditOpen(false);
+    setEditing(null);
+  }
+};
   // 🟢 Export Categories Function
-  const handleExportCategories = async () => {
-    const loadingToast = toast.loading("Exporting categories...");
-    try {
-      const response = await axiosInstance.get("/categories/export", {
+// 🟢 Export Categories Function
+const handleExportCategories = async () => {
+  const loadingToast = toast.loading(intl.formatMessage({ id: "categories.exporting" }));
+  try {
+    const response = await axiosInstance.get("/categories/export", {
+      responseType: "blob",
+    });
+
+    // Error response handling
+    const contentType = response.headers["content-type"];
+    if (contentType?.includes("application/json")) {
+      const blob = new Blob([response.data]);
+      const text = await blob.text();
+      const error = JSON.parse(text);
+      throw new Error(error.message || intl.formatMessage({ id: "categories.export_failed" }));
+    }
+
+    // Download file
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `categories_export_${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
+
+    toast.dismiss(loadingToast);
+    toast.success(intl.formatMessage({ id: "categories.export_success" }));
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        intl.formatMessage({ id: "categories.export_failed" });
+    toast.error(errorMessage);
+  }
+};
+
+// 🟢 Download Template
+const handleDownloadTemplate = async () => {
+  const loadingToast = toast.loading(intl.formatMessage({ id: "categories.downloading_template" }));
+  try {
+    const response = await axiosInstance.get(
+      "/categories/download-template",
+      {
         responseType: "blob",
-      });
-
-      // Error response handling
-      const contentType = response.headers["content-type"];
-      if (contentType?.includes("application/json")) {
-        const text = await response.data.text();
-        throw new Error(JSON.parse(text).message || "Export failed");
       }
+    );
 
-      // Download file
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `categories_export_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
-
-      toast.dismiss(loadingToast);
-      toast.success("Categories exported successfully!");
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error?.message || "Failed to export categories");
-    }
-  };
-
-  // 🟢 Download Template
-  const handleDownloadTemplate = async () => {
-    const loadingToast = toast.loading("Downloading template...");
-    try {
-      const response = await axiosInstance.get(
-        "/categories/download-template",
-        {
-          responseType: "blob",
-        }
-      );
-
-      const contentType = response.headers["content-type"];
-      if (contentType?.includes("application/json")) {
-        const text = await response.data.text();
-        throw new Error(JSON.parse(text).message || "Download failed");
-      }
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "categories_import_template.xlsx";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
-
-      toast.dismiss(loadingToast);
-      toast.success("Template downloaded successfully!");
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error?.message || "Failed to download template");
-    }
-  };
-
-  // 🟢 Import Categories
-  const handleImportCategories = async () => {
-    if (!selectedFile) {
-      toast.error("Please select a file to import");
-      return;
+    const contentType = response.headers["content-type"];
+    if (contentType?.includes("application/json")) {
+      const blob = new Blob([response.data]);
+      const text = await blob.text();
+      const error = JSON.parse(text);
+      throw new Error(error.message || intl.formatMessage({ id: "categories.template_download_failed" }));
     }
 
-    setImporting(true);
-    const loadingToast = toast.loading("Importing categories...");
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "categories_import_template.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
 
-    try {
-      const result = await axiosInstance.post("/categories/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    toast.dismiss(loadingToast);
+    toast.success(intl.formatMessage({ id: "categories.template_downloaded" }));
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        intl.formatMessage({ id: "categories.template_download_failed" });
+    toast.error(errorMessage);
+  }
+};
 
-      toast.dismiss(loadingToast);
+// 🟢 Import Categories
+const handleImportCategories = async () => {
+  if (!selectedFile) {
+    toast.error(intl.formatMessage({ id: "categories.select_file_error" }));
+    return;
+  }
 
-      if (result?.data?.results?.categories) {
-        const { success, updated, failed } = result.data.results.categories;
-        const summary = result.data.results.summary;
+  setImporting(true);
+  const loadingToast = toast.loading(intl.formatMessage({ id: "categories.importing" }));
+  const formData = new FormData();
+  formData.append("file", selectedFile);
 
-        if (success?.length > 0)
-          toast.success(`Imported ${success.length} categories`);
-        if (updated?.length > 0)
-          toast.success(`Updated ${updated.length} categories`);
-        if (failed?.length > 0) {
-          toast.error(`Failed to import ${failed.length} categories`);
-          if (failed.length <= 5) {
-            failed.forEach((f: any) =>
-              toast.error(
-                `❌ ${f.categoryName || "Unknown"} - ${
-                  f.error || "Unknown error"
-                }`
-              )
-            );
-          }
-        }
+  try {
+    const result = await axiosInstance.post("/categories/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-        if (summary) {
-          toast.success(
-            `Summary: ${summary.total} processed → ${summary.success} created, ${summary.updated} updated, ${summary.failed} failed`
+    toast.dismiss(loadingToast);
+
+    if (result?.data?.results?.categories) {
+      const { success, updated, failed } = result.data.results.categories;
+      const summary = result.data.results.summary;
+
+      if (success?.length > 0)
+        toast.success(intl.formatMessage({ id: "categories.import_success_count" }, { count: success.length }));
+      if (updated?.length > 0)
+        toast.success(intl.formatMessage({ id: "categories.import_updated_count" }, { count: updated.length }));
+      if (failed?.length > 0) {
+        toast.error(intl.formatMessage({ id: "categories.import_failed_count" }, { count: failed.length }));
+        if (failed.length <= 5) {
+          failed.forEach((f: any) =>
+            toast.error(
+              `❌ ${f.categoryName || "Unknown"} - ${
+                f.error || "Unknown error"
+              }`
+            )
           );
         }
       }
 
-      list.refetch();
-      setImportDialogOpen(false);
-      setSelectedFile(null);
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to import categories"
-      );
-    } finally {
-      setImporting(false);
+      if (summary) {
+        toast.success(
+          intl.formatMessage({ id: "categories.import_summary" }, { 
+            total: summary.total,
+            success: summary.success, 
+            updated: summary.updated, 
+            failed: summary.failed 
+          })
+        );
+      }
     }
-  };
+
+    list.refetch();
+    setImportDialogOpen(false);
+    setSelectedFile(null);
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage = error?.response?.data?.message ||
+                        error?.message ||
+                        intl.formatMessage({ id: "categories.import_failed" });
+    toast.error(errorMessage);
+  } finally {
+    setImporting(false);
+  }
+};
   const currentSort =
     filters.sorts.length > 0
       ? {
@@ -687,81 +736,106 @@ export default function CategoryPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[520px]">
-          <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
-          </DialogHeader>
-          <form
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!editing) return;
-              update.mutate({
-                id: editing._id,
-                payload: editForm,
-              });
-              setEditOpen(false);
-              setEditing(null);
-            }}
-          >
-            <FormField
-              id="edit_categoryName"
-              label={intl.formatMessage({ id: "categories.name" })}
-              value={editForm.categoryName}
-              onChange={(e) =>
-                setEditForm((f) => ({ ...f, categoryName: e.target.value }))
-              }
-            />
-            <FormField
-              id="edit_categoryDescription"
-              label={intl.formatMessage({ id: "categories.description" })}
-              value={editForm.categoryDescription}
-              onChange={(e) =>
-                setEditForm((f) => ({
-                  ...f,
-                  categoryDescription: e.target.value,
-                }))
-              }
-            />
 
-            <div className="col-span-full flex items-center justify-between border rounded-md p-3">
-              <div>
-                <Label htmlFor="edit_categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {intl.formatMessage({ id: "categories.toggle_status" })}
-                </p>
-              </div>
-              <Switch
-                id="edit_categoryStatus"
-                checked={editForm.categoryStatus}
-                onCheckedChange={(checked) =>
-                  setEditForm((f) => ({ ...f, categoryStatus: checked }))
-                }
-              />
-            </div>
+  {/* Edit Dialog */}
+<Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
+  <DialogContent className="sm:max-w-[520px]">
+    <DialogHeader>
+      <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
+    </DialogHeader>
+    <form
+      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!editing) return;
+        
+        update.mutate({
+          id: editing._id,
+          payload: editForm,
+        }, {
+          onSuccess: () => {
+            toast.success(intl.formatMessage({ id: "categories.edit_success" }));
+            setEditOpen(false);
+            setEditing(null);
+          },
+          onError: (error: any) => {
+            const errorMessage = error?.response?.data?.message ||
+                                error?.message ||
+                                intl.formatMessage({ id: "categories.edit_failed" });
+            toast.error(errorMessage);
+          },
+        });
+      }}
+    >
+      <FormField
+        id="edit_categoryName"
+        label={intl.formatMessage({ id: "categories.name" })}
+        value={editForm.categoryName}
+        onChange={(e) =>
+          setEditForm((f) => ({ ...f, categoryName: e.target.value }))
+        }
+        required
+      />
+      <FormField
+        id="edit_categoryDescription"
+        label={intl.formatMessage({ id: "categories.description" })}
+        value={editForm.categoryDescription}
+        onChange={(e) =>
+          setEditForm((f) => ({
+            ...f,
+            categoryDescription: e.target.value,
+          }))
+        }
+        required
+      />
 
-            <DialogFooter className="mt-4 col-span-full">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  {intl.formatMessage({ id: "categories.cancel" })}
-                </Button>
-              </DialogClose>
-              <Button
-                type="submit"
-                className="text-white"
-                disabled={
-                  !editForm.categoryName || !editForm.categoryDescription
-                }
-              >
-                {intl.formatMessage({ id: "categories.save_changes" })}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <div className="col-span-full flex items-center justify-between border rounded-md p-3">
+        <div>
+          <Label htmlFor="edit_categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
+          <p className="text-sm text-muted-foreground">
+            {intl.formatMessage({ id: "categories.toggle_status" })}
+          </p>
+        </div>
+        <Switch
+          id="edit_categoryStatus"
+          checked={editForm.categoryStatus}
+          onCheckedChange={(checked) =>
+            setEditForm((f) => ({ ...f, categoryStatus: checked }))
+          }
+        />
+      </div>
 
+      <DialogFooter className="mt-4 col-span-full">
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            {intl.formatMessage({ id: "categories.cancel" })}
+          </Button>
+        </DialogClose>
+        <Button
+          type="submit"
+          className="text-white"
+          disabled={
+            !editForm.categoryName || !editForm.categoryDescription || update.isPending
+          }
+        >
+          {update.isPending 
+            ? intl.formatMessage({ id: "categories.saving" }) 
+            : intl.formatMessage({ id: "categories.save_changes" })
+          }
+        </Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
+{/* Edit Confirmation Dialog */}
+<ConfirmationDialog
+  open={editConfirmDialog.isOpen}
+  onOpenChange={editConfirmDialog.setIsOpen}
+  variant="edit"
+  onConfirm={editConfirmDialog.handleConfirm}
+  onCancel={editConfirmDialog.handleCancel}
+  isDestructive={true}
+/>
       {/* Delete Confirmation Dialog */}
       {toDelete && (
         <ConfirmDeleteDialog
@@ -780,6 +854,7 @@ export default function CategoryPage() {
 }
 
 // AddCategory component
+// AddCategory component - استبدال كامل
 function AddCategory({
   create,
   isLoading,
@@ -795,76 +870,132 @@ function AddCategory({
     categoryStatus: true,
   });
 
+  // Add Dialog Confirmation
+  const addConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setOpen(false);
+      resetForm();
+    },
+    onCancel: () => {
+      // Stay in dialog
+    }
+  });
+
   const canSubmit = form.categoryName.trim() && form.categoryDescription.trim();
+
+  // Check if form has changes
+  const hasFormChanges = () => {
+    return (
+      form.categoryName !== "" ||
+      form.categoryDescription !== "" ||
+      form.categoryStatus !== true
+    );
+  };
+
+  // Handle dialog close with confirmation
+  const handleDialogClose = (isOpen: boolean) => {
+    if (!isOpen && hasFormChanges()) {
+      addConfirmDialog.showDialog();
+    } else {
+      setOpen(isOpen);
+      if (!isOpen) resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      categoryName: "",
+      categoryDescription: "",
+      categoryStatus: true,
+    });
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="text-white cursor-pointer">
-          <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "categories.new_category" })}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>{intl.formatMessage({ id: "categories.new_category" })}</DialogTitle>
-        </DialogHeader>
-        <form
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!canSubmit || isLoading) return;
-            create(form);
-            setForm({
-              categoryName: "",
-              categoryDescription: "",
-              categoryStatus: true,
-            });
-            setOpen(false);
-          }}
-        >
-          <FormField
-            id="categoryName"
-            label={intl.formatMessage({ id: "categories.name" })}
-            value={form.categoryName}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, categoryName: e.target.value }))
-            }
-          />
-          <FormField
-            id="categoryDescription"
-            label={intl.formatMessage({ id: "categories.description" })}
-            value={form.categoryDescription}
-            className={``}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, categoryDescription: e.target.value }))
-            }
-          />
-          <div className="col-span-full flex items-center justify-between border rounded-md p-3">
-            <div>
-              <Label htmlFor="categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
-              <p className="text-sm text-muted-foreground">
-                {intl.formatMessage({ id: "categories.toggle_status" })}
-              </p>
-            </div>
-            <Switch
-              id="categoryStatus"
-                         checked={form.categoryStatus}
-              onCheckedChange={(checked) =>
-                setForm((f) => ({ ...f, categoryStatus: checked }))
+    <>
+      <Dialog open={open} onOpenChange={handleDialogClose}>
+        <DialogTrigger asChild>
+          <Button className="text-white cursor-pointer">
+            <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "categories.new_category" })}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>{intl.formatMessage({ id: "categories.new_category" })}</DialogTitle>
+          </DialogHeader>
+          <form
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!canSubmit || isLoading) return;
+              
+              create(form);
+              setForm({
+                categoryName: "",
+                categoryDescription: "",
+                categoryStatus: true,
+              });
+              setOpen(false);
+            }}
+          >
+            <FormField
+              id="categoryName"
+              label={intl.formatMessage({ id: "categories.name" })}
+              value={form.categoryName}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, categoryName: e.target.value }))
               }
+              required
             />
-          </div>
-          <DialogFooter className="mt-4 col-span-full">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                {intl.formatMessage({ id: "categories.cancel" })}
+            <FormField
+              id="categoryDescription"
+              label={intl.formatMessage({ id: "categories.description" })}
+              value={form.categoryDescription}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, categoryDescription: e.target.value }))
+              }
+              required
+            />
+            <div className="col-span-full flex items-center justify-between border rounded-md p-3">
+              <div>
+                <Label htmlFor="categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {intl.formatMessage({ id: "categories.toggle_status" })}
+                </p>
+              </div>
+              <Switch
+                id="categoryStatus"
+                checked={form.categoryStatus}
+                onCheckedChange={(checked) =>
+                  setForm((f) => ({ ...f, categoryStatus: checked }))
+                }
+              />
+            </div>
+            <DialogFooter className="mt-4 col-span-full">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {intl.formatMessage({ id: "categories.cancel" })}
+                </Button>
+              </DialogClose>
+              <Button type="submit" className="text-white" disabled={!canSubmit || isLoading}>
+                {isLoading 
+                  ? intl.formatMessage({ id: "categories.saving" }) 
+                  : intl.formatMessage({ id: "categories.create" })
+                }
               </Button>
-            </DialogClose>
-            <Button type="submit" className="text-white" disabled={!canSubmit}>
-              {isLoading ? intl.formatMessage({ id: "categories.saving" }) : intl.formatMessage({ id: "categories.create" })}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Category Confirmation Dialog */}
+      <ConfirmationDialog
+        open={addConfirmDialog.isOpen}
+        onOpenChange={addConfirmDialog.setIsOpen}
+        variant="add"
+        onConfirm={addConfirmDialog.handleConfirm}
+        onCancel={addConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
+    </>
   );
 }

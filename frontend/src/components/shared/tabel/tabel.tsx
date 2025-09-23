@@ -196,6 +196,7 @@ function DataTable({
 }: TableProps) {
   const intl = useIntl();
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
   const [dateFilter, setDateFilter] = useState<DateFilter | null>(null);
   const [tempFilters, setTempFilters] = useState<Record<string, string>>({});
@@ -315,16 +316,34 @@ function DataTable({
   };
 
   // 🟢 NEW: Clear search function
-  const clearSearch = () => {
-    setSearch("");
-    if (onSearch) onSearch("");
-    toast.success(intl.formatMessage({ id: 'table.search_cleared' }));
-  };
+// 🟢 NEW: Clear search function - Updated
+const clearSearch = () => {
+  // Clear search
+  setSearch("");
+  setAppliedSearch("");
+  if (onSearch) onSearch("");
+  
+  // Clear all filters (same as clearAllFilters)
+  setActiveFilters({});
+  setDateFilter(null);
+  setTempFilters({});
+  setTempDateFilter(null);
+  
+  if (onFiltersApply) {
+    onFiltersApply({}, null);
+  } else {
+    if (onDateFilterChange) onDateFilterChange(null);
+    filterGroups.forEach(group => {
+      if (onFilterChange) onFilterChange(group.key, "all");
+    });
+  }
+  
+  toast.success(intl.formatMessage({ id: 'table.search_cleared' }));
+};
 
   // 🟢 NEW: Handle search change
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    if (onSearch) onSearch(value);
   };
 
   const activeFiltersCount = Object.keys(activeFilters).filter(key => activeFilters[key] && activeFilters[key] !== 'all').length + (dateFilter ? 1 : 0);
@@ -396,22 +415,26 @@ function DataTable({
           )}
           
           {searchAble && (
-            <div className="flex items-center bg-white border border-gray-300 rounded-md px-2 min-w-0 flex-1 md:flex-initial md:w-64 relative">
+            <div className="flex items-center bg-white border border-gray-300 rounded-md px-2 min-w-0 flex-1 md:flex-initial md:w-64 relative" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
               <Search className="text-gray-400 mr-2 h-4 w-4 flex-shrink-0" />
               <Input
                 placeholder={searchProps?.placeholder || "Search..."}
                 className="!border-0 shadow-none h-8 p-0 pr-6 focus:!ring-0 focus-visible:!ring-0 text-sm"
                 value={search}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                onKeyDown={(e) => { 
-                  if (searchProps?.onKeyDown) searchProps.onKeyDown(e); 
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setAppliedSearch(search);
+                    if (onSearch) onSearch(search);
+                  }
+                  if (searchProps?.onKeyDown) searchProps.onKeyDown(e);
                 }}
               />
               {/* 🟢 Clear Search Button */}
               {search && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className={`absolute ${intl.locale === "en" ? "right-2" : "left-2"}  top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors`}
                   title="Clear search"
                   type="button"
                 >
@@ -546,12 +569,12 @@ function DataTable({
       )}
 
       {/* 🟢 Active Search Display */}
-      {search && (
+      {appliedSearch && (
         <div className="px-4 py-2 bg-yellow-50 border-b flex flex-wrap gap-2 items-center">
           <span className="text-sm text-yellow-800 font-medium">Search:</span>
           <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-md text-sm">
             <Search className="w-3 h-3 text-yellow-800" />
-            <span className="text-yellow-800 font-medium">"{search}"</span>
+            <span className="text-yellow-800 font-medium">"{appliedSearch}"</span>
             <button onClick={clearSearch} className="ml-1 hover:bg-yellow-200 rounded-full p-0.5">
               <X className="w-3 h-3 text-yellow-800" />
             </button>

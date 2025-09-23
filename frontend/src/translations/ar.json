@@ -174,6 +174,19 @@
   "common.actions": "الإجراءات",
   "common.close": "إغلاق",
 
+  "common.confirm": "تأكيد",
+  "common.are_you_sure": "هل أنت متأكد؟",
+  "common.confirm_close": "تأكيد الإغلاق",
+  "common.confirm_delete": "تأكيد الحذف",
+  "common.unsaved_data_warning": "لديك بيانات غير محفوظة ستضيع إذا أغلقت الآن.",
+  "common.unsaved_changes_warning": "لديك تغييرات غير محفوظة ستضيع إذا أغلقت الآن.",
+  "common.unsaved_changes_question": "لديك تغييرات غير محفوظة. هل أنت متأكد من أنك تريد الإغلاق بدون حفظ؟",
+  "common.close_without_saving": "إغلاق بدون حفظ",
+  "common.continue_adding": "متابعة الإضافة",
+  "common.continue_editing": "متابعة التعديل",
+  "common.delete_warning": "بمجرد الحذف، لا يمكن التراجع عن هذا الإجراء.",
+  "common.delete_question": "هل أنت متأكد من أنك تريد حذف هذا العنصر؟",
+
   "message.success.created": "تم الإنشاء بنجاح!",
   "message.success.updated": "تم التحديث بنجاح!",
   "message.success.deleted": "تم الحذف بنجاح!",
@@ -417,6 +430,13 @@
   "orders.select_customer_product": "يرجى اختيار عميل ومنتج",
   "orders.order_created_success": "تم إنشاء الطلب بنجاح!",
   "orders.order_creation_failed": "فشل في إنشاء الطلب",
+
+  "orders.confirm_close": "تأكيد الإغلاق",
+  "orders.unsaved_data_warning": "لديك بيانات غير محفوظة ستضيع إذا أغلقت الآن.",
+  "orders.unsaved_changes_question": "لديك تغييرات غير محفوظة. هل أنت متأكد من أنك تريد الإغلاق بدون حفظ؟",
+  "orders.continue_adding": "متابعة الإضافة",
+  "orders.close_without_saving": "إغلاق بدون حفظ",
+  "orders.continue_editing": "متابعة التعديل",
 
   "consultation_requests.title": "طلبات الاستشارة",
   "consultation_requests.subtitle": "إدارة طلبات الاستشارة من العملاء (إنشاء عملاء تلقائياً)",
@@ -844,5 +864,27 @@
   "categories.import_success_count": "تم استيراد {count} فئة بنجاح",
   "categories.import_updated_count": "تم تحديث {count} فئة موجودة",
   "categories.import_failed_count": "فشل في استيراد {count} فئة",
-  "categories.import_summary": "الملخص: {success} نجح، {updated} محدث، {failed} فشل"
+  "categories.import_summary": "الملخص: {success} نجح، {updated} محدث، {failed} فشل",
+   "profile.settings": "إعدادات الملف الشخصي",
+  "profile.view_profile": "عرض الملف الشخصي",
+  "profile.edit_profile": "تعديل الملف الشخصي",
+  "profile.account_settings": "إعدادات الحساب",
+  "profile.preferences": "التفضيلات",
+  "profile.admin": "المشرف",
+  "profile.user": "المستخدم",
+  "profile.guest": "ضيف",
+  
+  "auth.logout": "تسجيل الخروج",
+  "auth.logout_confirm": "هل أنت متأكد من تسجيل الخروج؟",
+  "auth.logout_success": "تم تسجيل الخروج بنجاح",
+  "auth.logout_failed": "فشل في تسجيل الخروج",
+  "auth.login": "تسجيل الدخول",
+  "auth.login_success": "تم تسجيل الدخول بنجاح",
+  "auth.login_failed": "فشل في تسجيل الدخول",
+  
+  "avatar.default_alt": "صورة المستخدم",
+  "avatar.admin_alt": "صورة المشرف",
+  "avatar.change_avatar": "تغيير الصورة الشخصية",
+  "avatar.upload_avatar": "رفع صورة شخصية",
+  "avatar.remove_avatar": "إزالة الصورة الشخصية"
 }

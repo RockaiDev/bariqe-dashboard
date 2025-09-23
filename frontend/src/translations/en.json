@@ -174,6 +174,19 @@
   "common.actions": "Actions",
   "common.close": "Close",
 
+  "common.confirm": "Confirm",
+  "common.are_you_sure": "Are you sure?",
+  "common.confirm_close": "Confirm Close",
+  "common.confirm_delete": "Confirm Delete",
+  "common.unsaved_data_warning": "You have unsaved data that will be lost if you close now.",
+  "common.unsaved_changes_warning": "You have unsaved changes that will be lost if you close now.",
+  "common.unsaved_changes_question": "You have unsaved changes. Are you sure you want to close without saving?",
+  "common.close_without_saving": "Close Without Saving",
+  "common.continue_adding": "Continue Adding",
+  "common.continue_editing": "Continue Editing",
+  "common.delete_warning": "Once deleted, this cannot be undone.",
+  "common.delete_question": "Are you sure you want to delete this item?",
+
   "message.success.created": "Created successfully!",
   "message.success.updated": "Updated successfully!",
   "message.success.deleted": "Deleted successfully!",
@@ -410,6 +423,13 @@
   "orders.select_customer_product": "Please select a customer and a product",
   "orders.order_created_success": "Order created successfully!",
   "orders.order_creation_failed": "Failed to create order",
+
+  "orders.confirm_close": "Confirm Close",
+  "orders.unsaved_data_warning": "You have unsaved data that will be lost if you close now.",
+  "orders.unsaved_changes_question": "You have unsaved changes. Are you sure you want to close without saving?",
+  "orders.continue_adding": "Continue Adding",
+  "orders.close_without_saving": "Close Without Saving",
+  "orders.continue_editing": "Continue Editing",
 
   "consultation_requests.title": "Consultation Requests",
   "consultation_requests.subtitle": "Manage consultation requests from clients (Auto-creates customers)",
@@ -843,5 +863,27 @@
   "table.last_page": "Last page",
   "table.active_filters": "Active Filters:",
   "table.date": "Date:",
-  "table.search": "Search:"
+  "table.search": "Search:",
+   "profile.settings": "Profile Settings",
+  "profile.view_profile": "View Profile",
+  "profile.edit_profile": "Edit Profile",
+  "profile.account_settings": "Account Settings",
+  "profile.preferences": "Preferences",
+  "profile.admin": "Admin",
+  "profile.user": "User",
+  "profile.guest": "Guest",
+  
+  "auth.logout": "Logout",
+  "auth.logout_confirm": "Are you sure you want to logout?",
+  "auth.logout_success": "Logged out successfully",
+  "auth.logout_failed": "Failed to logout",
+  "auth.login": "Login",
+  "auth.login_success": "Logged in successfully",
+  "auth.login_failed": "Failed to login",
+  
+  "avatar.default_alt": "User Avatar",
+  "avatar.admin_alt": "Admin Avatar",
+  "avatar.change_avatar": "Change Avatar",
+  "avatar.upload_avatar": "Upload Avatar",
+  "avatar.remove_avatar": "Remove Avatar"
 }

@@ -7,6 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  // DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Eye,
@@ -44,6 +45,8 @@ import {
   handleOrderFilters,
 } from "@/components/shared/filters";
 import axiosInstance from "@/helper/axiosInstance";
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 interface Order {
   _id: string;
@@ -97,6 +100,8 @@ export default function OrdersPage() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [tableEditStatus, setTableEditStatus] = useState<string>("");
 
+
+
   // Form State
   const [orderForm, setOrderForm] = useState({
     customer: "",
@@ -112,7 +117,7 @@ export default function OrdersPage() {
     customerEmail: "",
     customerPhone: "",
     customerNotes: "",
-    customerSource: "orders",
+    customerSource: "order",
     customerAddress: "",
   });
 
@@ -128,7 +133,9 @@ export default function OrdersPage() {
   };
 
   const orders: Order[] = list.data?.result?.data || [];
-  const customers = customersList.data?.result?.data || [];
+  const allCustomers = customersList.data?.result?.data || [];
+  // فلترة العملاء - عرض العملاء الذين لديهم customerSource = "order" فقط
+  const customers = allCustomers.filter((customer: any) => customer.customerSource === "order");
   const products = productsList.data?.result?.data || [];
 
   const paginationData = list.data?.result?.pagination ?? {
@@ -204,7 +211,49 @@ export default function OrdersPage() {
     setIsEditingStatus(false);
     setEditedStatus("");
   };
+  const addConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setAddOpen(false);
+      resetForms();
+    },
+    onCancel: () => {
+      // يمكن إضافة أي منطق إضافي هنا
+    }
+  });
 
+  // Edit Dialog Confirmation
+  const editConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setViewOpen(false);
+      setViewing(null);
+      setIsEditingStatus(false);
+      setEditedStatus("");
+    },
+    onCancel: () => {
+      // يمكن إضافة أي منطق إضافي هنا
+    }
+  });
+
+  // Handle close dialogs with confirmation
+  const handleAddDialogClose = (open: boolean) => {
+    if (!open && hasAddFormChanges()) {
+      addConfirmDialog.showDialog();
+    } else {
+      setAddOpen(false);
+      resetForms();
+    }
+  };
+
+  const handleViewDialogClose = (open: boolean) => {
+    if (!open && hasEditFormChanges()) {
+      editConfirmDialog.showDialog();
+    } else {
+      setViewOpen(false);
+      setViewing(null);
+      setIsEditingStatus(false);
+      setEditedStatus("");
+    }
+  };
   const handleSaveStatus = async () => {
     if (!viewing || !editedStatus) return;
 
@@ -227,7 +276,11 @@ export default function OrdersPage() {
       
       toast.success(intl.formatMessage({ id: "orders.status_updated_success" }));
     } catch (error: any) {
-      toast.error(intl.formatMessage({ id: "orders.failed_to_update_status" }));
+      console.error("Update status error:", error);
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: "orders.failed_to_update_status" });
+      toast.error(errorMessage);
     } finally {
       setUpdatingStatus(false);
     }
@@ -262,9 +315,13 @@ export default function OrdersPage() {
       
       toast.success(intl.formatMessage({ id: "orders.status_updated_success" }));
     } catch (error: any) {
+      console.error("Update table status error:", error);
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: "orders.failed_to_update_status" });
+      toast.error(errorMessage);
       setEditingOrderId(null);
       setTableEditStatus("");
-      toast.error(intl.formatMessage({ id: "orders.failed_to_update_status" }));
     }
   };
 
@@ -273,6 +330,30 @@ export default function OrdersPage() {
     setEditingOrderId(null);
     setTableEditStatus("");
   };
+
+  // Check if form has changes
+  const hasAddFormChanges = () => {
+    return (
+      orderForm.customer !== "" ||
+      orderForm.product !== "" ||
+      orderForm.quantity !== 1 ||
+      orderForm.orderDiscount !== 0 ||
+      orderForm.orderStatus !== "pending" ||
+      (createNewCustomer && (
+        customerForm.customerName !== "" ||
+        customerForm.customerEmail !== "" ||
+        customerForm.customerPhone !== "" ||
+        customerForm.customerNotes !== "" ||
+        customerForm.customerAddress !== ""
+      ))
+    );
+  };
+
+  const hasEditFormChanges = () => {
+    return editedStatus !== "" && viewing && editedStatus !== viewing.orderStatus;
+  };
+
+
 
   // Add Order Functions
   const handleAddOrder = async () => {
@@ -291,18 +372,27 @@ export default function OrdersPage() {
           return;
         }
 
-        const customerResponse: any = await createCustomer.mutateAsync(
-          customerForm
-        );
+        try {
+          const customerResponse: any = await createCustomer.mutateAsync(
+            customerForm
+          );
 
-        customerId = customerResponse?.result?._id || customerResponse?._id;
+          customerId = customerResponse?.result?._id || customerResponse?._id;
 
-        if (!customerId) {
-          toast.error(intl.formatMessage({ id: "orders.failed_customer_creation" }));
+          if (!customerId) {
+            toast.error(intl.formatMessage({ id: "orders.failed_customer_creation" }));
+            return;
+          }
+
+          toast.success(intl.formatMessage({ id: "orders.customer_created_success" }));
+        } catch (customerError: any) {
+          console.error("Customer creation error:", customerError);
+          const errorMessage = customerError?.response?.data?.message || 
+                              customerError?.message || 
+                              intl.formatMessage({ id: "orders.failed_customer_creation" });
+          toast.error(errorMessage);
           return;
         }
-
-        toast.success(intl.formatMessage({ id: "orders.customer_created_success" }));
       }
 
       if (!customerId || !orderForm.product) {
@@ -327,7 +417,11 @@ export default function OrdersPage() {
       
       toast.success(intl.formatMessage({ id: "orders.order_created_success" }));
     } catch (error: any) {
-      toast.error(intl.formatMessage({ id: "orders.order_creation_failed" }));
+      console.error("Order creation error:", error);
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: "orders.order_creation_failed" });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -347,7 +441,7 @@ export default function OrdersPage() {
       customerEmail: "",
       customerPhone: "",
       customerNotes: "",
-      customerSource: "orders",
+      customerSource: "order",
       customerAddress: "",
     });
     setCreateNewCustomer(false);
@@ -391,7 +485,10 @@ export default function OrdersPage() {
       toast.success(intl.formatMessage({ id: "orders.orders_exported_success" }));
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error.message || intl.formatMessage({ id: "orders.export_failed" }));
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: "orders.export_failed" });
+      toast.error(errorMessage);
       console.error("Export error:", error);
     }
   };
@@ -656,7 +753,7 @@ export default function OrdersPage() {
       />
 
       {/* Add Order Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Dialog open={addOpen} onOpenChange={handleAddDialogClose}>
         <DialogContent
           className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
           aria-describedby="add-order-dialog-description"
@@ -923,7 +1020,7 @@ export default function OrdersPage() {
       </Dialog>
 
       {/* View Details Dialog */}
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={handleViewDialogClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1175,6 +1272,25 @@ export default function OrdersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+    <ConfirmationDialog
+        open={addConfirmDialog.isOpen}
+        onOpenChange={addConfirmDialog.setIsOpen}
+        variant="add"
+        onConfirm={addConfirmDialog.handleConfirm}
+        onCancel={addConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
+
+      {/* Edit Status Confirmation Dialog */}
+      <ConfirmationDialog
+        open={editConfirmDialog.isOpen}
+        onOpenChange={editConfirmDialog.setIsOpen}
+        variant="edit"
+        onConfirm={editConfirmDialog.handleConfirm}
+        onCancel={editConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
     </div>
   );
 }

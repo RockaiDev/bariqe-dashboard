@@ -1,7 +1,9 @@
+// hooks/useAuth.ts
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "@/helper/axiosInstance";
+import { useAuthStore } from "@/stores/authStore";
 
 // Query key constants
 export const AUTH_QUERY_KEY = ['auth', 'me'] as const;
@@ -31,72 +33,112 @@ const fetchAdminData = async () => {
 export default function useAuth() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { 
+    isAuthenticated, 
+    admin, 
+    isLoading: storeLoading, 
+    isInitialized,
+    setAuth, 
+    clearAuth, 
+    setLoading,
+    setInitialized 
+  } = useAuthStore();
 
   const {
-    data: admin,
-    isLoading: loading,
+    data: fetchedAdmin,
+    isLoading: queryLoading,
     isError,
     error,
     refetch,
   } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: fetchAdminData,
+    enabled: !isAuthenticated && isInitialized, // Only fetch if not authenticated and initialized
     retry: (failureCount, error: any) => {
-      // Don't retry on 401/403 errors (authentication issues)
+      // Don't retry on 401/403 errors
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         return false;
       }
-      // Retry up to 2 times for other errors
-      return failureCount < 2;
+      return failureCount < 1; // تقليل عدد المحاولات
     },
-    // Refetch on window focus if data is stale
-    refetchOnWindowFocus: true,
-    // Consider data stale after 5 minutes
+    refetchOnWindowFocus: false, // منع الـ refetch عند focus
     staleTime: 5 * 60 * 1000,
-    // Keep data in cache for 10 minutes
-    gcTime: 10 * 60 * 1000, // استبدال cacheTime بـ gcTime في v5
+    gcTime: 10 * 60 * 1000,
   });
 
-  // Handle errors with useEffect instead of onError
+  // Initialize auth state on app start
+  useEffect(() => {
+    if (!isInitialized) {
+      setInitialized(true);
+    }
+  }, [isInitialized, setInitialized]);
+
+  // Update store when query succeeds
+  useEffect(() => {
+    if (fetchedAdmin && !isError) {
+      setAuth(fetchedAdmin);
+    }
+  }, [fetchedAdmin, isError, setAuth]);
+
+  // Handle authentication errors
   useEffect(() => {
     if (isError && error) {
       console.error('Authentication error:', error);
       
-      // If it's an auth error, clear the cache and redirect to login
-      if ((error as any)?.response?.status === 401 || (error as any)?.response?.status === 403) {
-        queryClient.clear(); // Clear all cached data
+      const errorStatus = (error as any)?.response?.status;
+      if (errorStatus === 401 || errorStatus === 403) {
+        clearAuth();
+        queryClient.clear();
         navigate("/login", { replace: true });
       }
     }
-  }, [isError, error, queryClient, navigate]);
+  }, [isError, error, clearAuth, queryClient, navigate]);
 
-  // Computed values
-  const authenticated = !isError && !!admin;
+  // Combined loading state
+  const loading = storeLoading || (queryLoading && !isAuthenticated);
 
-  // Refresh function to manually refetch admin data
-  const refreshAdmin = () => {
-    refetch();
+  // Refresh function
+  const refreshAdmin = async () => {
+    setLoading(true);
+    try {
+      const result = await refetch();
+      if (result.data) {
+        setAuth(result.data);
+      }
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Function to invalidate and refetch admin data
+  // Invalidate function
   const invalidateAdmin = () => {
     queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
   };
 
-  // Function to update admin data in cache without refetching
+  // Update cache function
   const updateAdminCache = (updatedAdmin: any) => {
+    setAuth(updatedAdmin);
     queryClient.setQueryData(AUTH_QUERY_KEY, updatedAdmin);
   };
 
-  // Function to logout and clear all data
-  const logout = () => {
-    queryClient.clear();
-    navigate("/login", { replace: true });
+  // Logout function
+  const logout = async () => {
+    try {
+      await axios.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      clearAuth();
+      queryClient.clear();
+      navigate("/login", { replace: true });
+    }
   };
 
   return { 
     loading, 
-    authenticated, 
+    authenticated: isAuthenticated, 
     admin: admin || null,
     isError,
     error,

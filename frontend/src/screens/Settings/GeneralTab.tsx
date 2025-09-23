@@ -17,9 +17,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   DatabaseBackup,
-  LucideCircleFadingPlus,
+
   Upload,
-  Download,
+
   X,
   FileDown,
 } from "lucide-react";
@@ -373,7 +373,7 @@ export default function GeneralTab() {
       const fd = new FormData();
       fd.append("coverImage", coverFile);
 
-      const res = await axios.post("/auth/cover-image", fd, {
+      const res :any= await axios.post("/auth/cover-image", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {

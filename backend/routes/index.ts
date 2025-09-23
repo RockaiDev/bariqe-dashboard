@@ -7,7 +7,7 @@ const router = Router();
 const auth = new AuthController();
 
 // ✅ Public routes
-router.post("/auth/signup", auth.signUp.bind(auth));
+// router.post("/auth/signup", auth.signUp.bind(auth));
 router.post("/auth/signin", auth.signIn.bind(auth));
 router.get("/auth/verify", auth.verifyToken.bind(auth));
 router.post("/auth/signout", authentication, auth.signOut.bind(auth));

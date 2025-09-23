@@ -36,6 +36,7 @@ import { ConfirmLogoutDialog } from "@/components/shared/ConfirmLogoutDialog";
 import { useIntl } from "react-intl";
 import { useLanguage } from "../context/LanguageContext";
 import useAuth from "@/hooks/useAuth";
+import { scrollToTop } from "@/hooks/ScrollToTop"; // استيراد الـ function
 
 export default function AppSidebar() {
   const logout = useLogout();
@@ -93,44 +94,46 @@ export default function AppSidebar() {
       label: intl.formatMessage({ id: "nav_settings" }),
       href: "/settings",
     },
-    // {
-    //   icon: HelpCircle,
-    //   label: intl.formatMessage({ id: 'nav_help' }),
-    //   href: "/help"
-    // },
   ];
+
+  // دالة للتنقل مع التمرير إلى الأعلى
+  const handleNavigation = (href: string) => {
+    navigate(href);
+    scrollToTop(); // التمرير إلى أعلى الصفحة
+  };
 
   return (
     <Sidebar
       collapsible="icon"
       side={isRTL ? "right" : "left"}
-      className="!relative"
+      className="!relative lg:!relative md:!fixed sm:!fixed !z-50"
+      variant="sidebar"
     >
       {/* Header */}
-      <SidebarHeader className=" mb-5">
+      <SidebarHeader className="mb-3 lg:mb-5">
         <div
           className={`flex items-center gap-2 relative group ${
             isRTL ? "flex-row-reverse" : ""
           }`}
         >
-          <div className="relative h-10 w-10">
+          <div className="relative h-8 w-8 lg:h-10 lg:w-10">
             <img
-              src={ Logo}
+              src={Logo}
               alt="logo"
-              className="!h-10 !w-10 shrink-0 rounded-md"
+              className="!h-8 !w-8 lg:!h-10 lg:!w-10 shrink-0 rounded-md"
             />
             {state === "collapsed" && (
               <SidebarTrigger
                 className={`group-hover:!bg-black/60 !text-white absolute top-[50%] ${
                   isRTL ? "left-0" : "right-0"
-                } -translate-y-1/2 hidden group-hover:flex p-5 rounded-md items-center justify-center cursor-pointer`}
+                } -translate-y-1/2 hidden group-hover:flex p-3 lg:p-5 rounded-md items-center justify-center cursor-pointer`}
               />
             )}
           </div>
 
           {state === "expanded" && (
-            <div className="flex flex-col">
-              <span className="font-medium text-sm">
+            <div className="flex flex-col min-w-0">
+              <span className="font-medium text-xs lg:text-sm truncate">
                 {admin?.firstName ||
                   intl.formatMessage({ id: "sidebar_admin" })}
               </span>
@@ -139,53 +142,33 @@ export default function AppSidebar() {
                   isRTL ? "flex-row-reverse" : ""
                 }`}
               >
-                <span>{admin?.email || "admin@demo.com"}</span>
-                <Copy className="h-3 w-3 cursor-pointer" />
+                <span className="truncate text-xs">
+                  {admin?.email || "admin@demo.com"}
+                </span>
+                <Copy className="h-3 w-3 cursor-pointer shrink-0" />
               </div>
             </div>
           )}
-          {state === "expanded" && <SidebarTrigger />}
+          {state === "expanded" && <SidebarTrigger className="shrink-0" />}
         </div>
-
-        {/* {state === "expanded" ? (
-          // ✅ يظهر input كامل
-          <div className="relative mt-3">
-            <Search className={`absolute top-2.5 h-4 w-4 text-gray-400 ${isRTL ? 'right-2' : 'left-2'}`} />
-            <input
-              type="text"
-              placeholder={intl.formatMessage({ id: 'sidebar_search_placeholder' })}
-              className={`w-full py-2 text-sm rounded-md border border-gray-200 bg-transparent focus:ring-2 focus:ring-blue-500 outline-none ${
-                isRTL ? 'pr-8 pl-2 text-right' : 'pl-8 pr-2 text-left'
-              }`}
-              dir={isRTL ? 'rtl' : 'ltr'}
-            />
-          </div>
-        ) : (
-          // ✅ collapsed: أيقونة فقط بخلفية #f5f5f5
-          <div className="flex items-center justify-center mt-3">
-            <button className="h-10 w-10 flex items-center justify-center rounded-md bg-[#f5f5f5] hover:bg-gray-300 transition">
-              <Search className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
-        )} */}
       </SidebarHeader>
 
       {/* Navigation */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="!gap-3">
+            <SidebarMenu className="!gap-2 lg:!gap-3">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.href;
 
                 return (
                   <SidebarMenuItem
                     key={item.href}
-                    className="!text-[#3E4043] !text-[16px] !leading-[22.4px] !font-tajawal !font-medium"
+                    className="!text-[#3E4043] !text-sm lg:!text-[16px] !leading-tight lg:!leading-[22.4px] !font-tajawal !font-medium"
                   >
                     <SidebarMenuButton asChild>
                       <button
-                        onClick={() => navigate(item.href)}
+                        onClick={() => handleNavigation(item.href)}
                         className={`flex items-center gap-2 w-full rounded-md px-2 py-2 transition cursor-pointer ${
                           isRTL ? "flex-row-reverse text-right" : "text-left"
                         } ${
@@ -195,8 +178,10 @@ export default function AppSidebar() {
                         }`}
                         dir={isRTL ? "rtl" : "ltr"}
                       >
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.label}</span>
+                        <item.icon className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
+                        <span className="truncate text-xs lg:text-sm">
+                          {item.label}
+                        </span>
                       </button>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -220,9 +205,11 @@ export default function AppSidebar() {
                   isRTL ? "flex-row-reverse" : ""
                 }`}
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
                 {state === "expanded" && (
-                  <span>{intl.formatMessage({ id: "sidebar_logout" })}</span>
+                  <span className="text-xs lg:text-sm truncate">
+                    {intl.formatMessage({ id: "sidebar_logout" })}
+                  </span>
                 )}
               </div>
             </SidebarMenuButton>

@@ -20,12 +20,14 @@ import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ConfirmLogoutDialog } from "@/components/shared/ConfirmLogoutDialog";
+import { useScrollToTop } from "@/hooks/ScrollToTop";
 
 type HeaderLayoutProps = { children: ReactNode };
 
 export default function HeaderLayout({
   children,
 }: HeaderLayoutProps): JSX.Element {
+    useScrollToTop();
   return (
     <SidebarProvider className="min-h-screen font-tajawal w-screen !overflow-x-hidden">
       <div className="flex min-h-screen font-tajawal  w-screen !overflow-x-hidden">

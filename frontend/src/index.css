@@ -489,3 +489,21 @@ th {
   }
 }
 
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* تأكد من أن الـ sidebar يغطي الشاشة بالكامل على الموبايل */
+  [data-sidebar="sidebar"] {
+    max-width: 280px !important;
+  }
+  
+  /* تحسين مساحة الـ content على الشاشات الصغيرة */
+  [data-sidebar="content"] {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 640px) {
+  [data-sidebar="sidebar"] {
+    max-width: 260px !important;
+  }
+}

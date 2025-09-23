@@ -21,7 +21,7 @@ import {
   User,
   UserPlus,
   Download,
-  Upload,
+  // Upload,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,9 @@ import {
   handleConsultationRequestFilters,
 } from "@/components/shared/filters";
 import axiosInstance from "@/helper/axiosInstance";
-
+// إضافة هذه imports
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 interface ConsultationRequest {
   _id: string;
   ConsultationRequestsName: string;
@@ -82,6 +84,40 @@ export default function ConsultationRequestsPage() {
 
   const { list, create, update } = useCrud("consultation-requests", filters);
 
+  // Confirmation Dialogs
+const addConfirmDialog = useConfirmationDialog({
+  onConfirm: () => {
+    setAddOpen(false);
+    resetForm();
+  },
+  onCancel: () => {
+    // Handle cancel - stay in dialog
+  }
+});
+
+// Check if form has changes
+const hasAddFormChanges = () => {
+  return (
+    consultationForm.ConsultationRequestsName !== "" ||
+    consultationForm.ConsultationRequestsEmail !== "" ||
+    consultationForm.ConsultationRequestsPhone !== "" ||
+    consultationForm.ConsultationRequestsMessage !== "" ||
+    consultationForm.consultationRequestsArea !== "" ||
+    consultationForm.ConsultationRequestsStatus !== "new" ||
+    consultationForm.customerAddress !== ""
+  );
+};
+
+// Handle add dialog close with confirmation
+const handleAddDialogClose = (open: boolean) => {
+  if (!open && hasAddFormChanges()) {
+    addConfirmDialog.showDialog();
+  } else {
+    setAddOpen(false);
+    if (!open) resetForm();
+  }
+};
+
   // Add Consultation Dialog State
   const [addOpen, setAddOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -96,7 +132,7 @@ export default function ConsultationRequestsPage() {
   const [tableEditStatus, setTableEditStatus] = useState<string>("");
 
   // Import State
-  const [importLoading, setImportLoading] = useState(false);
+  // const [importLoading, setImportLoading] = useState(false);
 
   // Form State
   const [consultationForm, setConsultationForm] = useState({
@@ -382,93 +418,93 @@ export default function ConsultationRequestsPage() {
   };
 
   // Download template function
-  const handleDownloadTemplate = async () => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.downloading_template" }));
+  // const handleDownloadTemplate = async () => {
+  //   const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.downloading_template" }));
 
-    try {
-      const response = await axiosInstance.get(
-        "/consultation-requests/download-template",
-        {
-          responseType: "blob",
-        }
-      );
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       "/consultation-requests/download-template",
+  //       {
+  //         responseType: "blob",
+  //       }
+  //     );
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+  //     const blob = new Blob([response.data], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "consultation_requests_import_template.xlsx";
-      document.body.appendChild(a);
-      a.click();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = "consultation_requests_import_template.xlsx";
+  //     document.body.appendChild(a);
+  //     a.click();
 
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
+  //     setTimeout(() => {
+  //       window.URL.revokeObjectURL(url);
+  //       document.body.removeChild(a);
+  //     }, 100);
 
-      toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: "consultation_requests.template_downloaded_success" }));
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error.message || intl.formatMessage({ id: "consultation_requests.template_download_failed" }));
-    }
-  };
+  //     toast.dismiss(loadingToast);
+  //     toast.success(intl.formatMessage({ id: "consultation_requests.template_downloaded_success" }));
+  //   } catch (error: any) {
+  //     toast.dismiss(loadingToast);
+  //     toast.error(error.message || intl.formatMessage({ id: "consultation_requests.template_download_failed" }));
+  //   }
+  // };
 
-  // Import function
-  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // // Import function
+  // const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (!file) return;
 
-    const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.importing_requests" }));
-    setImportLoading(true);
+  //   const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.importing_requests" }));
+  //   setImportLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
 
-      const response = await axiosInstance.post(
-        "/consultation-requests/import",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+  //     const response = await axiosInstance.post(
+  //       "/consultation-requests/import",
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
 
-      const results = response.data.result?.results || response.data.results;
+  //     const results = response.data.result?.results || response.data.results;
 
-      if (results) {
-        const { summary } = results;
-        let message = intl.formatMessage({ id: "consultation_requests.import_completed" }) + " ";
-        message += intl.formatMessage({ id: "consultation_requests.import_success" }, { count: summary.success || 0 }) + ", ";
-        message += intl.formatMessage({ id: "consultation_requests.import_updated" }, { count: summary.updated || 0 }) + ", ";
-        message += intl.formatMessage({ id: "consultation_requests.import_customers_created" }, { count: summary.customersCreated || 0 }) + ", ";
-        message += intl.formatMessage({ id: "consultation_requests.import_failed" }, { count: summary.failed || 0 });
+  //     if (results) {
+  //       const { summary } = results;
+  //       let message = intl.formatMessage({ id: "consultation_requests.import_completed" }) + " ";
+  //       message += intl.formatMessage({ id: "consultation_requests.import_success" }, { count: summary.success || 0 }) + ", ";
+  //       message += intl.formatMessage({ id: "consultation_requests.import_updated" }, { count: summary.updated || 0 }) + ", ";
+  //       message += intl.formatMessage({ id: "consultation_requests.import_customers_created" }, { count: summary.customersCreated || 0 }) + ", ";
+  //       message += intl.formatMessage({ id: "consultation_requests.import_failed" }, { count: summary.failed || 0 });
 
-        if (summary.failed > 0) {
-          toast.error(message);
-        } else {
-          toast.success(message);
-        }
+  //       if (summary.failed > 0) {
+  //         toast.error(message);
+  //       } else {
+  //         toast.success(message);
+  //       }
 
-        list.refetch();
-      } else {
-        toast.success(intl.formatMessage({ id: "consultation_requests.import_completed_success" }));
-        list.refetch();
-      }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || intl.formatMessage({ id: "consultation_requests.import_failed" });
-      toast.error(errorMessage);
-    } finally {
-      toast.dismiss(loadingToast);
-      setImportLoading(false);
-      event.target.value = "";
-    }
-  };
+  //       list.refetch();
+  //     } else {
+  //       toast.success(intl.formatMessage({ id: "consultation_requests.import_completed_success" }));
+  //       list.refetch();
+  //     }
+  //   } catch (error: any) {
+  //     const errorMessage = error.response?.data?.message || error.message || intl.formatMessage({ id: "consultation_requests.import_failed" });
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     toast.dismiss(loadingToast);
+  //     setImportLoading(false);
+  //     event.target.value = "";
+  //   }
+  // };
 
   return (
     <div className="p-6 space-y-4 !font-tajawal" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
@@ -732,8 +768,8 @@ export default function ConsultationRequestsPage() {
         )}
       />
 
-      {/* Add Consultation Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+{/* Add Consultation Dialog */}
+<Dialog open={addOpen} onOpenChange={handleAddDialogClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1110,6 +1146,7 @@ export default function ConsultationRequestsPage() {
                 </div>
               </div>
             </div>
+            
           )}
 
           <DialogFooter className="mt-6">
@@ -1121,6 +1158,15 @@ export default function ConsultationRequestsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Add Consultation Confirmation Dialog */}
+<ConfirmationDialog
+  open={addConfirmDialog.isOpen}
+  onOpenChange={addConfirmDialog.setIsOpen}
+  variant="add"
+  onConfirm={addConfirmDialog.handleConfirm}
+  onCancel={addConfirmDialog.handleCancel}
+  isDestructive={true}
+/>
     </div>
   );
 }

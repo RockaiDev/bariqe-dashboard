@@ -20,6 +20,7 @@ import useAuth from "./hooks/useAuth";
 import LoadingComponent from "./components/shared/LoadingComponent";
 import { setNavigate } from './helper/axiosInstance';
 import { Toaster } from 'react-hot-toast';
+import { useAuthStore } from "@/stores/authStore";
 
 const messages = { en, ar } as const;
 type Locale = keyof typeof messages;
@@ -27,13 +28,17 @@ type Locale = keyof typeof messages;
 function AppWrapper() {
   const navigate = useNavigate();
   const { loading, authenticated } = useAuth();
+  const { isInitialized } = useAuthStore();
 
   // تعيين navigate function لـ axios
   useEffect(() => {
     setNavigate(navigate);
   }, [navigate]);
 
-  if (loading) return <LoadingComponent />;
+  // عرض loading فقط إذا لم يتم التهيئة بعد
+  if (!isInitialized || loading) {
+    return <LoadingComponent />;
+  }
 
   return (
     <Fragment>
@@ -54,7 +59,6 @@ function AppWrapper() {
             key={index}
             path={route.path}
             element={
-              // إذا كان المستخدم مسجل دخوله وحاول الوصول لصفحة login
               authenticated && route.path === "/login" ? (
                 <Navigate to="/dashboard" replace />
               ) : (
@@ -64,7 +68,7 @@ function AppWrapper() {
           />
         ))}
 
-        {/* Default redirect based on authentication status */}
+        {/* Default redirect */}
         <Route
           path="/"
           element={
@@ -76,7 +80,7 @@ function AppWrapper() {
           }
         />
 
-        {/* Catch all route - 404 */}
+        {/* Catch all route */}
         {!authenticated && (
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}

@@ -46,7 +46,9 @@ import {
 } from "@/components/shared/filters";
 import toast from "react-hot-toast";
 import axiosInstance from "@/helper/axiosInstance";
-
+// إضافة هذه imports
+import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 interface MaterialRequest {
   _id: string;
   materialName: string;
@@ -593,6 +595,7 @@ export default function MaterialRequestPage() {
 }
 
 // Add Material Request Dialog Component
+// Add Material Request Dialog Component
 function AddMaterialRequest({
   create,
   isLoading,
@@ -611,12 +614,56 @@ function AddMaterialRequest({
     materialActions: "pending" as "pending" | "approve" | "denied",
   });
 
+  // Add Dialog Confirmation
+  const addConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setOpen(false);
+      resetForm();
+    },
+    onCancel: () => {
+      // Stay in dialog
+    }
+  });
+
   const canSubmit =
     form.materialName.trim() &&
     form.materialEmail.trim() &&
     form.materialPhone.trim() &&
     form.materialIntendedUse.trim() &&
     form.materialQuantity > 0;
+
+  // Check if form has changes
+  const hasFormChanges = () => {
+    return (
+      form.materialName !== "" ||
+      form.materialEmail !== "" ||
+      form.materialPhone !== "" ||
+      form.materialQuantity !== 0 ||
+      form.materialIntendedUse !== "" ||
+      form.materialActions !== "pending"
+    );
+  };
+
+  // Handle dialog close with confirmation
+  const handleDialogClose = (isOpen: boolean) => {
+    if (!isOpen && hasFormChanges()) {
+      addConfirmDialog.showDialog();
+    } else {
+      setOpen(isOpen);
+      if (!isOpen) resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      materialName: "",
+      materialEmail: "",
+      materialPhone: "",
+      materialQuantity: 0,
+      materialIntendedUse: "",
+      materialActions: "pending",
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -635,135 +682,158 @@ function AddMaterialRequest({
         ])
     );
 
-    create(cleanForm);
-    setForm({
-      materialName: "",
-      materialEmail: "",
-      materialPhone: "",
-      materialQuantity: 0,
-      materialIntendedUse: "",
-      materialActions: "pending",
-    });
-    setOpen(false);
+    try {
+      create(cleanForm);
+      setForm({
+        materialName: "",
+        materialEmail: "",
+        materialPhone: "",
+        materialQuantity: 0,
+        materialIntendedUse: "",
+        materialActions: "pending",
+      });
+      setOpen(false);
+      toast.success(intl.formatMessage({ id: "material_requests.request_created_success" }));
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          intl.formatMessage({ id: "material_requests.request_creation_failed" });
+      toast.error(errorMessage);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="text-white cursor-pointer">
-          <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "material_requests.new_request" })}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{intl.formatMessage({ id: "material_requests.new_material_request" })}</DialogTitle>
-          <DialogDescription>
-            {intl.formatMessage({ id: "material_requests.create_request_description" })}
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          onSubmit={handleSubmit}
-        >
-          <FormField
-            id="materialName"
-            label={intl.formatMessage({ id: "material_requests.material_name" })}
-            value={form.materialName}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, materialName: e.target.value }))
-            }
-            required
-          />
-
-          <FormField
-            id="materialQuantity"
-            label={intl.formatMessage({ id: "material_requests.quantity" })}
-            type="number"
-            min="1"
-            value={form.materialQuantity}
-            onChange={(e) =>
-              setForm((f) => ({
-                ...f,
-                materialQuantity: parseInt(e.target.value) || 0,
-              }))
-            }
-            required
-          />
-
-          <FormField
-            id="materialEmail"
-            label={intl.formatMessage({ id: "material_requests.email" })}
-            type="email"
-            value={form.materialEmail}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, materialEmail: e.target.value }))
-            }
-            required
-          />
-
-          <FormField
-            id="materialPhone"
-            label={intl.formatMessage({ id: "material_requests.phone_number" })}
-            variant="phone"
-            onChange={(e) => {
-              e;
-            }}
-            value={form.materialPhone}
-            onPhoneChange={(value) =>
-              setForm((f) => ({ ...f, materialPhone: value || "" }))
-            }
-            placeholder="Enter phone number"
-            required
-          />
-
-          {/* Action Status Selector */}
-          <div className="space-y-2 col-span-full">
-            <Label htmlFor="materialActions">{intl.formatMessage({ id: "material_requests.initial_status" })}</Label>
-            <Select
-              value={form.materialActions}
-              onValueChange={(value) =>
-                setForm((f) => ({ ...f, materialActions: value as any }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_status" })} />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTION_OPTIONS.map((action) => (
-                  <SelectItem key={action.value} value={action.value}>
-                    {intl.formatMessage({ id: action.label })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="col-span-full">
+    <>
+      <Dialog open={open} onOpenChange={handleDialogClose}>
+        <DialogTrigger asChild>
+          <Button className="text-white cursor-pointer">
+            <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "material_requests.new_request" })}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{intl.formatMessage({ id: "material_requests.new_material_request" })}</DialogTitle>
+            <DialogDescription>
+              {intl.formatMessage({ id: "material_requests.create_request_description" })}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            onSubmit={handleSubmit}
+          >
             <FormField
-              id="materialIntendedUse"
-              label={intl.formatMessage({ id: "material_requests.intended_use_description" })}
-              variant="textarea"
-              rows={4}
-              value={form.materialIntendedUse}
+              id="materialName"
+              label={intl.formatMessage({ id: "material_requests.material_name" })}
+              value={form.materialName}
               onChange={(e) =>
-                setForm((f) => ({ ...f, materialIntendedUse: e.target.value }))
+                setForm((f) => ({ ...f, materialName: e.target.value }))
               }
               required
             />
-          </div>
 
-          <DialogFooter className="mt-4 col-span-full">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                {intl.formatMessage({ id: "material_requests.cancel" })}
+            <FormField
+              id="materialQuantity"
+              label={intl.formatMessage({ id: "material_requests.quantity" })}
+              type="number"
+              min="1"
+              value={form.materialQuantity}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  materialQuantity: parseInt(e.target.value) || 0,
+                }))
+              }
+              required
+            />
+
+            <FormField
+              id="materialEmail"
+              label={intl.formatMessage({ id: "material_requests.email" })}
+              type="email"
+              value={form.materialEmail}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, materialEmail: e.target.value }))
+              }
+              required
+            />
+
+            <FormField
+              id="materialPhone"
+              label={intl.formatMessage({ id: "material_requests.phone_number" })}
+              variant="phone"
+              onChange={(e) => {
+                e;
+              }}
+              value={form.materialPhone}
+              onPhoneChange={(value) =>
+                setForm((f) => ({ ...f, materialPhone: value || "" }))
+              }
+              placeholder="Enter phone number"
+              required
+            />
+
+            {/* Action Status Selector */}
+            <div className="space-y-2 col-span-full">
+              <Label htmlFor="materialActions">{intl.formatMessage({ id: "material_requests.initial_status" })}</Label>
+              <Select
+                value={form.materialActions}
+                onValueChange={(value) =>
+                  setForm((f) => ({ ...f, materialActions: value as any }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_status" })} />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTION_OPTIONS.map((action) => (
+                    <SelectItem key={action.value} value={action.value}>
+                      {intl.formatMessage({ id: action.label })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="col-span-full">
+              <FormField
+                id="materialIntendedUse"
+                label={intl.formatMessage({ id: "material_requests.intended_use_description" })}
+                variant="textarea"
+                rows={4}
+                value={form.materialIntendedUse}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, materialIntendedUse: e.target.value }))
+                }
+                required
+              />
+            </div>
+
+            <DialogFooter className="mt-4 col-span-full">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {intl.formatMessage({ id: "material_requests.cancel" })}
+                </Button>
+              </DialogClose>
+              <Button type="submit" className="text-white" disabled={!canSubmit || isLoading}>
+                {isLoading 
+                  ? intl.formatMessage({ id: "material_requests.creating" }) 
+                  : intl.formatMessage({ id: "material_requests.create_request" })
+                }
               </Button>
-            </DialogClose>
-            <Button type="submit" className="text-white" disabled={!canSubmit}>
-              {isLoading ? intl.formatMessage({ id: "material_requests.creating" }) : intl.formatMessage({ id: "material_requests.create_request" })}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Material Request Confirmation Dialog */}
+      <ConfirmationDialog
+        open={addConfirmDialog.isOpen}
+        onOpenChange={addConfirmDialog.setIsOpen}
+        variant="add"
+        onConfirm={addConfirmDialog.handleConfirm}
+        onCancel={addConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
+    </>
   );
 }
