@@ -1,0 +1,5 @@
+{
+    "codium.codeCompletion.enable": true,
+    "css.lint.unknownAtRules": "ignore",
+    "Codegeex.RepoIndex": true
+}
