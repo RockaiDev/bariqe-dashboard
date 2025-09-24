@@ -36,7 +36,7 @@ async function fetchCategories(
   try {
     const response = await axiosInstance.get("/categories", {
       params: filters,
-    });
+    }) as CategoryResponse;
 
     if (!response || typeof response !== 'object') {
       throw new Error("Invalid response structure");

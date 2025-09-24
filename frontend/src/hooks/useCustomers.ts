@@ -32,7 +32,7 @@ interface CustomerResponse {
 
 async function fetchCustomers(filters: CustomerFilters): Promise<CustomerResponse> {
   try {
-    const response = await axiosInstance.get("/customers", { params: filters })
+    const response = await axiosInstance.get("/customers", { params: filters }) as CustomerResponse
     return response
   } catch (err: any) {
     // Error normalization
