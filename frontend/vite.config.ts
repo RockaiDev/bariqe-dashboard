@@ -14,7 +14,15 @@ export default defineConfig({
   css: {
     postcss: "./postcss.config.js",
   },
-   server: {
+  server: {
     cors: true
+  },
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+    minify: true,
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   }
 });

@@ -156,7 +156,7 @@ const handleAddDialogClose = (open: boolean) => {
     }));
   };
 
-  const consultations: ConsultationRequest[] = list.data?.result?.data || [];
+  const consultations: ConsultationRequest[] = list.data?.data || [];
 
   const currentSort =
     filters.sorts.length > 0
@@ -174,7 +174,7 @@ const handleAddDialogClose = (open: boolean) => {
     }
   };
 
-  const paginationData = list.data?.result?.pagination ?? {
+  const paginationData = list.data?.pagination ?? {
     currentPage: 1,
     perPage: 10,
     totalPages: 1,
@@ -185,7 +185,7 @@ const handleAddDialogClose = (open: boolean) => {
   const pagination = {
     currentPage: paginationData.currentPage,
     perPage: paginationData.perPage,
-    total: list.data?.result?.count || 0,
+    total: list.data?.count || 0,
     lastPage: paginationData.totalPages,
   };
 

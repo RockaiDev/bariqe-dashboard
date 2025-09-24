@@ -176,7 +176,11 @@ export const handleProductFilters: FilterHandler = (filterKey, filterValue, chan
   }
 };
 
+
 export const createProductFilterGroups = (categories: Category[], t: (key: string) => string, isRTL: boolean = false) => [
+
+
+
   {
     label: t("filters.status"),
     key: "status",

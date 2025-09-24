@@ -79,7 +79,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Loading component
 
 
 // Connection status component

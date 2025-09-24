@@ -2,16 +2,26 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/helper/axiosInstance";
 import toast from "react-hot-toast";
 
+interface CrudResponse {
+  data: any[];
+  pagination: {
+    currentPage: number;
+    perPage: number;
+    totalPages: number;
+    nextPage: number | null;
+    prevPage: number | null;
+  };
+  count: number;
+}
+
 export function useCrud(resource: string, filters = {}) {
   const queryClient = useQueryClient();
 
-  // ✅ List
-  const list = useQuery({
+  const list = useQuery<CrudResponse>({
     queryKey: [resource, filters],
     queryFn: async () => {
       const params = new URLSearchParams();
       
-      // Add filters
       Object.entries(filters).forEach(([key, value]: [string, any]) => {
         if (value && (Array.isArray(value) ? value.length : true)) {
           params.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
@@ -19,8 +29,8 @@ export function useCrud(resource: string, filters = {}) {
       });
       
       const url = `/${resource}?${params}`;
-      const { result } = await axiosInstance.get(url);
-      return result;
+      const response = await axiosInstance.get(url) as CrudResponse;
+      return response;
     },
   });
 

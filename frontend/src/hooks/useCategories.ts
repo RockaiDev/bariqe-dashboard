@@ -20,30 +20,45 @@ export interface CategoryFilters {
 }
 
 interface CategoryResponse {
-  result: {
-    data: Category[];
-    pagination: {
-      currentPage: number;
-      perPage: number;
-      total: number;
-      hasNextPage: boolean;
-    };
+  data: Category[];
+  pagination: {
+    currentPage: number;
+    perPage: number;
+    total: number;
+    hasNextPage: boolean;
   };
-  keys: string[];
+  count: number;
 }
 
 async function fetchCategories(
   filters: CategoryFilters
 ): Promise<CategoryResponse> {
   try {
-    const { result } = await axiosInstance.get("/categories", {
+    const response = await axiosInstance.get("/categories", {
       params: filters,
-    });
+    }) as CategoryResponse;
 
-    return result;
+    if (!response || typeof response !== 'object') {
+      throw new Error("Invalid response structure");
+    }
+
+    if (!response.data || !Array.isArray(response.data)) {
+      return {
+        data: [],
+        pagination: {
+          currentPage: 1,
+          perPage: 15,
+          total: 0,
+          hasNextPage: false,
+        },
+        count: 0,
+      };
+    }
+
+    return response;
   } catch (err: any) {
     throw new Error(
-      err.response?.data?.result.message || "Failed to fetch categories."
+      err.response?.data?.message || err.message || "Failed to fetch categories."
     );
   }
 }
@@ -51,7 +66,28 @@ async function fetchCategories(
 export default function useCategories(filters: CategoryFilters) {
   return useQuery<CategoryResponse, Error>({
     queryKey: ["categories", filters],
-    queryFn: () => fetchCategories(filters),
+    queryFn: async () => {
+      try {
+        const result = await fetchCategories(filters);
+        
+        if (result === undefined || result === null) {
+          return {
+            data: [],
+            pagination: {
+              currentPage: 1,
+              perPage: 15,
+              total: 0,
+              hasNextPage: false,
+            },
+            count: 0,
+          };
+        }
+        
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: 2,
@@ -74,16 +110,13 @@ export function useDeleteCategory() {
 
       previous.forEach(([key, data]: any) => {
         if (!data) return;
-        if (!data.result?.data) return;
+        if (!data.data) return;
         const newData = {
           ...data,
-          result: {
-            ...data.result,
-            data: data.result.data.filter((c: any) => c._id !== id),
-            pagination: data.result.pagination
-              ? { ...data.result.pagination, total: Math.max(0, data.result.pagination.total - 1) }
-              : data.result.pagination,
-          },
+          data: data.data.filter((c: any) => c._id !== id),
+          pagination: data.pagination
+            ? { ...data.pagination, total: Math.max(0, data.pagination.total - 1) }
+            : data.pagination,
         };
         queryClient.setQueryData(key, newData);
       });
