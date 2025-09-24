@@ -58,7 +58,8 @@ interface Order {
   };
   product: {
     _id: string;
-    productName: string;
+    productNameAr: string;
+    productNameEn: string;
     productPrice: number;
   };
   quantity: number;
@@ -133,10 +134,13 @@ export default function OrdersPage() {
   };
 
   const orders: Order[] = list.data?.data || [];
-  const allCustomers = customersList.data?.data || [];
-  // فلترة العملاء - عرض العملاء الذين لديهم customerSource = "order" فقط
+  console.log("orders:", orders);
+  const allCustomers: any = customersList.data?.data || [];
+  console.log("allCustomers:", allCustomers);
+
   const customers = allCustomers.filter((customer: any) => customer.customerSource === "order");
-  const products = productsList.data?.data || [];
+  const products = productsList?.data?.data || [];
+      console.log("products:", products);
 
   const paginationData = list.data?.pagination ?? {
     currentPage: 1,
@@ -145,6 +149,8 @@ export default function OrdersPage() {
     nextPage: null,
     prevPage: null,
   };
+  console.log("paginationData:", paginationData);
+
 
   const pagination = {
     currentPage: paginationData.currentPage,
@@ -663,7 +669,9 @@ export default function OrdersPage() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{order.product.productName}</span>
+                {intl.locale === "ar"
+                    ? order?.product?.productNameAr
+                    : order?.product?.productNameEn}
                 </TableCell>
 
                 <TableCell className="">{order.quantity}</TableCell>
@@ -893,7 +901,9 @@ export default function OrdersPage() {
                   <SelectContent>
                     {products.map((product: any) => (
                       <SelectItem key={product._id} value={product._id}>
-                        {product.productName} - ${product.productPrice}
+                        {intl.locale === "ar"   
+                          ? product.productNameAr
+                          : product.productNameEn} - ${product.productPrice.toFixed(2)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1172,7 +1182,9 @@ export default function OrdersPage() {
                         <td className="px-4 py-3">
                           <div>
                             <p className="font-medium">
-                              {viewing.product.productName}
+                              {intl.locale === "ar"
+                                ? viewing.product?.productNameAr
+                                : viewing.product?.productNameEn}
                             </p>
                             <p className="text-sm text-gray-500">
                               ID: {viewing.product._id}

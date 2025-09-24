@@ -1,5 +1,7 @@
+// CategoryPage.tsx
 import { useState } from "react";
 import { useIntl } from "react-intl";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   Dialog,
   DialogClose,
@@ -8,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -27,6 +30,7 @@ import {
   Download,
   Upload,
   FileDown,
+  Loader2,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -45,14 +49,16 @@ import {
   createCategorySearchHandler,
   handleCategoryFilters,
 } from "@/components/shared/filters";
-// إضافة هذه imports
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
+
 interface Category {
   _id: string;
-  categoryName: string;
-  categoryDescription: string;
+  categoryNameAr: string;
+  categoryNameEn: string;
+  categoryDescriptionAr: string;
+  categoryDescriptionEn: string;
   categoryStatus: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -60,6 +66,8 @@ interface Category {
 
 export default function CategoryPage() {
   const intl = useIntl();
+  const { isRTL } = useLanguage();
+
   // pagination & filters
   const [filters, setFilters] = useState({
     page: 1,
@@ -83,7 +91,7 @@ export default function CategoryPage() {
     setFilters((f) => ({
       ...f,
       [type]: newQueries,
-      page: 1, // reset page عند البحث
+      page: 1,
     }));
   };
 
@@ -96,7 +104,6 @@ export default function CategoryPage() {
     prevPage: null,
   };
 
-  // تحويل البيانات لتتوافق مع الـ interface
   const pagination = {
     currentPage: paginationData.currentPage,
     perPage: paginationData.perPage,
@@ -104,27 +111,32 @@ export default function CategoryPage() {
     lastPage: paginationData.totalPages,
   };
 
-  // لإدارة الحذف
+  // Delete management
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Category | null>(null);
 
+  // View state
   const [viewOpen, setViewOpen] = useState(false);
   const [viewing, setViewing] = useState<Category | null>(null);
 
-  // edit state
+  // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [editForm, setEditForm] = useState({
-    categoryName: "",
-    categoryDescription: "",
+    categoryNameAr: "",
+    categoryNameEn: "",
+    categoryDescriptionAr: "",
+    categoryDescriptionEn: "",
     categoryStatus: true,
   });
 
   const handleEdit = (c: Category) => {
     setEditing(c);
     setEditForm({
-      categoryName: c.categoryName,
-      categoryDescription: c.categoryDescription,
+      categoryNameAr: c.categoryNameAr,
+      categoryNameEn: c.categoryNameEn,
+      categoryDescriptionAr: c.categoryDescriptionAr,
+      categoryDescriptionEn: c.categoryDescriptionEn,
       categoryStatus: Boolean(c.categoryStatus),
     });
     setEditOpen(true);
@@ -136,38 +148,40 @@ export default function CategoryPage() {
   };
 
   // Confirmation Dialogs
-const editConfirmDialog = useConfirmationDialog({
-  onConfirm: () => {
-    setEditOpen(false);
-    setEditing(null);
-  },
-  onCancel: () => {
-    // Handle cancel - stay in dialog
-  }
-});
+  const editConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setEditOpen(false);
+      setEditing(null);
+    },
+    onCancel: () => {
+      // Handle cancel - stay in dialog
+    }
+  });
 
-// Check if edit form has changes
-const hasEditFormChanges = () => {
-  if (!editing) return false;
+  // Check if edit form has changes
+  const hasEditFormChanges = () => {
+    if (!editing) return false;
 
-  return (
-    editForm.categoryName !== editing.categoryName ||
-    editForm.categoryDescription !== editing.categoryDescription ||
-    editForm.categoryStatus !== Boolean(editing.categoryStatus)
-  );
-};
+    return (
+      editForm.categoryNameAr !== editing.categoryNameAr ||
+      editForm.categoryNameEn !== editing.categoryNameEn ||
+      editForm.categoryDescriptionAr !== editing.categoryDescriptionAr ||
+      editForm.categoryDescriptionEn !== editing.categoryDescriptionEn ||
+      editForm.categoryStatus !== Boolean(editing.categoryStatus)
+    );
+  };
 
-// Handle edit dialog close with confirmation
-const handleEditDialogClose = (open: boolean) => {
-  if (!open && hasEditFormChanges()) {
-    editConfirmDialog.showDialog();
-  } else {
-    setEditOpen(false);
-    setEditing(null);
-  }
-};
-  // 🟢 Export Categories Function
-// 🟢 Export Categories Function
+  // Handle edit dialog close with confirmation
+  const handleEditDialogClose = (open: boolean) => {
+    if (!open && hasEditFormChanges()) {
+      editConfirmDialog.showDialog();
+    } else {
+      setEditOpen(false);
+      setEditing(null);
+    }
+  };
+
+  // Export Categories Function
 const handleExportCategories = async () => {
   const loadingToast = toast.loading(intl.formatMessage({ id: "categories.exporting" }));
   try {
@@ -269,15 +283,15 @@ const handleImportCategories = async () => {
   formData.append("file", selectedFile);
 
   try {
-    const result = await axiosInstance.post("/categories/import", formData, {
+    const result :any= await axiosInstance.post("/categories/import", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     toast.dismiss(loadingToast);
-
-    if (result?.data?.results?.categories) {
-      const { success, updated, failed } = result.data.results.categories;
-      const summary = result.data.results.summary;
+ console.log("Import result:", result);
+    if (result?.result?.results?.categories) {
+      const { success, updated, failed } = result.result?.results?.categories;
+      const summary = result.result?.results?.summary;
 
       if (success?.length > 0)
         toast.success(intl.formatMessage({ id: "categories.import_success_count" }, { count: success.length }));
@@ -321,6 +335,7 @@ const handleImportCategories = async () => {
     setImporting(false);
   }
 };
+
   const currentSort =
     filters.sorts.length > 0
       ? {
@@ -338,8 +353,9 @@ const handleImportCategories = async () => {
       ChangeFilter([{ field: key, direction }], "sorts");
     }
   };
+
   return (
-    <div className="p-6 space-y-4 !font-tajawal" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
+    <div className={`p-6 space-y-4 !font-tajawal ${isRTL ? 'rtl' : 'ltr'} relative min-h-screen overflow-x-hidden`}>
       <div className="flex justify-between items-center mb-3 md:flex-row flex-col gap-3">
         <Title
           title={intl.formatMessage({ id: "categories_title" })}
@@ -378,22 +394,22 @@ const handleImportCategories = async () => {
           <AddCategory
             create={create.mutate}
             isLoading={create.isPending}
-            // intl={intl}
           />
         </div>
       </div>
+
       <DataTable
         title={intl.formatMessage({ id: "categories.all_categories" })}
         icon={Layers}
         loading={list.isLoading}
         isEmpty={!categories?.length}
-        columnCount={6}
+        columnCount={7}
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
         onSortChange={handleSortChange}
         onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
-         onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
+        onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
         onDateFilterChange={(dateFilter) => {
           handleCustomDateRange(dateFilter, ChangeFilter);
         }}
@@ -417,9 +433,9 @@ const handleImportCategories = async () => {
         }}
         RenderHead={({ sort, onSortChange }) => (
           <>
-           <TableHead className=" text-right">#</TableHead>
+            <TableHead className="text-right">#</TableHead>
             <SortableTH
-              sortKey="categoryName"
+              sortKey={isRTL ? "categoryNameAr" : "categoryNameEn"}
               label={intl.formatMessage({ id: "categories.name" })}
               sort={sort}
               onSortChange={onSortChange}
@@ -463,16 +479,16 @@ const handleImportCategories = async () => {
                   duration-150 
                   border-b 
                   border-gray-200
-                   sub-title-cgrey
+                  sub-title-cgrey
                 `}
                 onClick={() => handleView(c)}
               >
                 <TableCell className="text-right">{i + 1}</TableCell>
                 <TableCell className="font-medium text-black">
-                  {c.categoryName}
+                  {isRTL ? c.categoryNameAr : c.categoryNameEn}
                 </TableCell>
                 <TableCell className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap">
-                  {c.categoryDescription}
+                  {isRTL ? c.categoryDescriptionAr : c.categoryDescriptionEn}
                 </TableCell>
                 <TableCell>
                   <span
@@ -487,7 +503,7 @@ const handleImportCategories = async () => {
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {c.createdAt
-                    ? new Date(c.createdAt).toLocaleDateString("en-US", {
+                    ? new Date(c.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
                         year: "2-digit",
                         month: "short",
                         day: "numeric",
@@ -496,7 +512,7 @@ const handleImportCategories = async () => {
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {c.updatedAt
-                    ? new Date(c.updatedAt).toLocaleDateString("en-US", {
+                    ? new Date(c.updatedAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
                         year: "2-digit",
                         month: "short",
                         day: "numeric",
@@ -505,7 +521,7 @@ const handleImportCategories = async () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div
-                    className="flex items-center gap-2 justify-center"
+                    className={`flex items-center gap-2 ${isRTL ? 'justify-start' : 'justify-center'}`}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
@@ -539,12 +555,15 @@ const handleImportCategories = async () => {
 
       {/* Import Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="import-categories-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Upload className="w-5 h-5" />
               {intl.formatMessage({ id: "categories.import.title" })}
             </DialogTitle>
+            <DialogDescription id="import-categories-description">
+              {intl.formatMessage({ id: "categories.import.description" })}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -604,7 +623,10 @@ const handleImportCategories = async () => {
               className="text-white"
             >
               {importing ? (
-                <>{intl.formatMessage({ id: "categories.importing_categories" })}</>
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {intl.formatMessage({ id: "categories.importing_categories" })}
+                </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
@@ -618,12 +640,15 @@ const handleImportCategories = async () => {
 
       {/* View Details Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px]" aria-describedby="view-category-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
               {intl.formatMessage({ id: "categories.category_details" })}
             </DialogTitle>
+            <DialogDescription id="view-category-description">
+              {intl.formatMessage({ id: "categories.view.description" })}
+            </DialogDescription>
           </DialogHeader>
 
           {viewing && (
@@ -632,10 +657,19 @@ const handleImportCategories = async () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "categories.category_name" })}
+                    {intl.formatMessage({ id: "categories.form.name_ar" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">{viewing.categoryName}</p>
+                    <p className="font-medium" dir="rtl">{viewing.categoryNameAr}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "categories.form.name_en" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <p className="font-medium" dir="ltr">{viewing.categoryNameEn}</p>
                   </div>
                 </div>
 
@@ -657,15 +691,28 @@ const handleImportCategories = async () => {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-600">
-                  {intl.formatMessage({ id: "categories.description" })}
-                </Label>
-                <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
-                  <p className="text-gray-800 leading-relaxed">
-                    {viewing.categoryDescription}
-                  </p>
+              {/* Descriptions */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "categories.form.description_ar" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
+                    <p className="text-gray-800 leading-relaxed" dir="rtl">
+                      {viewing.categoryDescriptionAr}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "categories.form.description_en" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
+                    <p className="text-gray-800 leading-relaxed" dir="ltr">
+                      {viewing.categoryDescriptionEn}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -678,7 +725,7 @@ const handleImportCategories = async () => {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.createdAt
-                        ? new Date(viewing.createdAt).toLocaleString()
+                        ? new Date(viewing.createdAt).toLocaleString(isRTL ? "ar-EG" : "en-US")
                         : intl.formatMessage({ id: "categories.not_available" })}
                     </p>
                   </div>
@@ -691,7 +738,7 @@ const handleImportCategories = async () => {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.updatedAt
-                        ? new Date(viewing.updatedAt).toLocaleString()
+                        ? new Date(viewing.updatedAt).toLocaleString(isRTL ? "ar-EG" : "en-US")
                         : intl.formatMessage({ id: "categories.not_available" })}
                     </p>
                   </div>
@@ -736,114 +783,179 @@ const handleImportCategories = async () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
+        <DialogContent className="sm:max-w-[600px]" aria-describedby="edit-category-description">
+          <DialogHeader>
+            <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
+            <DialogDescription id="edit-category-description">
+              {intl.formatMessage({ id: "categories.edit.description" })}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editing) return;
+              
+              // Validate required fields
+              if (!editForm.categoryNameAr || !editForm.categoryNameEn || 
+                  !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn) {
+                toast.error(intl.formatMessage({ id: "categories.validation.required_fields" }));
+                return;
+              }
+              
+              update.mutate({
+                id: editing._id,
+                payload: editForm,
+              }, {
+                onSuccess: () => {
+                  toast.success(intl.formatMessage({ id: "categories.edit_success" }));
+                  setEditOpen(false);
+                  setEditing(null);
+                },
+                onError: (error: any) => {
+                  const errorMessage = error?.response?.data?.message ||
+                                      error?.message ||
+                                      intl.formatMessage({ id: "categories.edit_failed" });
+                  toast.error(errorMessage);
+                },
+              });
+            }}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                id="edit_categoryNameAr"
+                label={intl.formatMessage({ id: "categories.form.name_ar" })}
+                value={editForm.categoryNameAr}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, categoryNameAr: e.target.value }))
+                }
+                required
+                dir="rtl"
+              />
 
-  {/* Edit Dialog */}
-<Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
-  <DialogContent className="sm:max-w-[520px]">
-    <DialogHeader>
-      <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
-    </DialogHeader>
-    <form
-      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!editing) return;
-        
-        update.mutate({
-          id: editing._id,
-          payload: editForm,
-        }, {
-          onSuccess: () => {
-            toast.success(intl.formatMessage({ id: "categories.edit_success" }));
-            setEditOpen(false);
-            setEditing(null);
-          },
-          onError: (error: any) => {
-            const errorMessage = error?.response?.data?.message ||
-                                error?.message ||
-                                intl.formatMessage({ id: "categories.edit_failed" });
-            toast.error(errorMessage);
-          },
-        });
-      }}
-    >
-      <FormField
-        id="edit_categoryName"
-        label={intl.formatMessage({ id: "categories.name" })}
-        value={editForm.categoryName}
-        onChange={(e) =>
-          setEditForm((f) => ({ ...f, categoryName: e.target.value }))
-        }
-        required
+              <FormField
+                id="edit_categoryNameEn"
+                label={intl.formatMessage({ id: "categories.form.name_en" })}
+                value={editForm.categoryNameEn}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, categoryNameEn: e.target.value }))
+                }
+                required
+                dir="ltr"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <FormField
+                id="edit_categoryDescriptionAr"
+                label={intl.formatMessage({ id: "categories.form.description_ar" })}
+                variant="textarea"
+                rows={4}
+                value={editForm.categoryDescriptionAr}
+                onChange={(e) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    categoryDescriptionAr: e.target.value,
+                  }))
+                }
+                required
+                dir="rtl"
+              />
+
+              <FormField
+                id="edit_categoryDescriptionEn"
+                label={intl.formatMessage({ id: "categories.form.description_en" })}
+                variant="textarea"
+                rows={4}
+                value={editForm.categoryDescriptionEn}
+                onChange={(e) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    categoryDescriptionEn: e.target.value,
+                  }))
+                }
+                required
+                dir="ltr"
+              />
+            </div>
+
+            <div className="flex items-center justify-between border rounded-md p-3">
+              <div>
+                <Label htmlFor="edit_categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {intl.formatMessage({ id: "categories.toggle_status" })}
+                </p>
+              </div>
+              <Switch
+                id="edit_categoryStatus"
+                checked={editForm.categoryStatus}
+                onCheckedChange={(checked) =>
+                  setEditForm((f) => ({ ...f, categoryStatus: checked }))
+                }
+              />
+            </div>
+
+            <DialogFooter className="mt-4">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {intl.formatMessage({ id: "categories.cancel" })}
+                </Button>
+              </DialogClose>
+              <Button
+                type="submit"
+                className="text-white"
+                disabled={
+                  !editForm.categoryNameAr || !editForm.categoryNameEn || 
+                  !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn || 
+                  update.isPending
+                }
+              >
+                {update.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {intl.formatMessage({ id: "categories.saving" })}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "categories.save_changes" })
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Confirmation Dialog */}
+      <ConfirmationDialog
+        open={editConfirmDialog.isOpen}
+        onOpenChange={editConfirmDialog.setIsOpen}
+        variant="edit"
+        onConfirm={editConfirmDialog.handleConfirm}
+        onCancel={editConfirmDialog.handleCancel}
+        isDestructive={true}
       />
-      <FormField
-        id="edit_categoryDescription"
-        label={intl.formatMessage({ id: "categories.description" })}
-        value={editForm.categoryDescription}
-        onChange={(e) =>
-          setEditForm((f) => ({
-            ...f,
-            categoryDescription: e.target.value,
-          }))
-        }
-        required
-      />
 
-      <div className="col-span-full flex items-center justify-between border rounded-md p-3">
-        <div>
-          <Label htmlFor="edit_categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
-          <p className="text-sm text-muted-foreground">
-            {intl.formatMessage({ id: "categories.toggle_status" })}
-          </p>
-        </div>
-        <Switch
-          id="edit_categoryStatus"
-          checked={editForm.categoryStatus}
-          onCheckedChange={(checked) =>
-            setEditForm((f) => ({ ...f, categoryStatus: checked }))
-          }
-        />
-      </div>
-
-      <DialogFooter className="mt-4 col-span-full">
-        <DialogClose asChild>
-          <Button type="button" variant="outline">
-            {intl.formatMessage({ id: "categories.cancel" })}
-          </Button>
-        </DialogClose>
-        <Button
-          type="submit"
-          className="text-white"
-          disabled={
-            !editForm.categoryName || !editForm.categoryDescription || update.isPending
-          }
-        >
-          {update.isPending 
-            ? intl.formatMessage({ id: "categories.saving" }) 
-            : intl.formatMessage({ id: "categories.save_changes" })
-          }
-        </Button>
-      </DialogFooter>
-    </form>
-  </DialogContent>
-</Dialog>
-{/* Edit Confirmation Dialog */}
-<ConfirmationDialog
-  open={editConfirmDialog.isOpen}
-  onOpenChange={editConfirmDialog.setIsOpen}
-  variant="edit"
-  onConfirm={editConfirmDialog.handleConfirm}
-  onCancel={editConfirmDialog.handleCancel}
-  isDestructive={true}
-/>
       {/* Delete Confirmation Dialog */}
       {toDelete && (
         <ConfirmDeleteDialog
           open={deleteOpen}
           setOpen={setDeleteOpen}
-          itemName={toDelete?.categoryName}
+          itemName={isRTL ? toDelete?.categoryNameAr : toDelete?.categoryNameEn}
           onConfirm={() => {
-            if (toDelete) del.mutate(toDelete._id);
+            if (toDelete) {
+              del.mutate(toDelete._id, {
+                onSuccess: () => {
+                  toast.success(intl.formatMessage({ id: "categories.delete.success" }));
+                },
+                onError: (error: any) => {
+                  const errorMessage = error?.response?.data?.message ||
+                                      error?.message ||
+                                      intl.formatMessage({ id: "categories.delete.failed" });
+                  toast.error(errorMessage);
+                }
+              });
+            }
             setDeleteOpen(false);
             setToDelete(null);
           }}
@@ -852,9 +964,7 @@ const handleImportCategories = async () => {
     </div>
   );
 }
-
 // AddCategory component
-// AddCategory component - استبدال كامل
 function AddCategory({
   create,
   isLoading,
@@ -863,10 +973,14 @@ function AddCategory({
   isLoading: boolean;
 }) {
   const intl = useIntl();
+  // const { isRTL } = useLanguage();
+  
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    categoryName: "",
-    categoryDescription: "",
+    categoryNameAr: "",
+    categoryNameEn: "",
+    categoryDescriptionAr: "",
+    categoryDescriptionEn: "",
     categoryStatus: true,
   });
 
@@ -881,13 +995,16 @@ function AddCategory({
     }
   });
 
-  const canSubmit = form.categoryName.trim() && form.categoryDescription.trim();
+  const canSubmit = form.categoryNameAr.trim() && form.categoryNameEn.trim() && 
+                   form.categoryDescriptionAr.trim() && form.categoryDescriptionEn.trim();
 
   // Check if form has changes
   const hasFormChanges = () => {
     return (
-      form.categoryName !== "" ||
-      form.categoryDescription !== "" ||
+      form.categoryNameAr !== "" ||
+      form.categoryNameEn !== "" ||
+      form.categoryDescriptionAr !== "" ||
+      form.categoryDescriptionEn !== "" ||
       form.categoryStatus !== true
     );
   };
@@ -904,8 +1021,10 @@ function AddCategory({
 
   const resetForm = () => {
     setForm({
-      categoryName: "",
-      categoryDescription: "",
+      categoryNameAr: "",
+      categoryNameEn: "",
+      categoryDescriptionAr: "",
+      categoryDescriptionEn: "",
       categoryStatus: true,
     });
   };
@@ -918,44 +1037,83 @@ function AddCategory({
             <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "categories.new_category" })}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="sm:max-w-[600px]" aria-describedby="add-category-description">
           <DialogHeader>
             <DialogTitle>{intl.formatMessage({ id: "categories.new_category" })}</DialogTitle>
+            <DialogDescription id="add-category-description">
+              {intl.formatMessage({ id: "categories.create.description" })}
+            </DialogDescription>
           </DialogHeader>
           <form
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               if (!canSubmit || isLoading) return;
               
               create(form);
               setForm({
-                categoryName: "",
-                categoryDescription: "",
+                categoryNameAr: "",
+                categoryNameEn: "",
+                categoryDescriptionAr: "",
+                categoryDescriptionEn: "",
                 categoryStatus: true,
               });
               setOpen(false);
             }}
           >
-            <FormField
-              id="categoryName"
-              label={intl.formatMessage({ id: "categories.name" })}
-              value={form.categoryName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, categoryName: e.target.value }))
-              }
-              required
-            />
-            <FormField
-              id="categoryDescription"
-              label={intl.formatMessage({ id: "categories.description" })}
-              value={form.categoryDescription}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, categoryDescription: e.target.value }))
-              }
-              required
-            />
-            <div className="col-span-full flex items-center justify-between border rounded-md p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                id="categoryNameAr"
+                label={intl.formatMessage({ id: "categories.form.name_ar" })}
+                value={form.categoryNameAr}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, categoryNameAr: e.target.value }))
+                }
+                required
+                dir="rtl"
+              />
+
+              <FormField
+                id="categoryNameEn"
+                label={intl.formatMessage({ id: "categories.form.name_en" })}
+                value={form.categoryNameEn}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, categoryNameEn: e.target.value }))
+                }
+                required
+                dir="ltr"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <FormField
+                id="categoryDescriptionAr"
+                label={intl.formatMessage({ id: "categories.form.description_ar" })}
+                variant="textarea"
+                rows={4}
+                value={form.categoryDescriptionAr}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, categoryDescriptionAr: e.target.value }))
+                }
+                required
+                dir="rtl"
+              />
+
+              <FormField
+                id="categoryDescriptionEn"
+                label={intl.formatMessage({ id: "categories.form.description_en" })}
+                variant="textarea"
+                rows={4}
+                value={form.categoryDescriptionEn}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, categoryDescriptionEn: e.target.value }))
+                }
+                required
+                dir="ltr"
+              />
+            </div>
+
+            <div className="flex items-center justify-between border rounded-md p-3">
               <div>
                 <Label htmlFor="categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
                 <p className="text-sm text-muted-foreground">
@@ -970,17 +1128,22 @@ function AddCategory({
                 }
               />
             </div>
-            <DialogFooter className="mt-4 col-span-full">
+
+            <DialogFooter className="mt-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   {intl.formatMessage({ id: "categories.cancel" })}
                 </Button>
               </DialogClose>
               <Button type="submit" className="text-white" disabled={!canSubmit || isLoading}>
-                {isLoading 
-                  ? intl.formatMessage({ id: "categories.saving" }) 
-                  : intl.formatMessage({ id: "categories.create" })
-                }
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {intl.formatMessage({ id: "categories.saving" })}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "categories.create" })
+                )}
               </Button>
             </DialogFooter>
           </form>

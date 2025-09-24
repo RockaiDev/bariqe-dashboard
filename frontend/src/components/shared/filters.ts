@@ -9,8 +9,8 @@ export type DateFilter = { from?: Date; to?: Date } | null;
 
 interface Category {
   _id: string;
-  categoryName: string;
-  categoryStatus: boolean;
+  categoryNameEn: string;
+  categoryNameAr: string;
 }
 
 // utils/dateFilters.ts
@@ -176,7 +176,11 @@ export const handleProductFilters: FilterHandler = (filterKey, filterValue, chan
   }
 };
 
-export const createProductFilterGroups = (_categories: Category[], t: (key: string) => string) => [
+
+export const createProductFilterGroups = (categories: Category[], t: (key: string) => string, isRTL: boolean = false) => [
+
+
+
   {
     label: t("filters.status"),
     key: "status",
@@ -220,6 +224,17 @@ export const createProductFilterGroups = (_categories: Category[], t: (key: stri
       { label: t("filters.this_month"), value: "thismonth" },
       { label: t("filters.last_30_days"), value: "last30days" },
       { label: t("filters.last_3_months"), value: "last3months" },
+    ],
+  },
+  {
+    label: t("filters.category"),
+    key: "category",
+    options: [
+      { label: t("filters.all"), value: "all" },
+      ...categories.map((cat :any)=> ({ 
+        label: isRTL ? (cat.categoryNameAr || cat.categoryName) : (cat.categoryNameEn || cat.categoryName), 
+        value: cat._id 
+      })),
     ],
   },
 ];

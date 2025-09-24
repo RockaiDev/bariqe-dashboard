@@ -47,7 +47,7 @@ import {
 
 import DataTable, { SortableTH } from "@/components/shared/tabel/tabel";
 import Title from "@/components/shared/Title";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { FormField } from "@/components/shared/FormField";
 
@@ -64,6 +64,7 @@ import {
   createProductFilterGroups,
   handleProductFilters,
 } from "@/components/shared/filters";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 // Updated interfaces to match new schema
 interface DiscountTier {
@@ -74,8 +75,10 @@ interface DiscountTier {
 
 interface Product {
   _id: string;
-  productName: string;
-  productDescription: string;
+  productNameAr: string;
+  productNameEn: string;
+  productDescriptionAr: string;
+  productDescriptionEn: string;
   productCode: string;
   productPrice: number;
   productCategory:
@@ -97,7 +100,8 @@ interface Product {
 
 interface Category {
   _id: string;
-  categoryName: string;
+  categoryNameAr: string;
+  categoryNameEn: string;
   categoryStatus: boolean;
 }
 
@@ -107,26 +111,47 @@ export default function ProductsPage() {
 
   // Grade and Form options based on schema
   const GRADE_OPTIONS = [
-    { label: intl.formatMessage({ id: 'products.grade.technical' }), value: "Technical" },
-    { label: intl.formatMessage({ id: 'products.grade.analytical' }), value: "Analytical" },
-    { label: intl.formatMessage({ id: 'products.grade.usp' }), value: "USP" },
-    { label: intl.formatMessage({ id: 'products.grade.fcc' }), value: "FCC" },
-    { label: intl.formatMessage({ id: 'products.grade.cosmetic' }), value: "Cosmetic Grade" },
+    {
+      label: intl.formatMessage({ id: "products.grade.technical" }),
+      value: "Technical",
+    },
+    {
+      label: intl.formatMessage({ id: "products.grade.analytical" }),
+      value: "Analytical",
+    },
+    { label: intl.formatMessage({ id: "products.grade.usp" }), value: "USP" },
+    { label: intl.formatMessage({ id: "products.grade.fcc" }), value: "FCC" },
+    {
+      label: intl.formatMessage({ id: "products.grade.cosmetic" }),
+      value: "Cosmetic Grade",
+    },
   ];
 
   const FORM_OPTIONS = [
-    { label: intl.formatMessage({ id: 'products.form.solid' }), value: "Solid" },
-    { label: intl.formatMessage({ id: 'products.form.liquid' }), value: "Liquid" },
-    { label: intl.formatMessage({ id: 'products.form.gas' }), value: "Gas" },
-    { label: intl.formatMessage({ id: 'products.form.powder' }), value: "Powder" },
-    { label: intl.formatMessage({ id: 'products.form.granular' }), value: "Granular" },
+    {
+      label: intl.formatMessage({ id: "products.form.solid" }),
+      value: "Solid",
+    },
+    {
+      label: intl.formatMessage({ id: "products.form.liquid" }),
+      value: "Liquid",
+    },
+    { label: intl.formatMessage({ id: "products.form.gas" }), value: "Gas" },
+    {
+      label: intl.formatMessage({ id: "products.form.powder" }),
+      value: "Powder",
+    },
+    {
+      label: intl.formatMessage({ id: "products.form.granular" }),
+      value: "Granular",
+    },
   ];
 
   // pagination, filters & sorting
   const [filters, setFilters] = useState({
     page: 1,
     perPage: 10,
-    sorts: [] as Array<{ field: string; direction: 'asc' | 'desc' }>,
+    sorts: [] as Array<{ field: string; direction: "asc" | "desc" }>,
     queries: [],
     search: "",
   });
@@ -151,10 +176,13 @@ export default function ProductsPage() {
   };
 
   // Sort handling
-  const currentSort = filters.sorts.length > 0 ? {
-    key: filters.sorts[0].field,
-    direction: filters.sorts[0].direction
-  } : undefined;
+  const currentSort =
+    filters.sorts.length > 0
+      ? {
+          key: filters.sorts[0].field,
+          direction: filters.sorts[0].direction,
+        }
+      : undefined;
 
   const handleSortChange = (key?: string, direction?: "asc" | "desc") => {
     if (!key || !direction) {
@@ -197,8 +225,10 @@ export default function ProductsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [editForm, setEditForm] = useState({
-    productName: "",
-    productDescription: "",
+    productNameAr: "",
+    productNameEn: "",
+    productDescriptionAr: "",
+    productDescriptionEn: "",
     productCode: "",
     productPrice: 0,
     productCategory: "",
@@ -229,7 +259,7 @@ export default function ProductsPage() {
     },
     onCancel: () => {
       // Handle cancel - stay in dialog
-    }
+    },
   });
 
   // Function to check if product code exists
@@ -261,19 +291,23 @@ export default function ProductsPage() {
     if (!editing) return false;
 
     return (
-      editForm.productName !== editing.productName ||
-      editForm.productDescription !== editing.productDescription ||
+      editForm.productNameAr !== editing.productNameAr ||
+      editForm.productNameEn !== editing.productNameEn ||
+      editForm.productDescriptionAr !== editing.productDescriptionAr ||
+      editForm.productDescriptionEn !== editing.productDescriptionEn ||
       editForm.productCode !== editing.productCode ||
       editForm.productPrice !== editing.productPrice ||
-      editForm.productCategory !== (typeof editing.productCategory === "object" 
-        ? editing.productCategory._id 
-        : editing.productCategory) ||
+      editForm.productCategory !==
+        (typeof editing.productCategory === "object"
+          ? editing.productCategory._id
+          : editing.productCategory) ||
       editForm.productStatus !== Boolean(editing.productStatus) ||
       editForm.productPurity !== (editing.productPurity || 0) ||
       editForm.productGrade !== (editing.productGrade || "Technical") ||
       editForm.productForm !== (editing.productForm || "Solid") ||
       editForm.productDiscount !== (editing.productDiscount || 0) ||
-      JSON.stringify(editForm.discountTiers) !== JSON.stringify(editing.discountTiers || []) ||
+      JSON.stringify(editForm.discountTiers) !==
+        JSON.stringify(editing.discountTiers || []) ||
       editImageFile !== null ||
       editImagePreview !== (editing.productImage || "")
     );
@@ -282,8 +316,10 @@ export default function ProductsPage() {
   const handleEdit = (p: Product) => {
     setEditing(p);
     setEditForm({
-      productName: p.productName,
-      productDescription: p.productDescription,
+      productNameAr: p.productNameAr,
+      productNameEn: p.productNameEn,
+      productDescriptionAr: p.productDescriptionAr,
+      productDescriptionEn: p.productDescriptionEn,
       productCode: p.productCode,
       productPrice: p.productPrice,
       productCategory:
@@ -321,11 +357,15 @@ export default function ProductsPage() {
   };
 
   // Helper function to get category name
+  // Helper function to get category name
   const getCategoryName = (category: any) => {
-    if (typeof category === "object" && category?.categoryName) {
-      return category.categoryName;
+    if (typeof category === "object" && category) {
+      // إذا كانت الفئة object مع اللغتين
+      if (category.categoryNameAr && category.categoryNameEn) {
+        return isRTL ? category.categoryNameAr : category.categoryNameEn;
+      }
     }
-    return category || intl.formatMessage({ id: 'products.unknown_category' });
+    return category || intl.formatMessage({ id: "products.unknown_category" });
   };
 
   // Image upload helpers
@@ -352,7 +392,9 @@ export default function ProductsPage() {
     imageFile: File
   ) => {
     setUploadingImage(true);
-    const loadingToast = toast.loading(intl.formatMessage({ id: 'products.uploading_image' }));
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "products.uploading_image" })
+    );
 
     try {
       const formData = new FormData();
@@ -369,7 +411,9 @@ export default function ProductsPage() {
       );
 
       toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: 'products.image_updated_success' }));
+      toast.success(
+        intl.formatMessage({ id: "products.image_updated_success" })
+      );
 
       // Refresh the data
       list.refetch();
@@ -377,9 +421,10 @@ export default function ProductsPage() {
       return response.data.newImageUrl;
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: 'products.upload_image_failed' });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "products.upload_image_failed" });
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -389,73 +434,110 @@ export default function ProductsPage() {
 
   // Remove product image
   const handleRemoveProductImage = async (productId: string) => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: 'products.removing_image' }));
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "products.removing_image" })
+    );
 
     try {
       await axiosInstance.delete(`/products/${productId}/image`);
       toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: 'products.image_removed_success' }));
+      toast.success(
+        intl.formatMessage({ id: "products.image_removed_success" })
+      );
 
       // Refresh the data
       list.refetch();
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: 'products.remove_image_failed' });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "products.remove_image_failed" });
       toast.error(errorMessage);
     }
   };
 
   // Export functions
-  const handleExportProducts = async () => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: 'products.exporting' }));
+// Export functions
+const handleExportProducts = async () => {
+  const loadingToast = toast.loading(
+    intl.formatMessage({ id: "products.exporting" })
+  );
 
-    try {
-      const response = await axiosInstance.get("/products/export", {
-        responseType: "blob",
-      });
+  try {
+    // إعداد parameters للإكسبورت مع الفلاتر الحالية
+    const exportParams = {
+      // إرسال الفلاتر الحالية (بدون pagination)
+      sorts: JSON.stringify(filters.sorts),
+      queries: JSON.stringify(filters.queries),
+      search: filters.search,
+      // إزالة pagination parameters للحصول على جميع النتائج المفلترة
+      // perPage: undefined,
+      // page: undefined,
+    };
 
-      const contentType = response.headers["content-type"];
-      if (contentType && contentType.includes("application/json")) {
-        const blob = new Blob([response.data]);
-        const text = await blob.text();
-        const error = JSON.parse(text);
-        throw new Error(error.message || "Export failed");
-      }
+    const response = await axiosInstance.get("/products/export", {
+      params: exportParams, // إرسال الفلاتر كـ query parameters
+      responseType: "blob",
+    });
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `products_export_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
-
-      toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: 'products.export_success' }));
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: 'products.export_failed' });
-      toast.error(errorMessage);
-      console.error("Export error:", error);
+    const contentType = response.headers["content-type"];
+    if (contentType && contentType.includes("application/json")) {
+      const blob = new Blob([response.data]);
+      const text = await blob.text();
+      const error = JSON.parse(text);
+      throw new Error(error.message || "Export failed");
     }
-  };
+
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `products_export_${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
+
+    toast.dismiss(loadingToast);
+    
+    // إضافة رسالة تأكيد تتضمن عدد المنتجات المصدرة
+    const filteredCount = products.length;
+    const totalCount = pagination.total;
+    
+    if (filteredCount < totalCount) {
+      toast.success(
+        intl.formatMessage(
+          { id: "products.export_filtered_success" }, 
+          { count: filteredCount, total: totalCount }
+        )
+      );
+    } else {
+      toast.success(intl.formatMessage({ id: "products.export_success" }));
+    }
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      intl.formatMessage({ id: "products.export_failed" });
+    toast.error(errorMessage);
+    console.error("Export error:", error);
+  }
+};
 
   const handleDownloadTemplate = async () => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: 'products.downloading_template' }));
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "products.downloading_template" })
+    );
 
     try {
       const response = await axiosInstance.get("/products/download-template", {
@@ -487,12 +569,13 @@ export default function ProductsPage() {
       }, 100);
 
       toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: 'products.template_downloaded' }));
+      toast.success(intl.formatMessage({ id: "products.template_downloaded" }));
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: 'products.template_download_failed' });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "products.template_download_failed" });
       toast.error(errorMessage);
       console.error("Download error:", error);
     }
@@ -500,12 +583,14 @@ export default function ProductsPage() {
 
   const handleImportProducts = async () => {
     if (!selectedFile) {
-      toast.error(intl.formatMessage({ id: 'products.select_file_error' }));
+      toast.error(intl.formatMessage({ id: "products.select_file_error" }));
       return;
     }
 
     setImporting(true);
-    const loadingToast = toast.loading(intl.formatMessage({ id: 'products.importing' }));
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "products.importing" })
+    );
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -526,17 +611,26 @@ export default function ProductsPage() {
 
         if (products?.success?.length > 0) {
           toast.success(
-            intl.formatMessage({ id: 'products.import_success_count' }, { count: products.success.length })
+            intl.formatMessage(
+              { id: "products.import_success_count" },
+              { count: products.success.length }
+            )
           );
         }
         if (products?.updated?.length > 0) {
           toast.success(
-            intl.formatMessage({ id: 'products.import_updated_count' }, { count: products.updated.length })
+            intl.formatMessage(
+              { id: "products.import_updated_count" },
+              { count: products.updated.length }
+            )
           );
         }
         if (products?.failed?.length > 0) {
           toast.error(
-            intl.formatMessage({ id: 'products.import_failed_count' }, { count: products.failed.length })
+            intl.formatMessage(
+              { id: "products.import_failed_count" },
+              { count: products.failed.length }
+            )
           );
           products.failed.slice(0, 5).forEach((failure: any) => {
             const code = failure.productCode || "Unknown";
@@ -547,7 +641,10 @@ export default function ProductsPage() {
 
         if (errors?.length > 0) {
           toast.error(
-            intl.formatMessage({ id: 'products.import_validation_errors' }, { count: errors.length })
+            intl.formatMessage(
+              { id: "products.import_validation_errors" },
+              { count: errors.length }
+            )
           );
           errors.slice(0, 5).forEach((err: any) => {
             const row = err.row || "Unknown row";
@@ -558,13 +655,16 @@ export default function ProductsPage() {
 
         if (summary) {
           toast(
-            intl.formatMessage({ 
-              id: 'products.import_summary' 
-            }, { 
-              success: summary.success, 
-              updated: summary.updated, 
-              failed: summary.failed 
-            })
+            intl.formatMessage(
+              {
+                id: "products.import_summary",
+              },
+              {
+                success: summary.success,
+                updated: summary.updated,
+                failed: summary.failed,
+              }
+            )
           );
         }
       }
@@ -577,7 +677,7 @@ export default function ProductsPage() {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        intl.formatMessage({ id: 'products.import_failed' });
+        intl.formatMessage({ id: "products.import_failed" });
       toast.error(errorMessage);
       console.error("Import error:", error);
     } finally {
@@ -586,11 +686,15 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className={`p-6 space-y-4 !font-tajawal ${isRTL ? 'rtl' : 'ltr'} relativemin-h-screen  overflow-x-hidden`}>
+    <div
+      className={`p-6 space-y-4 !font-tajawal ${
+        isRTL ? "rtl" : "ltr"
+      } relative min-h-screen overflow-x-hidden`}
+    >
       <div className="flex justify-between items-center mb-3 md:flex-row flex-col gap-3">
         <Title
-          title={intl.formatMessage({ id: 'products.title' })}
-          subtitle={intl.formatMessage({ id: 'products.subtitle' })}
+          title={intl.formatMessage({ id: "products.title" })}
+          subtitle={intl.formatMessage({ id: "products.subtitle" })}
         />
 
         {/* Action Buttons */}
@@ -600,7 +704,7 @@ export default function ProductsPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <FileSpreadsheet className="w-4 h-4" />
-                {intl.formatMessage({ id: 'excel_operations' })}
+                {intl.formatMessage({ id: "excel_operations" })}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -609,7 +713,7 @@ export default function ProductsPage() {
                 className="cursor-pointer"
               >
                 <Download className="w-4 h-4 mr-2" />
-                {intl.formatMessage({ id: 'products.export_all' })}
+                {intl.formatMessage({ id: "products.export_all" })}
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -617,7 +721,7 @@ export default function ProductsPage() {
                 className="cursor-pointer"
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {intl.formatMessage({ id: 'products.import' })}
+                {intl.formatMessage({ id: "products.import" })}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -635,7 +739,7 @@ export default function ProductsPage() {
       </div>
 
       <DataTable
-        title={intl.formatMessage({ id: 'products.management_title' })}
+        title={intl.formatMessage({ id: "products.management_title" })}
         icon={Package}
         loading={list.isLoading}
         isEmpty={!products?.length}
@@ -645,12 +749,21 @@ export default function ProductsPage() {
         sort={currentSort}
         onSortChange={handleSortChange}
         onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
-         onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
+        onPerPageChange={(perPage) =>
+          setFilters((f) => ({ ...f, perPage, page: 1 }))
+        }
         searchProps={{
-          placeholder: intl.formatMessage({ id: 'products.search_placeholder' }),
+          placeholder: intl.formatMessage({
+            id: "products.search_placeholder",
+          }),
           onKeyDown: createProductSearchHandler(ChangeFilter),
         }}
-        filterGroups={createProductFilterGroups(activeCategories, (key: string) => intl.formatMessage({ id: key }))}
+        // في ProductsPage.tsx
+        filterGroups={createProductFilterGroups(
+          activeCategories,
+          (key: string) => intl.formatMessage({ id: key }),
+          isRTL
+        )}
         onFiltersApply={(filters, dateFilter) => {
           // تطبيق فلاتر التاريخ
           if (dateFilter) {
@@ -666,85 +779,89 @@ export default function ProductsPage() {
         }}
         RenderHead={({ sort, onSortChange }) => (
           <>
-            <TableHead className=" text-right">#</TableHead>
+            <TableHead className="text-right">#</TableHead>
             {/* Non-sortable column */}
-            <TableHead className="px-2 sm:px-4 py-2">{intl.formatMessage({ id: 'products.table.image' })}</TableHead>
-            
+            <TableHead className="px-2 sm:px-4 py-2">
+              {intl.formatMessage({ id: "products.table.image" })}
+            </TableHead>
+
             {/* Sortable columns */}
-            <SortableTH 
-              sortKey="productCode" 
-              label={intl.formatMessage({ id: 'products.table.code' })}
+            <SortableTH
+              sortKey="productCode"
+              label={intl.formatMessage({ id: "products.table.code" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productName" 
-              label={intl.formatMessage({ id: 'products.table.name' })}
+
+            <SortableTH
+              sortKey={isRTL ? "productNameAr" : "productNameEn"}
+              label={intl.formatMessage({ id: "products.table.name" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productCategory" 
-              label={intl.formatMessage({ id: 'products.table.category' })}
+
+            <SortableTH
+              sortKey="productCategory"
+              label={intl.formatMessage({ id: "products.table.category" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productPurity" 
-              label={intl.formatMessage({ id: 'products.table.purity' })}
+
+            <SortableTH
+              sortKey="productPurity"
+              label={intl.formatMessage({ id: "products.table.purity" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productPrice" 
-              label={intl.formatMessage({ id: 'products.table.price' })}
+
+            <SortableTH
+              sortKey="productPrice"
+              label={intl.formatMessage({ id: "products.table.price" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productGrade" 
-              label={intl.formatMessage({ id: 'products.table.grade' })}
+
+            <SortableTH
+              sortKey="productGrade"
+              label={intl.formatMessage({ id: "products.table.grade" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productForm" 
-              label={intl.formatMessage({ id: 'products.table.form' })}
+
+            <SortableTH
+              sortKey="productForm"
+              label={intl.formatMessage({ id: "products.table.form" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="productStatus" 
-              label={intl.formatMessage({ id: 'products.table.status' })}
+
+            <SortableTH
+              sortKey="productStatus"
+              label={intl.formatMessage({ id: "products.table.status" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
-            <SortableTH 
-              sortKey="createdAt" 
-              label={intl.formatMessage({ id: 'products.table.date' })}
+
+            <SortableTH
+              sortKey="createdAt"
+              label={intl.formatMessage({ id: "products.table.date" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-            
+
             {/* Non-sortable actions column */}
-            <TableHead className="px-2 sm:px-4 py-2 text-right">{intl.formatMessage({ id: 'common.actions' })}</TableHead>
+            <TableHead className="px-2 sm:px-4 py-2 text-right">
+              {intl.formatMessage({ id: "common.actions" })}
+            </TableHead>
           </>
         )}
         RenderBody={({ getRowColor }) => (
@@ -761,17 +878,16 @@ export default function ProductsPage() {
                   border-b 
                   border-gray-200
                   sub-title-cgrey
-                 
                 `}
                 onClick={() => handleView(p)}
               >
                 <TableCell className="text-right">{i + 1}</TableCell>
                 <TableCell>
-                  <div className="w-12 h-12 rounded-lg  bg-gray-100 mx-auto flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-lg bg-gray-100 mx-auto flex items-center justify-center">
                     {p.productImage ? (
                       <img
                         src={p.productImage}
-                        alt={p.productName}
+                        alt={isRTL ? p.productNameAr : p.productNameEn}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
@@ -784,11 +900,11 @@ export default function ProductsPage() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="font-mono text-sm  ">
+                <TableCell className="font-mono text-sm">
                   {p.productCode}
                 </TableCell>
-                <TableCell className="font-medium text-black ">
-                  {p.productName}
+                <TableCell className="font-medium text-black">
+                  {isRTL ? p.productNameAr : p.productNameEn}
                 </TableCell>
                 <TableCell className="w-4">
                   {getCategoryName(p.productCategory)}
@@ -797,13 +913,15 @@ export default function ProductsPage() {
                 <TableCell className="font-semibold">
                   ${p.productPrice?.toFixed(2)}
                 </TableCell>
-                <TableCell className=" text-center">
-                  {GRADE_OPTIONS.find(g => g.value === p.productGrade)?.label || p.productGrade}
+                <TableCell className="text-center">
+                  {GRADE_OPTIONS.find((g) => g.value === p.productGrade)
+                    ?.label || p.productGrade}
                 </TableCell>
-                <TableCell className=" text-center">
-                  {FORM_OPTIONS.find(f => f.value === p.productForm)?.label || p.productForm}
+                <TableCell className="text-center">
+                  {FORM_OPTIONS.find((f) => f.value === p.productForm)?.label ||
+                    p.productForm}
                 </TableCell>
-                <TableCell className=" text-center">
+                <TableCell className="text-center">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium !text-nowrap ${
                       p.productStatus
@@ -811,24 +929,30 @@ export default function ProductsPage() {
                         : "bg-red-100 text-red-700 border rounded-lg border-red-700"
                     }`}
                   >
-                    {p.productStatus 
-                      ? intl.formatMessage({ id: 'products.status.in_stock' })
-                      : intl.formatMessage({ id: 'products.status.out_of_stock' })
-                    }
+                    {p.productStatus
+                      ? intl.formatMessage({ id: "products.status.in_stock" })
+                      : intl.formatMessage({
+                          id: "products.status.out_of_stock",
+                        })}
                   </span>
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {p.createdAt
-                    ? new Date(p.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
-                        year: "2-digit",
-                        month: "short",
-                        day: "numeric",
-                      })
+                    ? new Date(p.createdAt).toLocaleDateString(
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                     : "N/A"}
                 </TableCell>
                 <TableCell className="text-right">
                   <div
-                    className={`flex items-center gap-2 ${isRTL ? 'justify-start' : 'justify-center'}`}
+                    className={`flex items-center gap-2 ${
+                      isRTL ? "justify-start" : "justify-center"
+                    }`}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
@@ -860,17 +984,19 @@ export default function ProductsPage() {
         )}
       />
 
-      {/* Rest of your dialogs remain the same... */}
       {/* View Details Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="view-product-description">
+        <DialogContent
+          className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto"
+          aria-describedby="view-product-description"
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
-              {intl.formatMessage({ id: 'products.view.title' })}
+              {intl.formatMessage({ id: "products.view.title" })}
             </DialogTitle>
             <DialogDescription id="view-product-description">
-              {intl.formatMessage({ id: 'products.view.description' })}
+              {intl.formatMessage({ id: "products.view.description" })}
             </DialogDescription>
           </DialogHeader>
 
@@ -880,13 +1006,19 @@ export default function ProductsPage() {
               {viewing.productImage && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.image' })}
+                    {intl.formatMessage({ id: "products.form.image" })}
                   </Label>
-                  <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div
+                    className={`flex items-center gap-4 ${
+                      isRTL ? "flex-row-reverse" : ""
+                    }`}
+                  >
                     <div className="w-32 h-32 bg-gray-50 rounded-md border overflow-hidden">
                       <img
                         src={viewing.productImage}
-                        alt={viewing.productName}
+                        alt={
+                          isRTL ? viewing.productNameAr : viewing.productNameEn
+                        }
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
@@ -915,10 +1047,9 @@ export default function ProductsPage() {
                         disabled={uploadingImage}
                       >
                         <Camera className="w-4 h-4 mr-2" />
-                        {uploadingImage 
-                          ? intl.formatMessage({ id: 'products.uploading' }) 
-                          : intl.formatMessage({ id: 'products.change_image' })
-                        }
+                        {uploadingImage
+                          ? intl.formatMessage({ id: "products.uploading" })
+                          : intl.formatMessage({ id: "products.change_image" })}
                       </Button>
                       <Button
                         variant="destructive"
@@ -927,7 +1058,7 @@ export default function ProductsPage() {
                         onClick={() => handleRemoveProductImage(viewing._id)}
                       >
                         <X className="w-4 h-4 mr-2" />
-                        {intl.formatMessage({ id: 'products.remove_image' })}
+                        {intl.formatMessage({ id: "products.remove_image" })}
                       </Button>
                     </div>
                   </div>
@@ -938,7 +1069,7 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.code' })}
+                    {intl.formatMessage({ id: "products.form.code" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-mono font-medium">
@@ -949,16 +1080,29 @@ export default function ProductsPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.name' })}
+                    {intl.formatMessage({ id: "products.form.name_ar" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">{viewing.productName}</p>
+                    <p className="font-medium" dir="rtl">
+                      {viewing.productNameAr}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.category' })}
+                    {intl.formatMessage({ id: "products.form.name_en" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <p className="font-medium" dir="ltr">
+                      {viewing.productNameEn}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "products.form.category" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-medium">
@@ -969,7 +1113,7 @@ export default function ProductsPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.price' })}
+                    {intl.formatMessage({ id: "products.form.price" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-bold text-lg text-green-600">
@@ -980,7 +1124,7 @@ export default function ProductsPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.purity' })}
+                    {intl.formatMessage({ id: "products.form.purity" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-medium">{viewing.productPurity}%</p>
@@ -989,25 +1133,27 @@ export default function ProductsPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.grade' })}
+                    {intl.formatMessage({ id: "products.form.grade" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    {GRADE_OPTIONS.find(g => g.value === viewing.productGrade)?.label || viewing.productGrade}
+                    {GRADE_OPTIONS.find((g) => g.value === viewing.productGrade)
+                      ?.label || viewing.productGrade}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.form' })}
+                    {intl.formatMessage({ id: "products.form.form" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    {FORM_OPTIONS.find(f => f.value === viewing.productForm)?.label || viewing.productForm}
+                    {FORM_OPTIONS.find((f) => f.value === viewing.productForm)
+                      ?.label || viewing.productForm}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.status' })}
+                    {intl.formatMessage({ id: "products.form.status" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <span
@@ -1017,24 +1163,38 @@ export default function ProductsPage() {
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {viewing.productStatus 
-                        ? intl.formatMessage({ id: 'products.status.in_stock' })
-                        : intl.formatMessage({ id: 'products.status.out_of_stock' })
-                      }
+                      {viewing.productStatus
+                        ? intl.formatMessage({ id: "products.status.in_stock" })
+                        : intl.formatMessage({
+                            id: "products.status.out_of_stock",
+                          })}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-600">
-                  {intl.formatMessage({ id: 'products.form.description' })}
-                </Label>
-                <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
-                  <p className="text-gray-800 leading-relaxed">
-                    {viewing.productDescription}
-                  </p>
+              {/* Descriptions */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "products.form.description_ar" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
+                    <p className="text-gray-800 leading-relaxed" dir="rtl">
+                      {viewing.productDescriptionAr}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "products.form.description_en" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
+                    <p className="text-gray-800 leading-relaxed" dir="ltr">
+                      {viewing.productDescriptionEn}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1042,11 +1202,14 @@ export default function ProductsPage() {
               {viewing.productDiscount && viewing.productDiscount > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.general_discount' })}
+                    {intl.formatMessage({
+                      id: "products.form.general_discount",
+                    })}
                   </Label>
                   <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
                     <p className="text-yellow-800 font-medium">
-                      {viewing.productDiscount}% {intl.formatMessage({ id: 'products.discount.off' })}
+                      {viewing.productDiscount}%{" "}
+                      {intl.formatMessage({ id: "products.discount.off" })}
                     </p>
                   </div>
                 </div>
@@ -1056,7 +1219,9 @@ export default function ProductsPage() {
               {viewing.discountTiers && viewing.discountTiers.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.form.tiered_discounts' })}
+                    {intl.formatMessage({
+                      id: "products.form.tiered_discounts",
+                    })}
                   </Label>
                   <div className="bg-blue-50 rounded-md border border-blue-200 p-4">
                     <div className="space-y-2">
@@ -1068,10 +1233,16 @@ export default function ProductsPage() {
                             className="flex justify-between items-center p-2 bg-white rounded"
                           >
                             <span className="text-sm">
-                              {intl.formatMessage({ id: 'products.discount.buy_units' }, { quantity: tier.quantity })}
+                              {intl.formatMessage(
+                                { id: "products.discount.buy_units" },
+                                { quantity: tier.quantity }
+                              )}
                             </span>
                             <span className="font-medium text-blue-600">
-                              {tier.discount}% {intl.formatMessage({ id: 'products.discount.off' })}
+                              {tier.discount}%{" "}
+                              {intl.formatMessage({
+                                id: "products.discount.off",
+                              })}
                             </span>
                           </div>
                         ))}
@@ -1084,26 +1255,34 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.view.created_at' })}
+                    {intl.formatMessage({ id: "products.view.created_at" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.createdAt
-                        ? new Date(viewing.createdAt).toLocaleString(isRTL ? "ar-EG" : "en-US")
-                        : intl.formatMessage({ id: 'products.view.not_available' })}
+                        ? new Date(viewing.createdAt).toLocaleString(
+                            isRTL ? "ar-EG" : "en-US"
+                          )
+                        : intl.formatMessage({
+                            id: "products.view.not_available",
+                          })}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: 'products.view.last_updated' })}
+                    {intl.formatMessage({ id: "products.view.last_updated" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.updatedAt
-                        ? new Date(viewing.updatedAt).toLocaleString(isRTL ? "ar-EG" : "en-US")
-                        : intl.formatMessage({ id: 'products.view.not_available' })}
+                        ? new Date(viewing.updatedAt).toLocaleString(
+                            isRTL ? "ar-EG" : "en-US"
+                          )
+                        : intl.formatMessage({
+                            id: "products.view.not_available",
+                          })}
                     </p>
                   </div>
                 </div>
@@ -1112,7 +1291,7 @@ export default function ProductsPage() {
               {/* Product ID */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-600">
-                  {intl.formatMessage({ id: 'products.view.product_id' })}
+                  {intl.formatMessage({ id: "products.view.product_id" })}
                 </Label>
                 <div className="p-3 bg-gray-50 rounded-md border">
                   <p className="text-sm font-mono text-gray-600">
@@ -1127,7 +1306,7 @@ export default function ProductsPage() {
             <div className="flex gap-2 w-full">
               <DialogClose asChild>
                 <Button variant="outline" className="flex-1">
-                  {intl.formatMessage({ id: 'common.close' })}
+                  {intl.formatMessage({ id: "common.close" })}
                 </Button>
               </DialogClose>
               <Button
@@ -1140,7 +1319,7 @@ export default function ProductsPage() {
                 className="flex-1 text-white"
               >
                 <Pen className="w-4 h-4 mr-2" />
-                {intl.formatMessage({ id: 'products.edit_product' })}
+                {intl.formatMessage({ id: "products.edit_product" })}
               </Button>
             </div>
           </DialogFooter>
@@ -1149,11 +1328,16 @@ export default function ProductsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="edit-product-description">
+        <DialogContent
+          className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto"
+          aria-describedby="edit-product-description"
+        >
           <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: 'products.edit.title' })}</DialogTitle>
+            <DialogTitle>
+              {intl.formatMessage({ id: "products.edit.title" })}
+            </DialogTitle>
             <DialogDescription id="edit-product-description">
-              {intl.formatMessage({ id: 'products.edit.description' })}
+              {intl.formatMessage({ id: "products.edit.description" })}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -1165,13 +1349,19 @@ export default function ProductsPage() {
               // Validate basic form data
               if (
                 !editForm.productCode ||
-                !editForm.productName ||
-                !editForm.productDescription ||
+                !editForm.productNameAr ||
+                !editForm.productNameEn ||
+                !editForm.productDescriptionAr ||
+                !editForm.productDescriptionEn ||
                 !editForm.productCategory ||
                 editForm.productPrice <= 0 ||
                 editForm.productPurity <= 0
               ) {
-                toast.error(intl.formatMessage({ id: 'products.validation.required_fields' }));
+                toast.error(
+                  intl.formatMessage({
+                    id: "products.validation.required_fields",
+                  })
+                );
                 return;
               }
 
@@ -1181,7 +1371,11 @@ export default function ProductsPage() {
               );
 
               if (!validTiers) {
-                toast.error(intl.formatMessage({ id: 'products.validation.discount_tiers_code' }));
+                toast.error(
+                  intl.formatMessage({
+                    id: "products.validation.discount_tiers_code",
+                  })
+                );
                 return;
               }
 
@@ -1194,12 +1388,20 @@ export default function ProductsPage() {
                     editing._id
                   );
                   if (codeExists) {
-                    toast.error(intl.formatMessage({ id: 'products.validation.code_exists' }));
+                    toast.error(
+                      intl.formatMessage({
+                        id: "products.validation.code_exists",
+                      })
+                    );
                     setCheckingEditCode(false);
                     return;
                   }
                 } catch (error) {
-                  toast.error(intl.formatMessage({ id: 'products.validation.code_check_failed' }));
+                  toast.error(
+                    intl.formatMessage({
+                      id: "products.validation.code_check_failed",
+                    })
+                  );
                   setCheckingEditCode(false);
                   return;
                 }
@@ -1227,16 +1429,19 @@ export default function ProductsPage() {
                 { id: editing._id, payload: data },
                 {
                   onSuccess: () => {
-                    toast.success(intl.formatMessage({ id: 'products.edit.success' }));
+                    toast.success(
+                      intl.formatMessage({ id: "products.edit.success" })
+                    );
                     setEditOpen(false);
                     setEditing(null);
                     setEditImageFile(null);
                     setEditImagePreview("");
                   },
                   onError: (error: any) => {
-                    const errorMessage = error?.response?.data?.message ||
-                                        error?.message ||
-                                        intl.formatMessage({ id: 'products.edit.failed' });
+                    const errorMessage =
+                      error?.response?.data?.message ||
+                      error?.message ||
+                      intl.formatMessage({ id: "products.edit.failed" });
                     toast.error(errorMessage);
                   },
                 }
@@ -1246,9 +1451,13 @@ export default function ProductsPage() {
             {/* Image Upload Section */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                {intl.formatMessage({ id: 'products.form.image' })}
+                {intl.formatMessage({ id: "products.form.image" })}
               </Label>
-              <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div
+                className={`flex items-center gap-4 ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+              >
                 <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
                   {editImagePreview ? (
                     <img
@@ -1284,10 +1493,9 @@ export default function ProductsPage() {
                     }
                   >
                     <Camera className="w-4 h-4 mr-2" />
-                    {editImageFile 
-                      ? intl.formatMessage({ id: 'products.change_image' })
-                      : intl.formatMessage({ id: 'products.upload_image' })
-                    }
+                    {editImageFile
+                      ? intl.formatMessage({ id: "products.change_image" })
+                      : intl.formatMessage({ id: "products.upload_image" })}
                   </Button>
                   {(editImagePreview || editImageFile) && (
                     <Button
@@ -1302,7 +1510,7 @@ export default function ProductsPage() {
                       }}
                     >
                       <X className="w-4 h-4 mr-2 text-white" />
-                      {intl.formatMessage({ id: 'products.remove_image' })}
+                      {intl.formatMessage({ id: "products.remove_image" })}
                     </Button>
                   )}
                 </div>
@@ -1312,7 +1520,7 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 id="edit_productCode"
-                label={intl.formatMessage({ id: 'products.form.code' })}
+                label={intl.formatMessage({ id: "products.form.code" })}
                 value={editForm.productCode}
                 onChange={(e) =>
                   setEditForm((f) => ({
@@ -1328,19 +1536,32 @@ export default function ProductsPage() {
               />
 
               <FormField
-                id="edit_productName"
-                label={intl.formatMessage({ id: 'products.form.name' })}
-                value={editForm.productName}
+                id="edit_productNameAr"
+                label={intl.formatMessage({ id: "products.form.name_ar" })}
+                value={editForm.productNameAr}
                 onChange={(e) =>
-                  setEditForm((f) => ({ ...f, productName: e.target.value }))
+                  setEditForm((f) => ({ ...f, productNameAr: e.target.value }))
                 }
                 required
+                dir="rtl"
+              />
+
+              <FormField
+                id="edit_productNameEn"
+                label={intl.formatMessage({ id: "products.form.name_en" })}
+                value={editForm.productNameEn}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, productNameEn: e.target.value }))
+                }
+                required
+                dir="ltr"
               />
 
               {/* Category Selector */}
               <div className="space-y-2">
                 <Label htmlFor="edit_productCategory">
-                  {intl.formatMessage({ id: 'products.form.category' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.category" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={editForm.productCategory}
@@ -1349,12 +1570,18 @@ export default function ProductsPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_category' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_category",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {activeCategories.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
-                        {category.categoryName}
+                           {isRTL
+                          ? category.categoryNameAr 
+                          : category.categoryNameEn }
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1363,7 +1590,7 @@ export default function ProductsPage() {
 
               <FormField
                 id="edit_productPrice"
-                label={intl.formatMessage({ id: 'products.form.price' })}
+                label={intl.formatMessage({ id: "products.form.price" })}
                 type="number"
                 step="0.01"
                 min="0"
@@ -1379,7 +1606,9 @@ export default function ProductsPage() {
 
               <FormField
                 id="edit_productPurity"
-                label={intl.formatMessage({ id: 'products.form.purity_percent' })}
+                label={intl.formatMessage({
+                  id: "products.form.purity_percent",
+                })}
                 type="number"
                 min="0"
                 max="100"
@@ -1397,7 +1626,8 @@ export default function ProductsPage() {
               {/* Grade Selector */}
               <div className="space-y-2">
                 <Label htmlFor="edit_productGrade">
-                  {intl.formatMessage({ id: 'products.form.grade' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.grade" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={editForm.productGrade}
@@ -1406,7 +1636,11 @@ export default function ProductsPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_grade' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_grade",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {GRADE_OPTIONS.map((grade) => (
@@ -1421,7 +1655,8 @@ export default function ProductsPage() {
               {/* Form Selector */}
               <div className="space-y-2">
                 <Label htmlFor="edit_productForm">
-                  {intl.formatMessage({ id: 'products.form.form' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.form" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={editForm.productForm}
@@ -1430,7 +1665,11 @@ export default function ProductsPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_form' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_form",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {FORM_OPTIONS.map((form) => (
@@ -1444,7 +1683,9 @@ export default function ProductsPage() {
 
               <FormField
                 id="edit_productDiscount"
-                label={intl.formatMessage({ id: 'products.form.general_discount_percent' })}
+                label={intl.formatMessage({
+                  id: "products.form.general_discount_percent",
+                })}
                 type="number"
                 min="0"
                 max="100"
@@ -1458,27 +1699,48 @@ export default function ProductsPage() {
               />
             </div>
 
-            <div className="col-span-full">
+            <div className="col-span-full space-y-4">
               <FormField
-                id="edit_productDescription"
-                label={intl.formatMessage({ id: 'products.form.description' })}
+                id="edit_productDescriptionAr"
+                label={intl.formatMessage({
+                  id: "products.form.description_ar",
+                })}
                 variant="textarea"
                 rows={4}
-                value={editForm.productDescription}
+                value={editForm.productDescriptionAr}
                 onChange={(e) =>
                   setEditForm((f) => ({
                     ...f,
-                    productDescription: e.target.value,
+                    productDescriptionAr: e.target.value,
                   }))
                 }
                 required
+                dir="rtl"
+              />
+
+              <FormField
+                id="edit_productDescriptionEn"
+                label={intl.formatMessage({
+                  id: "products.form.description_en",
+                })}
+                variant="textarea"
+                rows={4}
+                value={editForm.productDescriptionEn}
+                onChange={(e) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    productDescriptionEn: e.target.value,
+                  }))
+                }
+                required
+                dir="ltr"
               />
             </div>
 
             {/* Discount Tiers Section */}
             <div className="col-span-full space-y-2">
               <Label className="text-sm font-medium">
-                {intl.formatMessage({ id: 'products.form.tiered_discounts' })}
+                {intl.formatMessage({ id: "products.form.tiered_discounts" })}
               </Label>
               <div className="border rounded-md p-4 space-y-3">
                 {editForm.discountTiers.map((tier, index) => (
@@ -1492,12 +1754,14 @@ export default function ProductsPage() {
                         htmlFor={`edit-quantity-${index}`}
                         className="text-xs font-medium text-gray-700"
                       >
-                        {intl.formatMessage({ id: 'products.form.quantity' })}
+                        {intl.formatMessage({ id: "products.form.quantity" })}
                       </Label>
                       <Input
                         id={`edit-quantity-${index}`}
                         type="number"
-                        placeholder={intl.formatMessage({ id: 'products.form.quantity' })}
+                        placeholder={intl.formatMessage({
+                          id: "products.form.quantity",
+                        })}
                         min="1"
                         value={tier.quantity}
                         onChange={(e) => {
@@ -1520,12 +1784,16 @@ export default function ProductsPage() {
                         htmlFor={`edit-discount-${index}`}
                         className="text-xs font-medium text-gray-700"
                       >
-                        {intl.formatMessage({ id: 'products.form.discount_percent' })}
+                        {intl.formatMessage({
+                          id: "products.form.discount_percent",
+                        })}
                       </Label>
                       <Input
                         id={`edit-discount-${index}`}
                         type="number"
-                        placeholder={intl.formatMessage({ id: 'products.form.discount_percent' })}
+                        placeholder={intl.formatMessage({
+                          id: "products.form.discount_percent",
+                        })}
                         min="0"
                         max="100"
                         value={tier.discount}
@@ -1582,7 +1850,9 @@ export default function ProductsPage() {
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  {intl.formatMessage({ id: 'products.form.add_discount_tier' })}
+                  {intl.formatMessage({
+                    id: "products.form.add_discount_tier",
+                  })}
                 </Button>
               </div>
             </div>
@@ -1590,10 +1860,12 @@ export default function ProductsPage() {
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
                 <Label htmlFor="edit_productStatus">
-                  {intl.formatMessage({ id: 'products.form.stock_status' })}
+                  {intl.formatMessage({ id: "products.form.stock_status" })}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  {intl.formatMessage({ id: 'products.form.stock_status_description' })}
+                  {intl.formatMessage({
+                    id: "products.form.stock_status_description",
+                  })}
                 </p>
               </div>
               <Switch
@@ -1608,7 +1880,7 @@ export default function ProductsPage() {
             <DialogFooter className="mt-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
-                  {intl.formatMessage({ id: 'common.cancel' })}
+                  {intl.formatMessage({ id: "common.cancel" })}
                 </Button>
               </DialogClose>
               <Button
@@ -1616,8 +1888,10 @@ export default function ProductsPage() {
                 className="text-white"
                 disabled={
                   !editForm.productCode ||
-                  !editForm.productName ||
-                  !editForm.productDescription ||
+                  !editForm.productNameAr ||
+                  !editForm.productNameEn ||
+                  !editForm.productDescriptionAr ||
+                  !editForm.productDescriptionEn ||
                   !editForm.productCategory ||
                   editForm.productPrice <= 0 ||
                   editForm.productPurity <= 0 ||
@@ -1628,15 +1902,15 @@ export default function ProductsPage() {
                 {checkingEditCode ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: 'products.checking_code' })}
+                    {intl.formatMessage({ id: "products.checking_code" })}
                   </>
                 ) : update.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: 'products.updating' })}
+                    {intl.formatMessage({ id: "products.updating" })}
                   </>
                 ) : (
-                  intl.formatMessage({ id: 'products.save_changes' })
+                  intl.formatMessage({ id: "products.save_changes" })
                 )}
               </Button>
             </DialogFooter>
@@ -1646,14 +1920,17 @@ export default function ProductsPage() {
 
       {/* Import Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]" aria-describedby="import-products-description">
+        <DialogContent
+          className="sm:max-w-[500px]"
+          aria-describedby="import-products-description"
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Upload className="w-5 h-5" />
-              {intl.formatMessage({ id: 'products.import.title' })}
+              {intl.formatMessage({ id: "products.import.title" })}
             </DialogTitle>
             <DialogDescription id="import-products-description">
-              {intl.formatMessage({ id: 'products.import.description' })}
+              {intl.formatMessage({ id: "products.import.description" })}
             </DialogDescription>
           </DialogHeader>
 
@@ -1665,24 +1942,42 @@ export default function ProductsPage() {
                 className="cursor-pointer text-white mb-3"
               >
                 <FileDown className="w-4 h-4 mr-2 text-white" />
-                {intl.formatMessage({ id: 'products.import.download_template' })}
+                {intl.formatMessage({
+                  id: "products.import.download_template",
+                })}
               </Button>
               <h4 className="font-semibold text-blue-900 mb-2">
-                {intl.formatMessage({ id: 'products.import.instructions_title' })}
+                {intl.formatMessage({
+                  id: "products.import.instructions_title",
+                })}
               </h4>
               <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                <li>{intl.formatMessage({ id: 'products.import.instruction_1' })}</li>
-                <li>{intl.formatMessage({ id: 'products.import.instruction_2' })}</li>
-                <li>{intl.formatMessage({ id: 'products.import.instruction_3' })}</li>
-                <li>{intl.formatMessage({ id: 'products.import.instruction_4' })}</li>
-                <li>{intl.formatMessage({ id: 'products.import.instruction_5' })}</li>
-                <li>{intl.formatMessage({ id: 'products.import.instruction_6' })}</li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_1" })}
+                </li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_2" })}
+                </li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_3" })}
+                </li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_4" })}
+                </li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_5" })}
+                </li>
+                <li>
+                  {intl.formatMessage({ id: "products.import.instruction_6" })}
+                </li>
               </ol>
             </div>
 
             {/* File Upload */}
             <div className="space-y-2">
-              <Label>{intl.formatMessage({ id: 'products.import.select_file' })}</Label>
+              <Label>
+                {intl.formatMessage({ id: "products.import.select_file" })}
+              </Label>
               <Input
                 type="file"
                 accept=".xlsx,.xls"
@@ -1696,7 +1991,8 @@ export default function ProductsPage() {
               />
               {selectedFile && (
                 <p className="text-sm text-gray-600">
-                  {intl.formatMessage({ id: 'products.import.selected_file' })}: {selectedFile.name}
+                  {intl.formatMessage({ id: "products.import.selected_file" })}:{" "}
+                  {selectedFile.name}
                 </p>
               )}
             </div>
@@ -1705,7 +2001,7 @@ export default function ProductsPage() {
           <DialogFooter className="mt-6">
             <DialogClose asChild>
               <Button variant="outline" disabled={importing}>
-                {intl.formatMessage({ id: 'common.cancel' })}
+                {intl.formatMessage({ id: "common.cancel" })}
               </Button>
             </DialogClose>
             <Button
@@ -1714,11 +2010,11 @@ export default function ProductsPage() {
               className="text-white"
             >
               {importing ? (
-                <>{intl.formatMessage({ id: 'products.importing' })}</>
+                <>{intl.formatMessage({ id: "products.importing" })}</>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  {intl.formatMessage({ id: 'products.import_button' })}
+                  {intl.formatMessage({ id: "products.import_button" })}
                 </>
               )}
             </Button>
@@ -1731,19 +2027,22 @@ export default function ProductsPage() {
         <ConfirmDeleteDialog
           open={deleteOpen}
           setOpen={setDeleteOpen}
-          itemName={toDelete?.productName}
+          itemName={isRTL ? toDelete?.productNameAr : toDelete?.productNameEn}
           onConfirm={() => {
             if (toDelete) {
               del.mutate(toDelete._id, {
                 onSuccess: () => {
-                  toast.success(intl.formatMessage({ id: 'products.delete.success' }));
+                  toast.success(
+                    intl.formatMessage({ id: "products.delete.success" })
+                  );
                 },
                 onError: (error: any) => {
-                  const errorMessage = error?.response?.data?.message ||
-                                      error?.message ||
-                                      intl.formatMessage({ id: 'products.delete.failed' });
+                  const errorMessage =
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    intl.formatMessage({ id: "products.delete.failed" });
                   toast.error(errorMessage);
-                }
+                },
               });
             }
             setDeleteOpen(false);
@@ -1764,7 +2063,6 @@ export default function ProductsPage() {
     </div>
   );
 }
-
 // Add Product Dialog Component with Product Code Validation
 function AddProduct({
   create,
@@ -1789,8 +2087,10 @@ function AddProduct({
   const [imagePreview, setImagePreview] = useState<string>("");
   const [checkingCode, setCheckingCode] = useState(false);
   const [form, setForm] = useState({
-    productName: "",
-    productDescription: "",
+    productNameAr: "",
+    productNameEn: "",
+    productDescriptionAr: "",
+    productDescriptionEn: "",
     productCode: "",
     productPrice: 0,
     productCategory: "",
@@ -1811,13 +2111,15 @@ function AddProduct({
     },
     onCancel: () => {
       // Stay in dialog
-    }
+    },
   });
 
   const canSubmit =
     form.productCode.trim() &&
-    form.productName.trim() &&
-    form.productDescription.trim() &&
+    form.productNameAr.trim() &&
+    form.productNameEn.trim() &&
+    form.productDescriptionAr.trim() &&
+    form.productDescriptionEn.trim() &&
     form.productCategory.trim() &&
     form.productPrice > 0 &&
     form.productPurity > 0;
@@ -1825,8 +2127,10 @@ function AddProduct({
   // Check if form has changes
   const hasFormChanges = () => {
     return (
-      form.productName !== "" ||
-      form.productDescription !== "" ||
+      form.productNameAr !== "" ||
+      form.productNameEn !== "" ||
+      form.productDescriptionAr !== "" ||
+      form.productDescriptionEn !== "" ||
       form.productCode !== "" ||
       form.productPrice !== 0 ||
       form.productCategory !== "" ||
@@ -1852,8 +2156,10 @@ function AddProduct({
 
   const resetForm = () => {
     setForm({
-      productName: "",
-      productDescription: "",
+      productNameAr: "",
+      productNameEn: "",
+      productDescriptionAr: "",
+      productDescriptionEn: "",
       productCode: "",
       productPrice: 0,
       productCategory: "",
@@ -1892,7 +2198,9 @@ function AddProduct({
     );
 
     if (!validTiers) {
-      toast.error(intl.formatMessage({ id: 'products.validation.discount_tiers_code' }));
+      toast.error(
+        intl.formatMessage({ id: "products.validation.discount_tiers_code" })
+      );
       return;
     }
 
@@ -1901,12 +2209,16 @@ function AddProduct({
     try {
       const codeExists = await checkProductCode(form.productCode);
       if (codeExists) {
-        toast.error(intl.formatMessage({ id: 'products.validation.code_exists' }));
+        toast.error(
+          intl.formatMessage({ id: "products.validation.code_exists" })
+        );
         setCheckingCode(false);
         return;
       }
     } catch (error) {
-      toast.error(intl.formatMessage({ id: 'products.validation.code_check_failed' }));
+      toast.error(
+        intl.formatMessage({ id: "products.validation.code_check_failed" })
+      );
       setCheckingCode(false);
       return;
     }
@@ -1943,10 +2255,12 @@ function AddProduct({
 
     create.mutate(payload, {
       onSuccess: () => {
-        toast.success(intl.formatMessage({ id: 'products.create.success' }));
+        toast.success(intl.formatMessage({ id: "products.create.success" }));
         setForm({
-          productName: "",
-          productDescription: "",
+          productNameAr: "",
+          productNameEn: "",
+          productDescriptionAr: "",
+          productDescriptionEn: "",
           productCode: "",
           productPrice: 0,
           productCategory: "",
@@ -1963,9 +2277,10 @@ function AddProduct({
         setOpen(false);
       },
       onError: (error: any) => {
-        const errorMessage = error?.response?.data?.message || 
-                            error?.message || 
-                            intl.formatMessage({ id: 'products.create.failed' });
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          intl.formatMessage({ id: "products.create.failed" });
         toast.error(errorMessage);
       },
     });
@@ -1976,23 +2291,33 @@ function AddProduct({
       <Dialog open={open} onOpenChange={handleDialogClose}>
         <DialogTrigger asChild>
           <Button className="text-white cursor-pointer">
-            {intl.formatMessage({ id: 'products.add_product' })} <Plus className="w-4 h-4 ml-2" />
+            {intl.formatMessage({ id: "products.add_product" })}{" "}
+            <Plus className="w-4 h-4 ml-2" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" aria-describedby="add-product-description">
+        <DialogContent
+          className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto"
+          aria-describedby="add-product-description"
+        >
           <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: 'products.create.title' })}</DialogTitle>
+            <DialogTitle>
+              {intl.formatMessage({ id: "products.create.title" })}
+            </DialogTitle>
             <DialogDescription id="add-product-description">
-              {intl.formatMessage({ id: 'products.create.description' })}
+              {intl.formatMessage({ id: "products.create.description" })}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Image Upload Section */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                {intl.formatMessage({ id: 'products.form.image' })}
+                {intl.formatMessage({ id: "products.form.image" })}
               </Label>
-              <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div
+                className={`flex items-center gap-4 ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+              >
                 <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
                   {imagePreview ? (
                     <img
@@ -2024,10 +2349,9 @@ function AddProduct({
                     }
                   >
                     <Camera className="w-4 h-4 mr-2" />
-                    {imageFile 
-                      ? intl.formatMessage({ id: 'products.change_image' })
-                      : intl.formatMessage({ id: 'products.upload_image' })
-                    }
+                    {imageFile
+                      ? intl.formatMessage({ id: "products.change_image" })
+                      : intl.formatMessage({ id: "products.upload_image" })}
                   </Button>
                   {(imagePreview || imageFile) && (
                     <Button
@@ -2041,7 +2365,7 @@ function AddProduct({
                       }}
                     >
                       <X className="w-4 h-4 mr-2 text-white" />
-                      {intl.formatMessage({ id: 'products.remove_image' })}
+                      {intl.formatMessage({ id: "products.remove_image" })}
                     </Button>
                   )}
                 </div>
@@ -2051,7 +2375,7 @@ function AddProduct({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 id="productCode"
-                label={intl.formatMessage({ id: 'products.form.code' })}
+                label={intl.formatMessage({ id: "products.form.code" })}
                 value={form.productCode}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -2067,19 +2391,32 @@ function AddProduct({
               />
 
               <FormField
-                id="productName"
-                label={intl.formatMessage({ id: 'products.form.name' })}
-                value={form.productName}
+                id="productNameAr"
+                label={intl.formatMessage({ id: "products.form.name_ar" })}
+                value={form.productNameAr}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, productName: e.target.value }))
+                  setForm((f) => ({ ...f, productNameAr: e.target.value }))
                 }
                 required
+                dir="rtl"
+              />
+
+              <FormField
+                id="productNameEn"
+                label={intl.formatMessage({ id: "products.form.name_en" })}
+                value={form.productNameEn}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, productNameEn: e.target.value }))
+                }
+                required
+                dir="ltr"
               />
 
               {/* Category Selector */}
               <div className="space-y-2">
                 <Label htmlFor="productCategory">
-                  {intl.formatMessage({ id: 'products.form.category' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.category" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={form.productCategory}
@@ -2088,12 +2425,18 @@ function AddProduct({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_category' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_category",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
-                        {category.categoryName}
+                        {isRTL
+                          ? category.categoryNameAr 
+                          : category.categoryNameEn }
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2102,7 +2445,7 @@ function AddProduct({
 
               <FormField
                 id="productPrice"
-                label={intl.formatMessage({ id: 'products.form.price' })}
+                label={intl.formatMessage({ id: "products.form.price" })}
                 type="number"
                 step="0.01"
                 min="0"
@@ -2118,7 +2461,9 @@ function AddProduct({
 
               <FormField
                 id="productPurity"
-                label={intl.formatMessage({ id: 'products.form.purity_percent' })}
+                label={intl.formatMessage({
+                  id: "products.form.purity_percent",
+                })}
                 type="number"
                 min="0"
                 max="100"
@@ -2136,7 +2481,8 @@ function AddProduct({
               {/* Grade Selector */}
               <div className="space-y-2">
                 <Label htmlFor="productGrade">
-                  {intl.formatMessage({ id: 'products.form.grade' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.grade" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={form.productGrade}
@@ -2145,7 +2491,11 @@ function AddProduct({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_grade' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_grade",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {gradeOptions.map((grade) => (
@@ -2160,7 +2510,8 @@ function AddProduct({
               {/* Form Selector */}
               <div className="space-y-2">
                 <Label htmlFor="productForm">
-                  {intl.formatMessage({ id: 'products.form.form' })} <span className="text-red-500">*</span>
+                  {intl.formatMessage({ id: "products.form.form" })}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={form.productForm}
@@ -2169,11 +2520,18 @@ function AddProduct({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: 'products.form.select_form' })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_form",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {formOptions.map((formOption) => (
-                      <SelectItem key={formOption.value} value={formOption.value}>
+                      <SelectItem
+                        key={formOption.value}
+                        value={formOption.value}
+                      >
                         {formOption.label}
                       </SelectItem>
                     ))}
@@ -2183,7 +2541,9 @@ function AddProduct({
 
               <FormField
                 id="productDiscount"
-                label={intl.formatMessage({ id: 'products.form.general_discount_percent' })}
+                label={intl.formatMessage({
+                  id: "products.form.general_discount_percent",
+                })}
                 type="number"
                 min="0"
                 max="100"
@@ -2197,40 +2557,71 @@ function AddProduct({
               />
             </div>
 
-            <div className="col-span-full">
+            <div className="col-span-full space-y-4">
               <FormField
-                id="productDescription"
-                label={intl.formatMessage({ id: 'products.form.description' })}
+                id="productDescriptionAr"
+                label={intl.formatMessage({
+                  id: "products.form.description_ar",
+                })}
                 variant="textarea"
                 rows={4}
-                value={form.productDescription}
+                value={form.productDescriptionAr}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, productDescription: e.target.value }))
+                  setForm((f) => ({
+                    ...f,
+                    productDescriptionAr: e.target.value,
+                  }))
                 }
                 required
+                dir="rtl"
+              />
+
+              <FormField
+                id="productDescriptionEn"
+                label={intl.formatMessage({
+                  id: "products.form.description_en",
+                })}
+                variant="textarea"
+                rows={4}
+                value={form.productDescriptionEn}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    productDescriptionEn: e.target.value,
+                  }))
+                }
+                required
+                dir="ltr"
               />
             </div>
 
             {/* Discount Tiers Section */}
             <div className="col-span-full space-y-2">
               <Label className="text-sm font-medium">
-                {intl.formatMessage({ id: 'products.form.tiered_discounts_optional' })}
+                {intl.formatMessage({
+                  id: "products.form.tiered_discounts_optional",
+                })}
               </Label>
               <div className="border rounded-md p-4 space-y-3">
                 {form.discountTiers.map((tier, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div
+                    key={index}
+                    className="grid grid-cols-12 gap-2 items-end"
+                  >
                     {/* Quantity */}
                     <div className="col-span-5 space-y-1">
                       <Label
                         htmlFor={`quantity-${index}`}
                         className="text-xs font-medium text-gray-700"
                       >
-                        {intl.formatMessage({ id: 'products.form.quantity' })}
+                        {intl.formatMessage({ id: "products.form.quantity" })}
                       </Label>
                       <Input
                         id={`quantity-${index}`}
                         type="number"
-                        placeholder={intl.formatMessage({ id: 'products.form.quantity' })}
+                        placeholder={intl.formatMessage({
+                          id: "products.form.quantity",
+                        })}
                         min="1"
                         value={tier.quantity}
                         onChange={(e) => {
@@ -2250,12 +2641,16 @@ function AddProduct({
                         htmlFor={`discount-${index}`}
                         className="text-xs font-medium text-gray-700"
                       >
-                        {intl.formatMessage({ id: 'products.form.discount_percent' })}
+                        {intl.formatMessage({
+                          id: "products.form.discount_percent",
+                        })}
                       </Label>
                       <Input
                         id={`discount-${index}`}
                         type="number"
-                        placeholder={intl.formatMessage({ id: 'products.form.discount_percent' })}
+                        placeholder={intl.formatMessage({
+                          id: "products.form.discount_percent",
+                        })}
                         min="0"
                         max="100"
                         value={tier.discount}
@@ -2306,7 +2701,9 @@ function AddProduct({
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  {intl.formatMessage({ id: 'products.form.add_discount_tier' })}
+                  {intl.formatMessage({
+                    id: "products.form.add_discount_tier",
+                  })}
                 </Button>
               </div>
             </div>
@@ -2314,10 +2711,12 @@ function AddProduct({
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
                 <Label htmlFor="productStatus">
-                  {intl.formatMessage({ id: 'products.form.stock_status' })}
+                  {intl.formatMessage({ id: "products.form.stock_status" })}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  {intl.formatMessage({ id: 'products.form.stock_status_description' })}
+                  {intl.formatMessage({
+                    id: "products.form.stock_status_description",
+                  })}
                 </p>
               </div>
               <Switch
@@ -2332,7 +2731,7 @@ function AddProduct({
             <DialogFooter className="mt-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
-                  {intl.formatMessage({ id: 'common.cancel' })}
+                  {intl.formatMessage({ id: "common.cancel" })}
                 </Button>
               </DialogClose>
               <Button
@@ -2343,15 +2742,15 @@ function AddProduct({
                 {checkingCode ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: 'products.checking_code' })}
+                    {intl.formatMessage({ id: "products.checking_code" })}
                   </>
                 ) : isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: 'products.creating' })}
+                    {intl.formatMessage({ id: "products.creating" })}
                   </>
                 ) : (
-                  intl.formatMessage({ id: 'products.create_product' })
+                  intl.formatMessage({ id: "products.create_product" })
                 )}
               </Button>
             </DialogFooter>

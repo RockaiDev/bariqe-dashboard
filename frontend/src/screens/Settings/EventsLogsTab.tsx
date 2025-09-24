@@ -28,12 +28,14 @@ import {
 } from '../../hooks/useEvents';
 import EventsList from "./EventsList";
 
-// Form validation schema
+// Form validation schema - مخطط التحقق المحدث
 const eventSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  titleAr: z.string().min(1, 'Arabic title is required'),
+  titleEn: z.string().min(1, 'English title is required'),
   date: z.string().min(1, 'Date is required'),
   tags: z.string().optional(),
-  content: z.string().min(1, 'Content is required'),
+  contentAr: z.string().min(1, 'Arabic content is required'),
+  contentEn: z.string().min(1, 'English content is required'),
   status: z.enum(['draft', 'published', 'archived']),
 });
 
@@ -62,10 +64,12 @@ export default function EventsLogsTab() {
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      title: '',
+      titleAr: '',
+      titleEn: '',
       date: '',
       tags: '',
-      content: '',
+      contentAr: '',
+      contentEn: '',
       status: 'draft',
     },
   });
@@ -77,7 +81,9 @@ export default function EventsLogsTab() {
 
   // Watch form values for validation
   const watchedValues = watch();
-  const canSave = watchedValues.title && watchedValues.content && watchedValues.date;
+  const canSave = watchedValues.titleAr && watchedValues.titleEn && 
+                  watchedValues.contentAr && watchedValues.contentEn && 
+                  watchedValues.date;
 
   function onChooseFiles() {
     fileInputRef.current?.click();
@@ -136,6 +142,20 @@ export default function EventsLogsTab() {
     toast.success(intl.formatMessage({ id: "events.import_file_removed" }));
   };
 
+  const resetForm = () => {
+    reset({
+      titleAr: '',
+      titleEn: '',
+      date: '',
+      tags: '',
+      contentAr: '',
+      contentEn: '',
+      status: 'draft',
+    });
+    setSelectedFiles([]);
+    toast.success(intl.formatMessage({ id: "events.form_reset" }));
+  };
+
   const onSubmit: SubmitHandler<EventFormData> = async (data) => {
     const loadingToast = toast.loading(intl.formatMessage({ id: "events.creating_event" }));
     setUploadProgress(0);
@@ -172,10 +192,12 @@ export default function EventsLogsTab() {
       toast.success(intl.formatMessage({ id: "events.event_created_success" }));
       
       reset({
-        title: '',
+        titleAr: '',
+        titleEn: '',
         date: '',
         tags: '',
-        content: '',
+        contentAr: '',
+        contentEn: '',
         status: 'draft',
       });
       setSelectedFiles([]);
@@ -380,24 +402,47 @@ export default function EventsLogsTab() {
           <div className="space-y-6">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* العنوان بالعربية */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Calendar className="inline h-4 w-4 ml-1" />
-                  {intl.formatMessage({ id: "events.event_title_required" })}
+                  {intl.formatMessage({ id: "events.event_title_ar_required" })}
                 </label>
                 <input
-                  {...register('title')}
+                  {...register('titleAr')}
                   className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
-                    errors.title ? 'border-red-500' : 'border-gray-300'
+                    errors.titleAr ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder={intl.formatMessage({ id: "events.enter_event_title" })}
+                  placeholder={intl.formatMessage({ id: "events.enter_event_title_ar" })}
                   disabled={create.isPending}
+                  dir="rtl"
                 />
-                {errors.title && (
-                  <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+                {errors.titleAr && (
+                  <p className="text-red-500 text-xs mt-1">{errors.titleAr.message}</p>
                 )}
               </div>
 
+              {/* العنوان بالإنجليزية */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Calendar className="inline h-4 w-4 ml-1" />
+                  {intl.formatMessage({ id: "events.event_title_en_required" })}
+                </label>
+                <input
+                  {...register('titleEn')}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                    errors.titleEn ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={intl.formatMessage({ id: "events.enter_event_title_en" })}
+                  disabled={create.isPending}
+                  dir="ltr"
+                />
+                {errors.titleEn && (
+                  <p className="text-red-500 text-xs mt-1">{errors.titleEn.message}</p>
+                )}
+              </div>
+
+              {/* التاريخ */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {intl.formatMessage({ id: "events.event_date_required" })}
@@ -415,6 +460,7 @@ export default function EventsLogsTab() {
                 )}
               </div>
 
+              {/* العلامات */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Tag className="inline h-4 w-4 ml-1" />
@@ -431,6 +477,7 @@ export default function EventsLogsTab() {
                 </p>
               </div>
 
+              {/* الحالة */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {intl.formatMessage({ id: "events.status" })}
@@ -448,22 +495,46 @@ export default function EventsLogsTab() {
             </div>
 
             {/* Content */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {intl.formatMessage({ id: "events.event_content_required" })}
-              </label>
-              <textarea
-                {...register('content')}
-                rows={6}
-                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
-                  errors.content ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder={intl.formatMessage({ id: "events.enter_event_description" })}
-                disabled={create.isPending}
-              />
-              {errors.content && (
-                <p className="text-red-500 text-xs mt-1">{errors.content.message}</p>
-              )}
+            <div className="space-y-4">
+              {/* المحتوى بالعربية */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {intl.formatMessage({ id: "events.event_content_ar_required" })}
+                </label>
+                <textarea
+                  {...register('contentAr')}
+                  rows={6}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
+                    errors.contentAr ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={intl.formatMessage({ id: "events.enter_event_description_ar" })}
+                  disabled={create.isPending}
+                  dir="rtl"
+                />
+                {errors.contentAr && (
+                  <p className="text-red-500 text-xs mt-1">{errors.contentAr.message}</p>
+                )}
+              </div>
+
+              {/* المحتوى بالإنجليزية */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {intl.formatMessage({ id: "events.event_content_en_required" })}
+                </label>
+                <textarea
+                  {...register('contentEn')}
+                  rows={6}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
+                    errors.contentEn ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={intl.formatMessage({ id: "events.enter_event_description_en" })}
+                  disabled={create.isPending}
+                  dir="ltr"
+                />
+                {errors.contentEn && (
+                  <p className="text-red-500 text-xs mt-1">{errors.contentEn.message}</p>
+                )}
+              </div>
             </div>
 
             {/* File Upload */}
@@ -554,17 +625,7 @@ export default function EventsLogsTab() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  reset({
-                    title: '',
-                    date: '',
-                    tags: '',
-                    content: '',
-                    status: 'draft',
-                  });
-                  setSelectedFiles([]);
-                  toast.success(intl.formatMessage({ id: "events.form_reset" }));
-                }}
+                onClick={resetForm}
                 disabled={create.isPending}
               >
                 {intl.formatMessage({ id: "events.reset_form" })}

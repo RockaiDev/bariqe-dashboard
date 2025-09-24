@@ -80,6 +80,7 @@ const formatDate = (dateString: string) => {
 };
 
 
+
 // Connection status component
 const ConnectionStatus = ({ 
   isOnline, 
@@ -291,6 +292,7 @@ export default function Dashboard() {
           <div>
             <DataTable
               title={intl.formatMessage({ id: "Recent Orders" })}
+              icon={Package}
                filterAble={false}
                searchAble={false}
               linkApply={true}
@@ -338,6 +340,7 @@ export default function Dashboard() {
             <DataTable
             filterAble={false}
               searchAble={false}
+              icon={MessageCircleMore}
               linkApply={true}
               linkText="/consultations"
               title={intl.formatMessage({ id: "Recent Consultation Requests" })}

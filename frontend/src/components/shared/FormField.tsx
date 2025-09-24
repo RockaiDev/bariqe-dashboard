@@ -22,6 +22,7 @@ interface FormFieldProps {
   rows?: number;
   error?: string;
   helperText?: string;
+  dir?: "ltr" | "rtl"; // إضافة هذا لتحديد الاتجاه
 }
 
 export function FormField({
@@ -42,6 +43,8 @@ export function FormField({
   rows = 3,
   error,
   helperText,
+  dir = "ltr"
+
 }: FormFieldProps) {
   const renderField = () => {
     if (variant === "textarea") {
@@ -74,6 +77,7 @@ export function FormField({
 
     return (
       <Input
+        dir={dir}
         id={id}
         type={type}
         value={value}

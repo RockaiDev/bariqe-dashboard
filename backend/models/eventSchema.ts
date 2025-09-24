@@ -4,7 +4,13 @@ const Schema = mongoose.Schema;
 
 const eventSchema = new Schema(
   {
-    title: {
+    // العناوين بالعربية والإنجليزية
+    titleAr: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    titleEn: {
       type: String,
       required: true,
       trim: true,
@@ -17,7 +23,12 @@ const eventSchema = new Schema(
       type: String,
       trim: true,
     }],
-    content: {
+    // المحتوى بالعربية والإنجليزية
+    contentAr: {
+      type: String,
+      required: true,
+    },
+    contentEn: {
       type: String,
       required: true,
     },
@@ -55,6 +66,15 @@ const eventSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Virtual للحصول على العنوان حسب اللغة (للتوافق مع الكود القديم)
+eventSchema.virtual('title').get(function() {
+  return this.titleEn || this.titleAr;
+});
+
+eventSchema.virtual('content').get(function() {
+  return this.contentEn || this.contentAr;
+});
 
 const Event = mongoose.model("Event", eventSchema);
 export default Event;

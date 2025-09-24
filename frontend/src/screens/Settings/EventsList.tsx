@@ -13,6 +13,7 @@ import {
   useEvents,
   useEvent,
   useRemoveEventFile,
+  type Event, // استيراد النوع من الـ hook
 } from '../../hooks/useEvents';
 import {
   Calendar,
@@ -36,37 +37,21 @@ import {
   Upload
 } from 'lucide-react';
 
-// Form validation schema
+// Form validation schema for editing
 const editEventSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  titleAr: z.string().min(1, 'Arabic title is required'),
+  titleEn: z.string().min(1, 'English title is required'),
   date: z.string().min(1, 'Date is required'),
   tags: z.string().optional(),
-  content: z.string().min(1, 'Content is required'),
+  contentAr: z.string().min(1, 'Arabic content is required'),
+  contentEn: z.string().min(1, 'English content is required'),
   status: z.enum(['draft', 'published', 'archived']),
 });
 
 type EditEventFormData = z.infer<typeof editEventSchema>;
 
-interface LocalEvent {
-  _id?: string;
-  title: string;
-  date: string;
-  tags: string[];
-  content: string;
-  status: 'draft' | 'published' | 'archived';
-  image?: string;
-  author?: string;
-  files?: {
-    _id: string;
-    filename: string;
-    originalName: string;
-    mimetype: string;
-    size: number;
-    path: string;
-  }[];
-  createdAt?: string;
-  updatedAt?: string;
-}
+// استخدام النوع Event من الـ hook بدلاً من LocalEvent
+// type LocalEvent = Event; // يمكنك استخدام هذا إذا كنت تريد الاحتفاظ باسم LocalEvent
 
 export default function EventsList() {
   const intl = useIntl();
@@ -98,7 +83,11 @@ export default function EventsList() {
   // Build queries based on filters
   const queries = [];
   if (searchTerm) {
-    queries.push(['title', 'regex', searchTerm]);
+    // البحث في العناوين باللغتين
+    queries.push(['$or', [
+      ['titleAr', 'regex', searchTerm],
+      ['titleEn', 'regex', searchTerm]
+    ]]);
   }
   if (statusFilter !== 'all') {
     queries.push(['status', '==', statusFilter]);
@@ -147,12 +136,14 @@ export default function EventsList() {
     setSelectedEventId(selectedEventId === eventId ? null : eventId);
   };
 
-  const startEdit = (event: LocalEvent) => {
+  const startEdit = (event: Event) => {
     setEditingEventId(event._id!);
-    setValue('title', event.title);
+    setValue('titleAr', event.titleAr);
+    setValue('titleEn', event.titleEn);
     setValue('date', event.date ? format(new Date(event.date), 'yyyy-MM-dd') : '');
     setValue('tags', event.tags?.join(', ') || '');
-    setValue('content', event.content);
+    setValue('contentAr', event.contentAr);
+    setValue('contentEn', event.contentEn);
     setValue('status', event.status);
     setSelectedFiles([]);
     setEditingImageUrl(event.image || null);
@@ -261,6 +252,16 @@ export default function EventsList() {
     return <FilePlus2 className="h-4 w-4 text-blue-600" />;
   };
 
+  // Helper function to get title based on current locale
+  const getEventTitle = (event: Event) => {
+    return intl.locale === 'ar' ? event.titleAr : event.titleEn;
+  };
+
+  // Helper function to get content based on current locale
+  const getEventContent = (event: Event) => {
+    return intl.locale === 'ar' ? event.contentAr : event.contentEn;
+  };
+
   if (list.isLoading) {
     return <LoadingComponent />;
   }
@@ -310,7 +311,7 @@ export default function EventsList() {
   }
 
   const eventsData = list.data;
-  const events: LocalEvent[] = eventsData?.data || [];
+  const events: Event[] = eventsData?.data || [];
   const totalPages = eventsData?.totalPages || 1;
   const totalItems = eventsData?.totalItems || 0;
 
@@ -383,7 +384,7 @@ export default function EventsList() {
             )}
           </div>
         ) : (
-          events.map((event: LocalEvent) => (
+          events.map((event: Event) => (
             <div
               key={event._id}
               className={`border rounded-lg bg-white transition-all duration-200 ${
@@ -398,22 +399,43 @@ export default function EventsList() {
                   /* Edit Form */
                   <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* العنوان بالعربية */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {intl.formatMessage({ id: "events.event_title_required" })}
+                          {intl.formatMessage({ id: "events.event_title_ar_required" })}
                         </label>
                         <input
-                          {...register('title')}
+                          {...register('titleAr')}
                           className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
-                            errors.title ? 'border-red-500' : 'border-gray-300'
+                            errors.titleAr ? 'border-red-500' : 'border-gray-300'
                           }`}
-                          placeholder={intl.formatMessage({ id: "events.enter_event_title" })}
+                          placeholder={intl.formatMessage({ id: "events.enter_event_title_ar" })}
+                          dir="rtl"
                         />
-                        {errors.title && (
-                          <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+                        {errors.titleAr && (
+                          <p className="text-red-500 text-xs mt-1">{errors.titleAr.message}</p>
                         )}
                       </div>
 
+                      {/* العنوان بالإنجليزية */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {intl.formatMessage({ id: "events.event_title_en_required" })}
+                        </label>
+                        <input
+                          {...register('titleEn')}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                            errors.titleEn ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder={intl.formatMessage({ id: "events.enter_event_title_en" })}
+                          dir="ltr"
+                        />
+                        {errors.titleEn && (
+                          <p className="text-red-500 text-xs mt-1">{errors.titleEn.message}</p>
+                        )}
+                      </div>
+
+                      {/* التاريخ */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           {intl.formatMessage({ id: "events.event_date_required" })}
@@ -430,6 +452,7 @@ export default function EventsList() {
                         )}
                       </div>
 
+                      {/* العلامات */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           {intl.formatMessage({ id: "events.tags" })}
@@ -441,6 +464,7 @@ export default function EventsList() {
                         />
                       </div>
 
+                      {/* الحالة */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           {intl.formatMessage({ id: "events.status" })}
@@ -456,21 +480,45 @@ export default function EventsList() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {intl.formatMessage({ id: "events.event_content_required" })}
-                      </label>
-                      <textarea
-                        {...register('content')}
-                        rows={4}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
-                          errors.content ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder={intl.formatMessage({ id: "events.enter_event_content" })}
-                      />
-                      {errors.content && (
-                        <p className="text-red-500 text-xs mt-1">{errors.content.message}</p>
-                      )}
+                    {/* المحتوى */}
+                    <div className="space-y-4">
+                      {/* المحتوى بالعربية */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {intl.formatMessage({ id: "events.event_content_ar_required" })}
+                        </label>
+                        <textarea
+                          {...register('contentAr')}
+                          rows={4}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
+                            errors.contentAr ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder={intl.formatMessage({ id: "events.enter_event_content_ar" })}
+                          dir="rtl"
+                        />
+                        {errors.contentAr && (
+                          <p className="text-red-500 text-xs mt-1">{errors.contentAr.message}</p>
+                        )}
+                      </div>
+
+                      {/* المحتوى بالإنجليزية */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {intl.formatMessage({ id: "events.event_content_en_required" })}
+                        </label>
+                        <textarea
+                          {...register('contentEn')}
+                          rows={4}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none ${
+                            errors.contentEn ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder={intl.formatMessage({ id: "events.enter_event_content_en" })}
+                          dir="ltr"
+                        />
+                        {errors.contentEn && (
+                          <p className="text-red-500 text-xs mt-1">{errors.contentEn.message}</p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Image (edit) */}
@@ -584,7 +632,7 @@ export default function EventsList() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <h4 className="text-lg font-semibold text-gray-900 line-clamp-1">
-                          {event.title}
+                          {getEventTitle(event)}
                         </h4>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
@@ -640,7 +688,7 @@ export default function EventsList() {
 
                       {/* Content Preview */}
                       <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                        {event.content}
+                        {getEventContent(event)}
                       </p>
 
                       {/* Meta Info */}
@@ -692,7 +740,7 @@ export default function EventsList() {
                       </Button>
                       
                       <Button
-                        onClick={() => handleDelete(event._id!, event.title)}
+                        onClick={() => handleDelete(event._id!, getEventTitle(event))}
                         disabled={del.isPending}
                         variant="outline"
                         size="sm"
@@ -722,8 +770,21 @@ export default function EventsList() {
                             <FileText className="h-4 w-4" />
                             {intl.formatMessage({ id: "events.full_content" })}
                           </h5>
-                          <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
-                            {selectedEvent.content}
+                          
+                          {/* عرض المحتوى بالعربية */}
+                          <div className="mb-4">
+                            <h6 className="font-medium text-gray-700 mb-2">{intl.formatMessage({ id: "events.arabic_content" })}</h6>
+                            <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto" dir="rtl">
+                              {selectedEvent.contentAr}
+                            </div>
+                          </div>
+                          
+                          {/* عرض المحتوى بالإنجليزية */}
+                          <div>
+                            <h6 className="font-medium text-gray-700 mb-2">{intl.formatMessage({ id: "events.english_content" })}</h6>
+                            <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto" dir="ltr">
+                              {selectedEvent.contentEn}
+                            </div>
                           </div>
                         </div>
 

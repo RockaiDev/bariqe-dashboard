@@ -12,10 +12,12 @@ export default class EventService extends MongooseFeatures {
   constructor() {
     super();
     this.keys = [
-      "title",
+      "titleAr",
+      "titleEn",
       "date",
       "tags",
-      "content",
+      "contentAr",
+      "contentEn",
       "files",
       "status",
       "author",
@@ -57,10 +59,11 @@ export default class EventService extends MongooseFeatures {
   // 🟢 Add new event
   public async AddEvent(body: any, files?: any[]) {
     try {
-      if (!body.title || !body.date || !body.content) {
+      if (!body.titleAr || !body.titleEn || !body.date || 
+          !body.contentAr || !body.contentEn) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'title', 'date', 'content' are required"
+          "Fields 'titleAr', 'titleEn', 'date', 'contentAr', 'contentEn' are required"
         );
       }
 
@@ -199,17 +202,19 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Export events for Excel
+  // 🟢 Export events for Excel - محدث للحقول الجديدة
   public async ExportEvents(query: any) {
     try {
       const events = await EventModel.find({})
         .sort({ createdAt: -1 });
 
       const formattedEvents = events.map((event: any) => ({
-        title: event.title,
+        titleAr: event.titleAr,
+        titleEn: event.titleEn,
         date: event.date,
         tags: Array.isArray(event.tags) ? event.tags.join(', ') : event.tags || '',
-        content: event.content,
+        contentAr: event.contentAr,
+        contentEn: event.contentEn,
         status: event.status,
         author: event.author,
         filesCount: event.files ? event.files.length : 0,
@@ -223,7 +228,7 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Import events from Excel data
+  // 🟢 Import events from Excel data - محدث للحقول الجديدة
   public async ImportEvents(eventsData: any[]) {
     const results = {
       success: [] as any[],
@@ -233,23 +238,31 @@ export default class EventService extends MongooseFeatures {
 
     for (const eventData of eventsData) {
       try {
+        // التحقق من الحقول المطلوبة
+        if (!eventData.titleAr || !eventData.titleEn || 
+            !eventData.contentAr || !eventData.contentEn) {
+          throw new Error("Missing required fields: Arabic/English titles or content");
+        }
+
         // Process tags
         if (eventData.tags && typeof eventData.tags === 'string') {
           eventData.tags = eventData.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
         }
 
         const newEventData = {
-          title: eventData.title,
+          titleAr: eventData.titleAr.trim(),
+          titleEn: eventData.titleEn.trim(),
           date: new Date(eventData.date),
           tags: eventData.tags || [],
-          content: eventData.content,
+          contentAr: eventData.contentAr.trim(),
+          contentEn: eventData.contentEn.trim(),
           status: eventData.status || 'draft',
           author: eventData.author || 'System',
         };
 
-        // Check if event already exists (by title and date)
+        // Check if event already exists (by titleEn and date)
         const existingEvent = await EventModel.findOne({
-          title: eventData.title,
+          titleEn: eventData.titleEn,
           date: newEventData.date
         });
 
