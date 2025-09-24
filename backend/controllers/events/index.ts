@@ -119,7 +119,7 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Export events to Excel
+  // 🟢 Export events to Excel - محدث للحقول الجديدة
   public async exportEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const events = await eventService.ExportEvents(req.query);
@@ -138,11 +138,14 @@ export default class EventController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
+      // تحديث الأعمدة للحقول الجديدة
       eventsSheet.columns = [
-        { header: "Title", key: "title", width: 30 },
+        { header: "Title (Arabic)", key: "titleAr", width: 30 },
+        { header: "Title (English)", key: "titleEn", width: 30 },
         { header: "Date", key: "date", width: 15 },
         { header: "Tags", key: "tags", width: 25 },
-        { header: "Content", key: "content", width: 50 },
+        { header: "Content (Arabic)", key: "contentAr", width: 50 },
+        { header: "Content (English)", key: "contentEn", width: 50 },
         { header: "Status", key: "status", width: 15 },
         { header: "Author", key: "author", width: 20 },
         { header: "Files Count", key: "filesCount", width: 15 },
@@ -159,6 +162,10 @@ export default class EventController extends BaseApi {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FF4472C4" },
+      };
+      eventsSheet.getRow(1).alignment = {
+        vertical: "middle",
+        horizontal: "center",
       };
 
       // Add data
@@ -197,45 +204,97 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Download import template
+  // 🟢 Download import template - محدث للحقول الجديدة
   public async downloadTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const workbook = new ExcelJS.Workbook();
+      workbook.creator = "AlexChem";
+      workbook.created = new Date();
+
       const eventsSheet = workbook.addWorksheet("Events");
 
+      // تحديث الأعمدة للحقول الجديدة
       eventsSheet.columns = [
-        { header: "Title", key: "title", width: 30 },
+        { header: "Title (Arabic)", key: "titleAr", width: 30 },
+        { header: "Title (English)", key: "titleEn", width: 30 },
         { header: "Date", key: "date", width: 15 },
         { header: "Tags", key: "tags", width: 25 },
-        { header: "Content", key: "content", width: 50 },
+        { header: "Content (Arabic)", key: "contentAr", width: 50 },
+        { header: "Content (English)", key: "contentEn", width: 50 },
         { header: "Status", key: "status", width: 15 },
         { header: "Author", key: "author", width: 20 },
       ];
 
       // Style header
-      eventsSheet.getRow(1).font = { bold: true };
+      eventsSheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
       eventsSheet.getRow(1).fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FF4472C4" },
       };
+      eventsSheet.getRow(1).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+      };
 
-      // Add sample data
+      // Add sample data - محدث للحقول الجديدة
       eventsSheet.addRow({
-        title: "Sample Event",
+        titleAr: "حدث تجريبي",
+        titleEn: "Sample Event",
         date: new Date(),
         tags: "tag1, tag2, tag3",
-        content: "Sample event content...",
+        contentAr: "محتوى الحدث التجريبي...",
+        contentEn: "Sample event content...",
         status: "draft",
         author: "System",
       });
 
       // Add data validation for Status
-      eventsSheet.getCell("E2").dataValidation = {
+      eventsSheet.getCell("G2").dataValidation = {
         type: "list",
         allowBlank: false,
         formulae: ['"draft,published,archived"'],
       };
+
+      // Add instructions sheet
+      const instructionsSheet = workbook.addWorksheet("Instructions");
+      instructionsSheet.columns = [
+        { header: "Instructions", key: "instructions", width: 80 },
+      ];
+
+      // Style header
+      instructionsSheet.getRow(1).font = { bold: true };
+      instructionsSheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF0000" },
+      };
+
+      // Add instruction rows
+      const instructions = [
+        "How to use this template:",
+        "",
+        "1. Title (Arabic): Event title in Arabic (required)",
+        "2. Title (English): Event title in English (required)",
+        "3. Date: Event date (required)",
+        "4. Tags: Event tags separated by commas (optional)",
+        "5. Content (Arabic): Event content in Arabic (required)",
+        "6. Content (English): Event content in English (required)",
+        "7. Status: Must be one of: draft, published, archived",
+        "8. Author: Event author (optional, defaults to 'System')",
+        "",
+        "Important Notes:",
+        "- Do not modify column headers",
+        "- Both Arabic and English titles are required",
+        "- Both Arabic and English content are required",
+        "- Date format should be recognizable (DD/MM/YYYY or MM/DD/YYYY)",
+      ];
+
+      instructions.forEach((text, index) => {
+        if (index > 0) {
+          instructionsSheet.addRow([text]);
+        }
+      });
 
       res.setHeader(
         "Content-Type",
@@ -253,7 +312,7 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Import events from Excel
+  // 🟢 Import events from Excel - محدث للحقول الجديدة
   public async importEvents(req: Request, res: Response, next: NextFunction) {
     const uploadSingle = upload.single("file");
 
@@ -282,17 +341,25 @@ export default class EventController extends BaseApi {
         eventsSheet.eachRow((row, rowNumber) => {
           if (rowNumber > 1) {
             try {
-              const title = String(row.getCell(1).value || "").trim();
-              const date = row.getCell(2).value;
-              const tags = String(row.getCell(3).value || "").trim();
-              const content = String(row.getCell(4).value || "").trim();
-              const status = String(row.getCell(5).value || "").trim() || "draft";
-              const author = String(row.getCell(6).value || "").trim() || "System";
+              // تحديث قراءة البيانات للحقول الجديدة
+              const titleAr = String(row.getCell(1).value || "").trim();
+              const titleEn = String(row.getCell(2).value || "").trim();
+              const date = row.getCell(3).value;
+              const tags = String(row.getCell(4).value || "").trim();
+              const contentAr = String(row.getCell(5).value || "").trim();
+              const contentEn = String(row.getCell(6).value || "").trim();
+              const status = String(row.getCell(7).value || "").trim() || "draft";
+              const author = String(row.getCell(8).value || "").trim() || "System";
 
-              if (!title && !content) return;
+              // Skip empty rows
+              if (!titleAr && !titleEn && !contentAr && !contentEn) return;
 
-              if (!title || !content) {
-                throw new Error("Missing title or content");
+              // Validation - التحقق من الحقول المطلوبة
+              if (!titleAr || !titleEn) {
+                throw new Error("Missing Arabic or English title");
+              }
+              if (!contentAr || !contentEn) {
+                throw new Error("Missing Arabic or English content");
               }
 
               const validStatuses = ["draft", "published", "archived"];
@@ -301,17 +368,20 @@ export default class EventController extends BaseApi {
               }
 
               eventsData.push({
-                title,
+                titleAr,
+                titleEn,
                 date: date || new Date(),
                 tags,
-                content,
+                contentAr,
+                contentEn,
                 status,
                 author,
               });
             } catch (err: any) {
               eventErrors.push({
                 row: rowNumber,
-                title: String(row.getCell(1).value || "").trim() || null,
+                titleEn: String(row.getCell(2).value || "").trim() || null,
+                titleAr: String(row.getCell(1).value || "").trim() || null,
                 error: err.message,
               });
             }

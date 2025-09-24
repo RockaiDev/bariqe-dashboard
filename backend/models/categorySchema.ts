@@ -1,32 +1,51 @@
+// models/categorySchema.js
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const categorySchema = new Schema(
   {
-    categoryName: {
+    categoryNameAr: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, "Arabic category name is required"],
+      trim: true,
     },
-    categoryDescription: {
+    categoryNameEn: {
       type: String,
-      required: true,
+      required: [true, "English category name is required"],
+      trim: true,
+    },
+    categoryDescriptionAr: {
+      type: String,
+      required: [true, "Arabic description is required"],
+      trim: true,
+    },
+    categoryDescriptionEn: {
+      type: String,
+      required: [true, "English description is required"],
+      trim: true,
     },
     categoryStatus: {
       type: Boolean,
-      // default: true,
+      default: true,
     },
+  },
+  {
+    timestamps: true, // هذا يضيف createdAt و updatedAt تلقائياً
+  }
+);
 
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-        updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
+// Virtual للحصول على الاسم حسب اللغة (للتوافق مع الكود القديم)
+categorySchema.virtual('categoryName').get(function() {
+  return this.categoryNameEn || this.categoryNameAr;
+});
 
-})  
+categorySchema.virtual('categoryDescription').get(function() {
+  return this.categoryDescriptionEn || this.categoryDescriptionAr;
+});
 
+
+categorySchema.index({ categoryNameAr: 1 });
+categorySchema.index({ categoryNameEn: 1 });
+categorySchema.index({ categoryStatus: 1 });
 const Category = mongoose.model("Category", categorySchema);
 export default Category;

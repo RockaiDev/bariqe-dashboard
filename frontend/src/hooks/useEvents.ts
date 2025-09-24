@@ -23,10 +23,13 @@ export interface EventFile {
 
 export interface Event {
   _id?: string;
-  title: string;
+  titleAr: string;
+  titleEn: string;
   date: string;
   tags: string[];
-  content: string;
+  contentAr: string;
+  contentEn: string;
+  image?: string;
   status: 'draft' | 'published' | 'archived';
   author?: string;
   files?: EventFile[];

@@ -90,7 +90,7 @@ export default class CategoryController extends BaseApi {
     }
   }
 
-  // 🟢 Export categories to Excel
+  // 🟢 Export categories to Excel - محدث للحقول الجديدة
   public async exportCategories(
     req: Request,
     res: Response,
@@ -114,9 +114,12 @@ export default class CategoryController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
+      // تحديث الأعمدة للحقول الجديدة
       sheet.columns = [
-        { header: "Category Name", key: "categoryName", width: 30 },
-        { header: "Description", key: "categoryDescription", width: 50 },
+        { header: "Category Name (Arabic)", key: "categoryNameAr", width: 30 },
+        { header: "Category Name (English)", key: "categoryNameEn", width: 30 },
+        { header: "Description (Arabic)", key: "categoryDescriptionAr", width: 50 },
+        { header: "Description (English)", key: "categoryDescriptionEn", width: 50 },
         { header: "Status", key: "categoryStatus", width: 15 },
         { header: "Created At", key: "createdAt", width: 20 },
         { header: "Updated At", key: "updatedAt", width: 20 },
@@ -164,8 +167,8 @@ export default class CategoryController extends BaseApi {
     }
   }
 
-  // 🟢 Download import template
-  public async downloadTemplate(
+  // 🟢 Download import template - محدث للحقول الجديدة
+  public async downloadTemplate( 
     req: Request,
     res: Response,
     next: NextFunction
@@ -176,11 +179,16 @@ export default class CategoryController extends BaseApi {
       workbook.created = new Date();
 
       const sheet = workbook.addWorksheet("Categories");
+      
+      // تحديث الأعمدة للحقول الجديدة
       sheet.columns = [
-        { header: "Category Name", key: "categoryName", width: 30 },
-        { header: "Description", key: "categoryDescription", width: 50 },
+        { header: "Category Name (Arabic)", key: "categoryNameAr", width: 30 },
+        { header: "Category Name (English)", key: "categoryNameEn", width: 30 },
+        { header: "Description (Arabic)", key: "categoryDescriptionAr", width: 50 },
+        { header: "Description (English)", key: "categoryDescriptionEn", width: 50 },
         { header: "Status", key: "categoryStatus", width: 15 },
       ];
+      
       sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
       sheet.getRow(1).fill = {
         type: "pattern",
@@ -188,21 +196,26 @@ export default class CategoryController extends BaseApi {
         fgColor: { argb: "FF4472C4" },
       };
 
+      // تحديث البيانات التجريبية
       sheet.addRow({
-        categoryName: "Sample Category",
-        categoryDescription: "Example category description",
+        categoryNameAr: "فئة تجريبية",
+        categoryNameEn: "Sample Category",
+        categoryDescriptionAr: "وصف الفئة التجريبية",
+        categoryDescriptionEn: "Example category description",
         categoryStatus: "Active",
       });
       sheet.addRow({
-        categoryName: "Another Category",
-        categoryDescription: "Another sample category",
+        categoryNameAr: "فئة أخرى",
+        categoryNameEn: "Another Category",
+        categoryDescriptionAr: "وصف فئة أخرى",
+        categoryDescriptionEn: "Another sample category",
         categoryStatus: "Inactive",
       });
 
       const instructions = workbook.addWorksheet("Instructions");
       instructions.addRow(["How to use this template:"]);
       instructions.addRow([
-        "1. Do not modify headers. 2. Fill required fields. 3. Status must be Active/Inactive.",
+        "1. Do not modify headers. 2. Fill required fields (Arabic and English names/descriptions). 3. Status must be Active/Inactive.",
       ]);
 
       res.setHeader(
@@ -220,7 +233,7 @@ export default class CategoryController extends BaseApi {
     }
   }
 
-  // 🟢 Import categories
+  // 🟢 Import categories - محدث للحقول الجديدة
   public async importCategories(
     req: Request,
     res: Response,
@@ -244,18 +257,31 @@ export default class CategoryController extends BaseApi {
         const categoriesData: any[] = [];
         sheet.eachRow((row, rowNum) => {
           if (rowNum === 1) return; // skip header
-          const name = String(row.getCell(1).value || "").trim();
-          const desc = String(row.getCell(2).value || "").trim();
-          const status = String(row.getCell(3).value || "Active").trim();
+          
+          // تحديث قراءة البيانات للحقول الجديدة
+          const categoryNameAr = String(row.getCell(1).value || "").trim();
+          const categoryNameEn = String(row.getCell(2).value || "").trim();
+          const categoryDescriptionAr = String(row.getCell(3).value || "").trim();
+          const categoryDescriptionEn = String(row.getCell(4).value || "").trim();
+          const status = String(row.getCell(5).value || "Active").trim();
 
-          if (!name || !desc) return;
+          // تخطي الصفوف الفارغة
+          if (!categoryNameAr && !categoryNameEn && !categoryDescriptionAr && !categoryDescriptionEn) return;
+          
+          // التحقق من البيانات المطلوبة
+          if (!categoryNameAr || !categoryNameEn || !categoryDescriptionAr || !categoryDescriptionEn) {
+            throw new ApiError("BAD_REQUEST", `Row ${rowNum}: Missing required fields (Arabic/English names or descriptions)`);
+          }
+          
           if (!["Active", "Inactive"].includes(status)) {
             throw new ApiError("BAD_REQUEST", `Row ${rowNum}: Invalid status`);
           }
 
           categoriesData.push({
-            categoryName: name,
-            categoryDescription: desc,
+            categoryNameAr,
+            categoryNameEn,
+            categoryDescriptionAr,
+            categoryDescriptionEn,
             categoryStatus: status,
           });
         });

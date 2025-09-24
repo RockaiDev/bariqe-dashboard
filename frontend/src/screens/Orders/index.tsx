@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useIntl } from 'react-intl';
+import { useIntl } from "react-intl";
 import {
   Dialog,
   DialogClose,
@@ -58,7 +58,8 @@ interface Order {
   };
   product: {
     _id: string;
-    productName: string;
+    productNameAr: string;
+    productNameEn: string;
     productPrice: number;
   };
   quantity: number;
@@ -100,8 +101,6 @@ export default function OrdersPage() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [tableEditStatus, setTableEditStatus] = useState<string>("");
 
-
-
   // Form State
   const [orderForm, setOrderForm] = useState({
     customer: "",
@@ -135,7 +134,9 @@ export default function OrdersPage() {
   const orders: Order[] = list.data?.result?.data || [];
   const allCustomers = customersList.data?.result?.data || [];
   // فلترة العملاء - عرض العملاء الذين لديهم customerSource = "order" فقط
-  const customers = allCustomers.filter((customer: any) => customer.customerSource === "order");
+  const customers = allCustomers.filter(
+    (customer: any) => customer.customerSource === "order"
+  );
   const products = productsList.data?.result?.data || [];
 
   const paginationData = list.data?.result?.pagination ?? {
@@ -218,7 +219,7 @@ export default function OrdersPage() {
     },
     onCancel: () => {
       // يمكن إضافة أي منطق إضافي هنا
-    }
+    },
   });
 
   // Edit Dialog Confirmation
@@ -231,7 +232,7 @@ export default function OrdersPage() {
     },
     onCancel: () => {
       // يمكن إضافة أي منطق إضافي هنا
-    }
+    },
   });
 
   // Handle close dialogs with confirmation
@@ -265,7 +266,7 @@ export default function OrdersPage() {
         payload: { orderStatus: editedStatus },
       });
       console.log("Update response:", response);
-      
+
       setViewing({
         ...viewing,
         orderStatus: editedStatus as Order["orderStatus"],
@@ -273,13 +274,16 @@ export default function OrdersPage() {
 
       setIsEditingStatus(false);
       list.refetch();
-      
-      toast.success(intl.formatMessage({ id: "orders.status_updated_success" }));
+
+      toast.success(
+        intl.formatMessage({ id: "orders.status_updated_success" })
+      );
     } catch (error: any) {
       console.error("Update status error:", error);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: "orders.failed_to_update_status" });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "orders.failed_to_update_status" });
       toast.error(errorMessage);
     } finally {
       setUpdatingStatus(false);
@@ -312,13 +316,16 @@ export default function OrdersPage() {
       list.refetch();
       setEditingOrderId(null);
       setTableEditStatus("");
-      
-      toast.success(intl.formatMessage({ id: "orders.status_updated_success" }));
+
+      toast.success(
+        intl.formatMessage({ id: "orders.status_updated_success" })
+      );
     } catch (error: any) {
       console.error("Update table status error:", error);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: "orders.failed_to_update_status" });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "orders.failed_to_update_status" });
       toast.error(errorMessage);
       setEditingOrderId(null);
       setTableEditStatus("");
@@ -339,21 +346,20 @@ export default function OrdersPage() {
       orderForm.quantity !== 1 ||
       orderForm.orderDiscount !== 0 ||
       orderForm.orderStatus !== "pending" ||
-      (createNewCustomer && (
-        customerForm.customerName !== "" ||
-        customerForm.customerEmail !== "" ||
-        customerForm.customerPhone !== "" ||
-        customerForm.customerNotes !== "" ||
-        customerForm.customerAddress !== ""
-      ))
+      (createNewCustomer &&
+        (customerForm.customerName !== "" ||
+          customerForm.customerEmail !== "" ||
+          customerForm.customerPhone !== "" ||
+          customerForm.customerNotes !== "" ||
+          customerForm.customerAddress !== ""))
     );
   };
 
   const hasEditFormChanges = () => {
-    return editedStatus !== "" && viewing && editedStatus !== viewing.orderStatus;
+    return (
+      editedStatus !== "" && viewing && editedStatus !== viewing.orderStatus
+    );
   };
-
-
 
   // Add Order Functions
   const handleAddOrder = async () => {
@@ -368,7 +374,9 @@ export default function OrdersPage() {
           !customerForm.customerEmail ||
           !customerForm.customerPhone
         ) {
-          toast.error(intl.formatMessage({ id: "orders.fill_required_fields" }));
+          toast.error(
+            intl.formatMessage({ id: "orders.fill_required_fields" })
+          );
           return;
         }
 
@@ -380,23 +388,30 @@ export default function OrdersPage() {
           customerId = customerResponse?.result?._id || customerResponse?._id;
 
           if (!customerId) {
-            toast.error(intl.formatMessage({ id: "orders.failed_customer_creation" }));
+            toast.error(
+              intl.formatMessage({ id: "orders.failed_customer_creation" })
+            );
             return;
           }
 
-          toast.success(intl.formatMessage({ id: "orders.customer_created_success" }));
+          toast.success(
+            intl.formatMessage({ id: "orders.customer_created_success" })
+          );
         } catch (customerError: any) {
           console.error("Customer creation error:", customerError);
-          const errorMessage = customerError?.response?.data?.message || 
-                              customerError?.message || 
-                              intl.formatMessage({ id: "orders.failed_customer_creation" });
+          const errorMessage =
+            customerError?.response?.data?.message ||
+            customerError?.message ||
+            intl.formatMessage({ id: "orders.failed_customer_creation" });
           toast.error(errorMessage);
           return;
         }
       }
 
       if (!customerId || !orderForm.product) {
-        toast.error(intl.formatMessage({ id: "orders.select_customer_product" }));
+        toast.error(
+          intl.formatMessage({ id: "orders.select_customer_product" })
+        );
         return;
       }
 
@@ -414,13 +429,14 @@ export default function OrdersPage() {
       setAddOpen(false);
       resetForms();
       list.refetch();
-      
+
       toast.success(intl.formatMessage({ id: "orders.order_created_success" }));
     } catch (error: any) {
       console.error("Order creation error:", error);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: "orders.order_creation_failed" });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "orders.order_creation_failed" });
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -448,7 +464,9 @@ export default function OrdersPage() {
   };
 
   const handleExportOrders = async () => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: "orders.exporting_orders" }));
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "orders.exporting_orders" })
+    );
 
     try {
       const response = await axiosInstance.get("/orders/export", {
@@ -460,7 +478,9 @@ export default function OrdersPage() {
         const blob = new Blob([response.data]);
         const text = await blob.text();
         const error = JSON.parse(text);
-        throw new Error(error.message || intl.formatMessage({ id: "orders.export_failed" }));
+        throw new Error(
+          error.message || intl.formatMessage({ id: "orders.export_failed" })
+        );
       }
 
       const blob = new Blob([response.data], {
@@ -482,12 +502,15 @@ export default function OrdersPage() {
       }, 100);
 
       toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: "orders.orders_exported_success" }));
+      toast.success(
+        intl.formatMessage({ id: "orders.orders_exported_success" })
+      );
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: "orders.export_failed" });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "orders.export_failed" });
       toast.error(errorMessage);
       console.error("Export error:", error);
     }
@@ -510,11 +533,14 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="p-6 space-y-4 !font-tajawal" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
+    <div
+      className="p-6 space-y-4 !font-tajawal"
+      dir={intl.locale === "ar" ? "rtl" : "ltr"}
+    >
       <div className="flex justify-between items-center mb-3 md:flex-row flex-col gap-3">
-        <Title 
-          title={intl.formatMessage({ id: "orders.title" })} 
-          subtitle={intl.formatMessage({ id: "orders.subtitle" })} 
+        <Title
+          title={intl.formatMessage({ id: "orders.title" })}
+          subtitle={intl.formatMessage({ id: "orders.subtitle" })}
         />
 
         {/* Action Buttons */}
@@ -551,7 +577,9 @@ export default function OrdersPage() {
         sort={currentSort}
         onSortChange={handleSortChange}
         onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
-        onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
+        onPerPageChange={(perPage) =>
+          setFilters((f) => ({ ...f, perPage, page: 1 }))
+        }
         onDateFilterChange={(dateFilter) => {
           handleCustomDateRange(dateFilter, ChangeFilter);
         }}
@@ -559,7 +587,9 @@ export default function OrdersPage() {
           placeholder: intl.formatMessage({ id: "orders.search_placeholder" }),
           onKeyDown: createOrderSearchHandler(ChangeFilter),
         }}
-        filterGroups={createOrderFilterGroups((key: string) => intl.formatMessage({ id: key }))}
+        filterGroups={createOrderFilterGroups((key: string) =>
+          intl.formatMessage({ id: key })
+        )}
         onFiltersApply={(filters, dateFilter) => {
           if (dateFilter) {
             handleCustomDateRange(dateFilter, ChangeFilter);
@@ -573,7 +603,9 @@ export default function OrdersPage() {
         }}
         RenderHead={({ sort, onSortChange }) => (
           <>
-            <TableHead className="text-right">{intl.formatMessage({ id: "orders.hash" })}</TableHead>
+            <TableHead className="text-right">
+              {intl.formatMessage({ id: "orders.hash" })}
+            </TableHead>
             <SortableTH
               sortKey="orderId"
               label={intl.formatMessage({ id: "orders.order_id" })}
@@ -630,7 +662,9 @@ export default function OrdersPage() {
               onSortChange={onSortChange}
               className="px-4 py-2"
             />
-            <TableHead className="px-4 py-2 text-right">{intl.formatMessage({ id: "orders.actions" })}</TableHead>
+            <TableHead className="px-4 py-2 text-right">
+              {intl.formatMessage({ id: "orders.actions" })}
+            </TableHead>
           </>
         )}
         RenderBody={({ getRowColor }) => (
@@ -656,14 +690,18 @@ export default function OrdersPage() {
                 </TableCell>
                 <TableCell>
                   <div>
-                    <p className="font-medium">{order.customer?.customerName}</p>
+                    <p className="font-medium">
+                      {order.customer?.customerName}
+                    </p>
                     <p className="text-sm text-gray-500">
                       {order.customer?.customerEmail}
                     </p>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{order.product.productName}</span>
+                  {intl.locale === "ar"
+                    ? order?.product?.productNameAr
+                    : order?.product?.productNameEn}
                 </TableCell>
 
                 <TableCell className="">{order.quantity}</TableCell>
@@ -687,10 +725,18 @@ export default function OrdersPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">{intl.formatMessage({ id: "orders.pending" })}</SelectItem>
-                          <SelectItem value="shipped">{intl.formatMessage({ id: "orders.shipped" })}</SelectItem>
-                          <SelectItem value="delivered">{intl.formatMessage({ id: "orders.delivered" })}</SelectItem>
-                          <SelectItem value="cancelled">{intl.formatMessage({ id: "orders.cancelled" })}</SelectItem>
+                          <SelectItem value="pending">
+                            {intl.formatMessage({ id: "orders.pending" })}
+                          </SelectItem>
+                          <SelectItem value="shipped">
+                            {intl.formatMessage({ id: "orders.shipped" })}
+                          </SelectItem>
+                          <SelectItem value="delivered">
+                            {intl.formatMessage({ id: "orders.delivered" })}
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            {intl.formatMessage({ id: "orders.cancelled" })}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -714,7 +760,9 @@ export default function OrdersPage() {
                           order.orderStatus
                         )}`}
                       >
-                        {intl.formatMessage({ id: `orders.${order.orderStatus}` })}
+                        {intl.formatMessage({
+                          id: `orders.${order.orderStatus}`,
+                        })}
                       </span>
                       <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
                     </div>
@@ -788,7 +836,11 @@ export default function OrdersPage() {
               {createNewCustomer ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-gray-50">
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "orders.customer_name_required" })}</Label>
+                    <Label>
+                      {intl.formatMessage({
+                        id: "orders.customer_name_required",
+                      })}
+                    </Label>
                     <Input
                       value={customerForm?.customerName}
                       onChange={(e) =>
@@ -797,11 +849,15 @@ export default function OrdersPage() {
                           customerName: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "orders.enter_customer_name" })}
+                      placeholder={intl.formatMessage({
+                        id: "orders.enter_customer_name",
+                      })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "orders.email_required" })}</Label>
+                    <Label>
+                      {intl.formatMessage({ id: "orders.email_required" })}
+                    </Label>
                     <Input
                       type="email"
                       value={customerForm.customerEmail}
@@ -811,7 +867,9 @@ export default function OrdersPage() {
                           customerEmail: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "orders.email_placeholder" })}
+                      placeholder={intl.formatMessage({
+                        id: "orders.email_placeholder",
+                      })}
                     />
                   </div>
                   <FormField
@@ -823,11 +881,15 @@ export default function OrdersPage() {
                     }}
                     onPhoneChange={handlePhoneChange}
                     variant="phone"
-                    placeholder={intl.formatMessage({ id: "orders.enter_phone" })}
+                    placeholder={intl.formatMessage({
+                      id: "orders.enter_phone",
+                    })}
                     required
                   />
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "orders.address" })}</Label>
+                    <Label>
+                      {intl.formatMessage({ id: "orders.address" })}
+                    </Label>
                     <Input
                       value={customerForm.customerAddress}
                       onChange={(e) =>
@@ -836,7 +898,9 @@ export default function OrdersPage() {
                           customerAddress: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "orders.customer_address" })}
+                      placeholder={intl.formatMessage({
+                        id: "orders.customer_address",
+                      })}
                     />
                   </div>
                   <div className="col-span-2 space-y-2">
@@ -849,13 +913,19 @@ export default function OrdersPage() {
                           customerNotes: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "orders.additional_notes" })}
+                      placeholder={intl.formatMessage({
+                        id: "orders.additional_notes",
+                      })}
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label>{intl.formatMessage({ id: "orders.select_customer_required" })}</Label>
+                  <Label>
+                    {intl.formatMessage({
+                      id: "orders.select_customer_required",
+                    })}
+                  </Label>
                   <Select
                     value={orderForm.customer}
                     onValueChange={(value) =>
@@ -863,7 +933,11 @@ export default function OrdersPage() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={intl.formatMessage({ id: "orders.choose_customer" })} />
+                      <SelectValue
+                        placeholder={intl.formatMessage({
+                          id: "orders.choose_customer",
+                        })}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {customers.map((customer: any) => (
@@ -880,7 +954,9 @@ export default function OrdersPage() {
             {/* Product Selection */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>{intl.formatMessage({ id: "orders.product_required" })}</Label>
+                <Label>
+                  {intl.formatMessage({ id: "orders.product_required" })}
+                </Label>
                 <Select
                   value={orderForm.product}
                   onValueChange={(value) =>
@@ -888,12 +964,19 @@ export default function OrdersPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: "orders.select_product" })} />
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "orders.select_product",
+                      })}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {products.map((product: any) => (
                       <SelectItem key={product._id} value={product._id}>
-                        {product.productName} - ${product.productPrice}
+                        {intl.locale === "ar"
+                          ? product.productNameAr
+                          : product.productNameEn}{" "}
+                        - ${product.productPrice.toFixed(2)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -901,7 +984,9 @@ export default function OrdersPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>{intl.formatMessage({ id: "orders.quantity_required" })}</Label>
+                <Label>
+                  {intl.formatMessage({ id: "orders.quantity_required" })}
+                </Label>
                 <Input
                   type="number"
                   min="1"
@@ -920,7 +1005,9 @@ export default function OrdersPage() {
             {/* Order Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{intl.formatMessage({ id: "orders.discount_amount" })}</Label>
+                <Label>
+                  {intl.formatMessage({ id: "orders.discount_amount" })}
+                </Label>
                 <Input
                   type="number"
                   min="0"
@@ -936,7 +1023,9 @@ export default function OrdersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>{intl.formatMessage({ id: "orders.order_status" })}</Label>
+                <Label>
+                  {intl.formatMessage({ id: "orders.order_status" })}
+                </Label>
                 <Select
                   value={orderForm.orderStatus}
                   onValueChange={(value: any) =>
@@ -947,10 +1036,18 @@ export default function OrdersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">{intl.formatMessage({ id: "orders.pending" })}</SelectItem>
-                    <SelectItem value="shipped">{intl.formatMessage({ id: "orders.shipped" })}</SelectItem>
-                    <SelectItem value="delivered">{intl.formatMessage({ id: "orders.delivered" })}</SelectItem>
-                    <SelectItem value="cancelled">{intl.formatMessage({ id: "orders.cancelled" })}</SelectItem>
+                    <SelectItem value="pending">
+                      {intl.formatMessage({ id: "orders.pending" })}
+                    </SelectItem>
+                    <SelectItem value="shipped">
+                      {intl.formatMessage({ id: "orders.shipped" })}
+                    </SelectItem>
+                    <SelectItem value="delivered">
+                      {intl.formatMessage({ id: "orders.delivered" })}
+                    </SelectItem>
+                    <SelectItem value="cancelled">
+                      {intl.formatMessage({ id: "orders.cancelled" })}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -959,7 +1056,9 @@ export default function OrdersPage() {
             {/* Order Summary */}
             {orderForm.product && (
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <h4 className="font-semibold">{intl.formatMessage({ id: "orders.order_summary" })}</h4>
+                <h4 className="font-semibold">
+                  {intl.formatMessage({ id: "orders.order_summary" })}
+                </h4>
                 <div className="space-y-1 text-sm">
                   {(() => {
                     const product = getProductById(orderForm.product);
@@ -978,16 +1077,22 @@ export default function OrdersPage() {
                         </div>
                         <hr className="my-2" />
                         <div className="flex justify-between">
-                          <span>{intl.formatMessage({ id: "orders.subtotal" })}:</span>
+                          <span>
+                            {intl.formatMessage({ id: "orders.subtotal" })}:
+                          </span>
                           <span>${subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-red-600">
-                          <span>{intl.formatMessage({ id: "orders.discount" })}:</span>
+                          <span>
+                            {intl.formatMessage({ id: "orders.discount" })}:
+                          </span>
                           <span>-${orderForm.orderDiscount.toFixed(2)}</span>
                         </div>
                         <hr className="my-2" />
                         <div className="flex justify-between font-bold">
-                          <span>{intl.formatMessage({ id: "orders.total" })}:</span>
+                          <span>
+                            {intl.formatMessage({ id: "orders.total" })}:
+                          </span>
                           <span>${total.toFixed(2)}</span>
                         </div>
                       </>
@@ -1053,10 +1158,18 @@ export default function OrdersPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">{intl.formatMessage({ id: "orders.pending" })}</SelectItem>
-                          <SelectItem value="shipped">{intl.formatMessage({ id: "orders.shipped" })}</SelectItem>
-                          <SelectItem value="delivered">{intl.formatMessage({ id: "orders.delivered" })}</SelectItem>
-                          <SelectItem value="cancelled">{intl.formatMessage({ id: "orders.cancelled" })}</SelectItem>
+                          <SelectItem value="pending">
+                            {intl.formatMessage({ id: "orders.pending" })}
+                          </SelectItem>
+                          <SelectItem value="shipped">
+                            {intl.formatMessage({ id: "orders.shipped" })}
+                          </SelectItem>
+                          <SelectItem value="delivered">
+                            {intl.formatMessage({ id: "orders.delivered" })}
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            {intl.formatMessage({ id: "orders.cancelled" })}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -1085,7 +1198,9 @@ export default function OrdersPage() {
                           viewing.orderStatus
                         )}`}
                       >
-                        {intl.formatMessage({ id: `orders.${viewing.orderStatus}` })}
+                        {intl.formatMessage({
+                          id: `orders.${viewing.orderStatus}`,
+                        })}
                       </span>
                       <Button
                         size="sm"
@@ -1148,7 +1263,9 @@ export default function OrdersPage() {
 
               {/* Order Product */}
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{intl.formatMessage({ id: "orders.order_item" })}</h3>
+                <h3 className="text-lg font-semibold">
+                  {intl.formatMessage({ id: "orders.order_item" })}
+                </h3>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-gray-50">
@@ -1172,7 +1289,9 @@ export default function OrdersPage() {
                         <td className="px-4 py-3">
                           <div>
                             <p className="font-medium">
-                              {viewing.product.productName}
+                              {intl.locale === "ar"
+                                ? viewing.product?.productNameAr
+                                : viewing.product?.productNameEn}
                             </p>
                             <p className="text-sm text-gray-500">
                               ID: {viewing.product._id}
@@ -1201,10 +1320,14 @@ export default function OrdersPage() {
 
               {/* Order Summary */}
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{intl.formatMessage({ id: "orders.order_summary" })}</h3>
+                <h3 className="text-lg font-semibold">
+                  {intl.formatMessage({ id: "orders.order_summary" })}
+                </h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                   <div className="flex justify-between">
-                    <span>{intl.formatMessage({ id: "orders.subtotal" })}:</span>
+                    <span>
+                      {intl.formatMessage({ id: "orders.subtotal" })}:
+                    </span>
                     <span className="font-medium">
                       $
                       {(
@@ -1213,7 +1336,9 @@ export default function OrdersPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-red-600">
-                    <span>{intl.formatMessage({ id: "orders.discount" })}:</span>
+                    <span>
+                      {intl.formatMessage({ id: "orders.discount" })}:
+                    </span>
                     <span className="font-medium">
                       -${viewing.orderDiscount.toFixed(2)}
                     </span>
@@ -1224,7 +1349,9 @@ export default function OrdersPage() {
                     <span>${calculateOrderTotal(viewing).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>{intl.formatMessage({ id: "orders.total_quantity" })}:</span>
+                    <span>
+                      {intl.formatMessage({ id: "orders.total_quantity" })}:
+                    </span>
                     <span>{viewing.quantity}</span>
                   </div>
                 </div>
@@ -1273,7 +1400,7 @@ export default function OrdersPage() {
         </DialogContent>
       </Dialog>
 
-    <ConfirmationDialog
+      <ConfirmationDialog
         open={addConfirmDialog.isOpen}
         onOpenChange={addConfirmDialog.setIsOpen}
         variant="add"

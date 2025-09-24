@@ -1,3 +1,4 @@
+// ProductService.js
 import ApiError from "../../../utils/errors/ApiError";
 import MongooseFeatures from "../features/index";
 import ProductModel from "../../../models/productSchema";
@@ -11,18 +12,20 @@ export default class ProductService extends MongooseFeatures {
     super();
     // Allowed fields in body
     this.keys = [
-      "productName",
-      "productDescription",
+      "productNameAr",
+      "productNameEn",
+      "productDescriptionAr",
+      "productDescriptionEn",
       "productPrice",
-      "productCategory", // This should be ObjectId, not categoryName
+      "productCategory",
       "productImage",
       "productStatus",
       "productPurity",
       "productGrade",
       "productForm",
       "productDiscount",
-      "productCode", // أضف productCode هنا
-      "discountTiers" // أضف discountTiers
+      "productCode",
+      "discountTiers"
     ];
   }
 
@@ -68,13 +71,16 @@ export default class ProductService extends MongooseFeatures {
   // 🟢 Add new product
   public async AddProduct(body: any) {
     try {
-      if (!body.productName || !body.productPrice || !body.productCategory || !body.productPurity || !body.productGrade || !body.productForm || !body.productCode) {
+      if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
+          !body.productDescriptionEn || !body.productPrice || !body.productCategory || 
+          !body.productPurity || !body.productGrade || !body.productForm || !body.productCode) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'productName', 'productCode', 'productPrice', 'productCategory', 'productPurity', 'productGrade', 'productForm' are required"
+          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productPurity', 'productGrade', 'productForm' are required"
         );
       }
-       //nproductCode is exists
+      
+      // Check if productCode exists
       const existingProduct = await ProductModel.findOne({ productCode: body.productCode });
       if (existingProduct) {
         throw new ApiError("CONFLICT", "Product with the same code already exists");
@@ -137,42 +143,75 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Export products to Excel format
-  public async ExportProducts(filters?: any) {
-    try {
-      const query = filters?.queries || [];
-      const products = await ProductModel.find(
-        query.length > 0 ? { $and: query } : {}
-      ).populate('productCategory');
+  // 🟢 Export products to Excel format - UPDATED FOR NEW CATEGORY STRUCTURE
+// 🟢 Export products to Excel format - مع استخدام الفلاتر المطبقة
+// في ProductService.js
+// 🟢 Export products to Excel format - مع استخدام الفلاتر المطبقة
+// في ProductService.js
+// 🟢 Export products with exact same filtering as GetProducts
+// في ProductService.js - تحديث للدالة الأصلية
+public async ExportProducts(query?: any) {
+  try {
+    console.log('Export query received:', query);
+    
+    // استخدام نفس منطق GetProducts بالضبط
+    const keys = this.keys.sort();
+    const {
+      perPage = 999999, // رقم كبير عشان نجيب كل البيانات
+      page = 1,
+      sorts = [],
+      queries = [],
+    } = pick(query, ["perPage", "page", "sorts", "queries"]);
 
-      const exportData = products.map((product: any) => {
-        // Use type assertion for populated document
-        const categoryName = product.productCategory && typeof product.productCategory === 'object' 
-          ? product.productCategory.categoryName 
-          : '';
+    console.log('Export filters:', { sorts, queries });
 
-        return {
-          productCode: product.productCode,
-          productName: product.productName,
-          productDescription: product.productDescription,
-          productPrice: product.productPrice,
-          categoryName: categoryName,
-          productPurity: product.productPurity,
-          productGrade: product.productGrade,
-          productForm: product.productForm,
-          productStatus: product.productStatus ? 'Active' : 'Inactive',
-          productDiscount: product.productDiscount || 0,
-          discountTiers: product.discountTiers || []
-        };
-      });
+    // استخدام PaginateHandler زي GetProducts بالضبط
+    const result = await super.PaginateHandler(
+      ProductModel,
+      Number(perPage),
+      Number(page),
+      sorts,
+      queries
+    );
 
-      return exportData;
-    } catch (error) {
-      throw error;
-    }
+    console.log(`Found ${result.data.length} products for export out of ${result.count} total`);
+
+    // تحويل البيانات لصيغة الإكسبورت
+    const exportData = result.data.map((product: any) => {
+      let categoryNameEn = '';
+      let categoryNameAr = '';
+      
+      if (product.productCategory && typeof product.productCategory === 'object') {
+        categoryNameEn = product.productCategory.categoryNameEn || '';
+        categoryNameAr = product.productCategory.categoryNameAr || '';
+      }
+
+      return {
+        productCode: product.productCode,
+        productNameAr: product?.productNameAr,
+        productNameEn: product?.productNameEn,
+        productDescriptionAr: product?.productDescriptionAr,
+        productDescriptionEn: product?.productDescriptionEn,
+        productPrice: product?.productPrice,
+        categoryNameEn: categoryNameEn,
+        categoryNameAr: categoryNameAr,
+        productPurity: product?.productPurity,
+        productGrade: product?.productGrade,
+        productForm: product?.productForm,
+        productStatus: product?.productStatus ? 'Active' : 'Inactive',
+        productDiscount: product?.productDiscount || 0,
+        discountTiers: product?.discountTiers || []
+      }; 
+    });
+
+    return exportData;
+  } catch (error) {
+    console.error('Export error:', error);
+    throw error;
   }
+}
 
-  // 🟢 Import products from Excel
+  // 🟢 Import products from Excel - UPDATED FOR NEW CATEGORY STRUCTURE
   public async ImportProducts(productsData: any[]) {
     try {
       const results = {
@@ -188,18 +227,44 @@ export default class ProductService extends MongooseFeatures {
             productCode: productData.productCode 
           });
 
-          // Get category by name
+          // Get category by name - UPDATED to handle new structure
           let categoryId = null;
-          if (productData.categoryName) {
-            const category = await CategoryModel.findOne({ 
-              categoryName: productData.categoryName 
-            });
+          
+          // Try to find category by English name first, then Arabic name
+          if (productData.categoryNameEn || productData.categoryNameAr) {
+            let category = null;
+            
+            // Search by English name first
+            if (productData.categoryNameEn) {
+              category = await CategoryModel.findOne({ 
+                categoryNameEn: productData.categoryNameEn 
+              });
+            }
+            
+            // If not found by English, try Arabic
+            if (!category && productData.categoryNameAr) {
+              category = await CategoryModel.findOne({ 
+                categoryNameAr: productData.categoryNameAr 
+              });
+            }
+            
+            // Fallback: search by old categoryName field if still exists
+            if (!category && productData.categoryName) {
+              category = await CategoryModel.findOne({
+                $or: [
+                  { categoryNameEn: productData.categoryName },
+                  { categoryNameAr: productData.categoryName }
+                ]
+              });
+            }
+
             if (category) {
               categoryId = category._id;
             } else {
+              const categoryName = productData.categoryNameEn || productData.categoryNameAr || productData.categoryName;
               results.failed.push({
                 productCode: productData.productCode,
-                error: `Category '${productData.categoryName}' not found`
+                error: `Category '${categoryName}' not found`
               });
               continue;
             }
@@ -213,8 +278,10 @@ export default class ProductService extends MongooseFeatures {
             discountTiers: productData.discountTiers || []
           };
 
-          // Remove categoryName as it's not in schema
-          delete productToSave.categoryName;
+          // Remove category name fields as they're not in product schema
+          delete productToSave.categoryNameEn;
+          delete productToSave.categoryNameAr;
+          delete productToSave.categoryName; // Remove old field too
 
           if (existingProduct) {
             // Update existing product

@@ -8,7 +8,6 @@ import {
   MessageCircleMore, 
   Package, 
   UserPlus2Icon, 
-  Loader2, 
   RefreshCw, 
   Wifi, 
   WifiOff 
@@ -81,17 +80,7 @@ const formatDate = (dateString: string) => {
 };
 
 // Loading component
-const LoadingSpinner = ({ message }: { message?: string }) => {
-  const intl = useIntl();
-  const defaultMessage = message || intl.formatMessage({ id: "common.loading" });
-  
-  return (
-    <div className="flex items-center justify-center p-8">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      <span className="ml-2 text-gray-600">{defaultMessage}</span>
-    </div>
-  );
-};
+
 
 // Connection status component
 const ConnectionStatus = ({ 
@@ -304,6 +293,7 @@ export default function Dashboard() {
           <div>
             <DataTable
               title={intl.formatMessage({ id: "Recent Orders" })}
+              icon={Package}
                filterAble={false}
                searchAble={false}
               linkApply={true}
@@ -351,6 +341,7 @@ export default function Dashboard() {
             <DataTable
             filterAble={false}
               searchAble={false}
+              icon={MessageCircleMore}
               linkApply={true}
               linkText="/consultations"
               title={intl.formatMessage({ id: "Recent Consultation Requests" })}

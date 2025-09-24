@@ -1,3 +1,4 @@
+// productSchema.js
 import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
@@ -23,11 +24,21 @@ const discountTierSchema = new Schema({
 
 const productSchema = new Schema(
   {
-    productName: {
+    // أسماء المنتج بالعربية والإنجليزية
+    productNameAr: {
       type: String,
       required: true,
     },
-    productDescription: {
+    productNameEn: {
+      type: String,
+      required: true,
+    },
+    // أوصاف المنتج بالعربية والإنجليزية
+    productDescriptionAr: {
+      type: String,
+      required: true,
+    },
+    productDescriptionEn: {
       type: String,
       required: true,
     },
@@ -71,12 +82,10 @@ const productSchema = new Schema(
       enum: ["Solid", "Liquid", "Gas", "Powder", "Granular"],
       default: "Solid",
     },
-    // خصم واحد عام (اختياري)
     productDiscount: {
       type: Number,
       default: 0
     },
-    // نظام الخصومات المتدرج - الطريقة الصحيحة
     discountTiers: {
       type: [discountTierSchema],
       default: []
@@ -94,6 +103,17 @@ const productSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Virtual للحصول على الاسم حسب اللغة
+productSchema.virtual('productName').get(function() {
+  // يمكن تحديد اللغة الافتراضية هنا
+  return this.productNameEn || this.productNameAr;
+});
+
+productSchema.virtual('productDescription').get(function() {
+  // يمكن تحديد اللغة الافتراضية هنا
+  return this.productDescriptionEn || this.productDescriptionAr;
+});
 
 // Validation للتأكد من أن code في discountTiers يطابق productCode
 productSchema.pre('save', function(next) {
@@ -113,10 +133,8 @@ productSchema.virtual('getDiscountForQuantity').get(function() {
       return this.productDiscount || 0;
     }
     
-    // ترتيب الخصومات تصاعدياً حسب الكمية
     const sortedTiers = this.discountTiers.sort((a: any, b: any) => a.quantity - b.quantity);
     
-    // البحث عن أكبر خصم ممكن للكمية المطلوبة
     let applicableDiscount = this.productDiscount || 0;
     
     for (const tier of sortedTiers) {
