@@ -150,6 +150,7 @@ export default class ProductService extends MongooseFeatures {
 // في ProductService.js
 // 🟢 Export products with exact same filtering as GetProducts
 // في ProductService.js - تحديث للدالة الأصلية
+// ProductService.js - تحديث ExportProducts
 public async ExportProducts(query?: any) {
   try {
     console.log('Export query received:', query);
@@ -186,6 +187,14 @@ public async ExportProducts(query?: any) {
         categoryNameAr = product.productCategory.categoryNameAr || '';
       }
 
+      // تحويل discount tiers لـ string format للعرض في الـ main sheet
+      let discountTiersText = '';
+      if (product.discountTiers && product.discountTiers.length > 0) {
+        discountTiersText = product.discountTiers.map((tier: any) => 
+          `${tier.quantity}: ${tier.discount}%`
+        ).join('; ');
+      }
+
       return {
         productCode: product.productCode,
         productNameAr: product?.productNameAr,
@@ -200,13 +209,62 @@ public async ExportProducts(query?: any) {
         productForm: product?.productForm,
         productStatus: product?.productStatus ? 'Active' : 'Inactive',
         productDiscount: product?.productDiscount || 0,
-        discountTiers: product?.discountTiers || []
+        discountTiers: discountTiersText, // النسخة النصية
+        discountTiersRaw: product?.discountTiers || [] // النسخة الخام للـ separate sheet
       }; 
     });
 
     return exportData;
   } catch (error) {
     console.error('Export error:', error);
+    throw error;
+  }
+}
+
+// 🟢 Export discount tiers separately - جديد
+public async ExportDiscountTiers(query?: any) {
+  try {
+    console.log('Export discount tiers query received:', query);
+    
+    const keys = this.keys.sort();
+    const {
+      perPage = 999999,
+      page = 1,
+      sorts = [],
+      queries = [],
+    } = pick(query, ["perPage", "page", "sorts", "queries"]);
+
+    // استخدام نفس الفلتر
+    const result = await super.PaginateHandler(
+      ProductModel,
+      Number(perPage),
+      Number(page),
+      sorts,
+      queries
+    );
+
+    // تحويل البيانات لصيغة discount tiers
+    const discountTiersData: any[] = [];
+    
+    result.data.forEach((product: any) => {
+      if (product.discountTiers && product.discountTiers.length > 0) {
+        product.discountTiers.forEach((tier: any) => {
+          discountTiersData.push({
+            productCode: product.productCode,
+            productNameAr: product.productNameAr,
+            productNameEn: product.productNameEn,
+            quantity: tier.quantity,
+            discount: tier.discount,
+            tierCode: tier.code || product.productCode
+          });
+        });
+      }
+    });
+
+    console.log(`Found ${discountTiersData.length} discount tiers for export`);
+    return discountTiersData;
+  } catch (error) {
+    console.error('Export discount tiers error:', error);
     throw error;
   }
 }

@@ -418,19 +418,27 @@ export default class ProductController extends BaseApi {
 
   // 🟢 Export products to Excel - UPDATED FOR NEW CATEGORY STRUCTURE
 // في products controller
-    public async exportProducts(req: Request, res: Response) {
+// في ProductController.js - تحديث exportProducts
+public async exportProducts(req: Request, res: Response) {
   try {
     const productService = new ProductService();
     
     // تمرير جميع query parameters للـ service
-    const exportData = await productService.ExportProducts(req.query);
+    const [exportData, discountTiersData] = await Promise.all([
+      productService.ExportProducts(req.query),
+      productService.ExportDiscountTiers(req.query)
+    ]);
+    
+    console.log(`Exporting ${exportData.length} products and ${discountTiersData.length} discount tiers`);
     
     // إنشاء Excel file
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Products');
     
-    // إضافة headers
-    worksheet.columns = [
+    // 📋 Products Sheet
+    const productsWorksheet = workbook.addWorksheet('Products');
+    
+    // إضافة headers للمنتجات
+    productsWorksheet.columns = [
       { header: 'Product Code', key: 'productCode', width: 15 },
       { header: 'Product Name (AR)', key: 'productNameAr', width: 25 },
       { header: 'Product Name (EN)', key: 'productNameEn', width: 25 },
@@ -444,16 +452,123 @@ export default class ProductController extends BaseApi {
       { header: 'Form', key: 'productForm', width: 10 },
       { header: 'Status', key: 'productStatus', width: 10 },
       { header: 'Discount %', key: 'productDiscount', width: 10 },
+      { header: 'Discount Tiers (Summary)', key: 'discountTiers', width: 30 }
     ];
     
-    // إضافة البيانات
+    // تنسيق header للمنتجات
+    const productHeaderRow = productsWorksheet.getRow(1);
+    productHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    productHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    productHeaderRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    
+    // إضافة بيانات المنتجات
     exportData.forEach(product => {
-      worksheet.addRow(product);
+      productsWorksheet.addRow({
+        productCode: product.productCode,
+        productNameAr: product.productNameAr,
+        productNameEn: product.productNameEn,
+        productDescriptionAr: product.productDescriptionAr,
+        productDescriptionEn: product.productDescriptionEn,
+        productPrice: product.productPrice,
+        categoryNameEn: product.categoryNameEn,
+        categoryNameAr: product.categoryNameAr,
+        productPurity: product.productPurity,
+        productGrade: product.productGrade,
+        productForm: product.productForm,
+        productStatus: product.productStatus,
+        productDiscount: product.productDiscount,
+        discountTiers: product.discountTiers
+      });
+    });
+
+    // 🎯 Discount Tiers Sheet - إذا كان في discount tiers
+    if (discountTiersData.length > 0) {
+      const discountWorksheet = workbook.addWorksheet('Discount Tiers');
+      
+      // إضافة headers للخصومات
+      discountWorksheet.columns = [
+        { header: 'Product Code', key: 'productCode', width: 15 },
+        { header: 'Product Name (AR)', key: 'productNameAr', width: 25 },
+        { header: 'Product Name (EN)', key: 'productNameEn', width: 25 },
+        { header: 'Minimum Quantity', key: 'quantity', width: 15 },
+        { header: 'Discount %', key: 'discount', width: 12 },
+        { header: 'Tier Code', key: 'tierCode', width: 15 }
+      ];
+      
+      // تنسيق header للخصومات
+      const discountHeaderRow = discountWorksheet.getRow(1);
+      discountHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      discountHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF70AD47' }
+      };
+      discountHeaderRow.alignment = { vertical: 'middle', horizontal: 'center' };
+      
+      // إضافة بيانات الخصومات
+      discountTiersData.forEach(tier => {
+        discountWorksheet.addRow({
+          productCode: tier.productCode,
+          productNameAr: tier.productNameAr,
+          productNameEn: tier.productNameEn,
+          quantity: tier.quantity,
+          discount: tier.discount,
+          tierCode: tier.tierCode
+        });
+      });
+
+      // إضافة borders للـ discount sheet
+      discountWorksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+      });
+    }
+
+    // 📊 Summary Sheet
+    const summaryWorksheet = workbook.addWorksheet('Summary');
+    summaryWorksheet.columns = [
+      { header: 'Export Information', key: 'info', width: 30 },
+      { header: 'Value', key: 'value', width: 20 }
+    ];
+    
+    const summaryHeaderRow = summaryWorksheet.getRow(1);
+    summaryHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    summaryHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF000000' }
+    };
+    
+    summaryWorksheet.addRow({ info: 'Export Date', value: new Date().toISOString() });
+    summaryWorksheet.addRow({ info: 'Total Products', value: exportData.length });
+    summaryWorksheet.addRow({ info: 'Total Discount Tiers', value: discountTiersData.length });
+    summaryWorksheet.addRow({ info: 'Products with Discounts', value: discountTiersData.length > 0 ? new Set(discountTiersData.map(t => t.productCode)).size : 0 });
+    
+    // إضافة borders للمنتجات
+    productsWorksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
     });
     
     // تحديد نوع الاستجابة
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=products_export.xlsx');
+    res.setHeader('Content-Disposition', `attachment; filename=products_export_${new Date().toISOString().split('T')[0]}.xlsx`);
     
     // إرسال الملف
     await workbook.xlsx.write(res);
@@ -465,7 +580,7 @@ export default class ProductController extends BaseApi {
       message: error.message || 'Failed to export products'
     });
   }
-};
+}
 
   // 🟢 Download import template - UPDATED FOR NEW CATEGORY STRUCTURE
   public async downloadTemplate(
