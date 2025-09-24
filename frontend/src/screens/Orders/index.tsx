@@ -132,13 +132,13 @@ export default function OrdersPage() {
     }));
   };
 
-  const orders: Order[] = list.data?.result?.data || [];
-  const allCustomers = customersList.data?.result?.data || [];
+  const orders: Order[] = list.data?.data || [];
+  const allCustomers = customersList.data?.data || [];
   // فلترة العملاء - عرض العملاء الذين لديهم customerSource = "order" فقط
   const customers = allCustomers.filter((customer: any) => customer.customerSource === "order");
-  const products = productsList.data?.result?.data || [];
+  const products = productsList.data?.data || [];
 
-  const paginationData = list.data?.result?.pagination ?? {
+  const paginationData = list.data?.pagination ?? {
     currentPage: 1,
     perPage: 15,
     totalPages: 1,
@@ -149,7 +149,7 @@ export default function OrdersPage() {
   const pagination = {
     currentPage: paginationData.currentPage,
     perPage: paginationData.perPage,
-    total: list.data?.result?.count || 0,
+    total: list.data?.count || 0,
     lastPage: paginationData.totalPages,
   };
 

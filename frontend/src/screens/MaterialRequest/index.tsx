@@ -95,8 +95,8 @@ export default function MaterialRequestPage() {
     }));
   };
 
-  const materialRequests: MaterialRequest[] = list.data?.result?.data || [];
-  const paginationData = list.data?.result?.pagination ?? {
+  const materialRequests: MaterialRequest[] = list.data?.data || [];
+  const paginationData = list.data?.pagination ?? {
     currentPage: 1,
     perPage: 10,
     totalPages: 1,
@@ -107,7 +107,7 @@ export default function MaterialRequestPage() {
   const pagination = {
     currentPage: paginationData.currentPage,
     perPage: paginationData.perPage,
-    total: list.data?.result?.count || 0,
+    total: list.data?.count || 0,
     lastPage: paginationData.totalPages,
   };
 

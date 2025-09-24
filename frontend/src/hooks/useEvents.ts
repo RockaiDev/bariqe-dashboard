@@ -108,47 +108,34 @@ const eventsApi = {
       console.log('Events API Response:', response);
       
       // التعامل مع الهيكل الجديد للاستجابة
-      const responseData  :any= response.result?.result;
-      
-      if (responseData?.data) {
+      if (response?.data) {
         return {
-          data: responseData.data,
-          totalItems: responseData.count || responseData.data.length,
-          totalPages: responseData.pagination?.totalPages || 1,
-          currentPage: responseData.pagination?.currentPage || 1,
-          perPage: responseData.pagination?.perPage || 10,
-        };
-      }
-
-      // Fallback للهياكل الأخرى
-      if (response?.result?.data) {
-        return {
-          data: response.result.data,
-          totalItems: response.result.totalItems || response.result.data.length,
-          totalPages: response.result.totalPages || 1,
-          currentPage: response.result.currentPage || 1,
-          perPage: response.result.perPage || 10,
+          data: response.data,
+          totalItems: response.count || response.data.length,
+          totalPages: response.pagination?.totalPages || 1,
+          currentPage: response.pagination?.currentPage || 1,
+          perPage: response.pagination?.perPage || 10,
         };
       }
 
       // إذا كانت البيانات array مباشرة
-      if (Array.isArray(response.result?.result)) {
+      if (Array.isArray(response)) {
         return {
-          data: response.result.result,
-          totalItems: response.result.result.length,
+          data: response,
+          totalItems: response.length,
           totalPages: 1,
           currentPage: 1,
-          perPage: response.result.result.length,
+          perPage: response.length,
         };
       }
 
       // البيانات في الجذر
       return {
-        data: response.result?.events || [],
-        totalItems: response.result?.totalItems || 0,
-        totalPages: response.result?.totalPages || 1,
-        currentPage: response.result?.currentPage || 1,
-        perPage: response.result?.perPage || 10,
+        data: response.events || [],
+        totalItems: response.totalItems || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: response.currentPage || 1,
+        perPage: response.perPage || 10,
       };
       
     } catch (error: any) {
@@ -164,9 +151,7 @@ const eventsApi = {
       console.log('Single event response:', response.data);
       
       // التعامل مع الهيكل الجديد
-      if (response.result?.result) {
-        return response.result.result;
-      }
+      return response;
 
       if (response.result) {
         return response.result;
@@ -189,9 +174,7 @@ const eventsApi = {
       console.log('Create event response:', response.data);
       
       // التعامل مع الهيكل الجديد
-      if (response.result?.result) {
-        return response.result.result;
-      }
+      return response;
 
       if (response.result) {
         return response.result.result;
@@ -212,10 +195,6 @@ const eventsApi = {
       });
       
       // التعامل مع الهيكل الجديد
-      if (response.data?.result?.result) {
-        return response.data.result.result;
-      }
-      
       if (response.data?.result) {
         return response.data.result;
       }
@@ -243,10 +222,6 @@ const eventsApi = {
       const response = await axiosInstance.delete(`/events/${eventId}/files/${fileId}`);
 
       // التعامل مع الهيكل الجديد
-      if (response.data?.result?.result) {
-        return response.data.result.result;
-      }
-      
       if (response.data?.result) {
         return response.data.result;
       }
@@ -275,10 +250,6 @@ const eventsApi = {
       });
       
       // التعامل مع الهيكل الجديد
-      if (response.data?.result?.result) {
-        return response.data.result.result;
-      }
-      
       if (response.data?.result) {
         return response.data.result;
       }

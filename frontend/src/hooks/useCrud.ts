@@ -20,7 +20,7 @@ export function useCrud(resource: string, filters = {}) {
       
       const url = `/${resource}?${params}`;
       const response = await axiosInstance.get(url);
-      return response.data;
+      return response;
     },
   });
 

@@ -20,25 +20,23 @@ export interface CustomerFilters {
 }
 
 interface CustomerResponse {
-  result: {
-    data: Customer[]
-    pagination: {
-      currentPage: number
-      perPage: number
-      total: number
-      hasNextPage: boolean
-    }
+  data: Customer[]
+  pagination: {
+    currentPage: number
+    perPage: number
+    total: number
+    hasNextPage: boolean
   }
-  keys: string[]
+  count: number
 }
 
 async function fetchCustomers(filters: CustomerFilters): Promise<CustomerResponse> {
   try {
-    const { data } = await axiosInstance.get("/customers", { params: filters })
-    return data
+    const response = await axiosInstance.get("/customers", { params: filters })
+    return response
   } catch (err: any) {
     // Error normalization
-    throw new Error(err.response?.data?.message || "Failed to fetch customers.")
+    throw new Error(err.response?.data?.message || err.message || "Failed to fetch customers.")
   }
 }
 

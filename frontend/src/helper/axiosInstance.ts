@@ -43,7 +43,9 @@ axiosInstance.interceptors.response.use(
     if (response.config.responseType === 'blob') {
       return response;
     }
-    return response.data;
+    
+    const result = response.data.result?.result || response.data.result;
+    return result;
   },
   (error) => {
     if (error.response) {

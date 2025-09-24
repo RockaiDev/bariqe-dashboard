@@ -87,8 +87,8 @@ export default function CategoryPage() {
     }));
   };
 
-  const categories: Category[] = list.data?.result?.data || [];
-  const paginationData = list.data?.result?.pagination ?? {
+  const categories: Category[] = list.data?.data || [];
+  const paginationData = list.data?.pagination ?? {
     currentPage: 1,
     perPage: 15,
     totalPages: 1,
@@ -100,7 +100,7 @@ export default function CategoryPage() {
   const pagination = {
     currentPage: paginationData.currentPage,
     perPage: paginationData.perPage,
-    total: list.data?.result?.count || 0,
+    total: list.data?.count || 0,
     lastPage: paginationData.totalPages,
   };
 

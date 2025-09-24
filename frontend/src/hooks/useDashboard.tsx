@@ -49,22 +49,14 @@ export interface Consultation {
 // Helper function
 // =======================
 const fetchData = async <T,>(url: string): Promise<T> => {
-  // axiosInstance's response interceptor returns `response.data` already.
-  const apiResponse = (await axiosInstance.get<ApiResponse<T>>(url)) as unknown as ApiResponse<T>;
+  // axiosInstance's response interceptor returns the result directly
+  const response = await axiosInstance.get(url);
 
-  if (!apiResponse || typeof apiResponse !== "object") {
+  if (!response || typeof response !== "object") {
     throw new Error("Invalid API response");
   }
 
-  if (apiResponse.status !== 200) {
-    throw new Error(apiResponse.message || "API returned error status");
-  }
-
-  if (apiResponse.result === undefined || apiResponse.result === null) {
-    throw new Error("No result data in API response");
-  }
-
-  return apiResponse.result;
+  return response as T;
 };
 
 // =======================
