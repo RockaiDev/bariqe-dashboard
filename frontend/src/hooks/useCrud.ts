@@ -19,8 +19,8 @@ export function useCrud(resource: string, filters = {}) {
       });
       
       const url = `/${resource}?${params}`;
-      const { result } = await axiosInstance.get(url);
-      return result;
+      const response = await axiosInstance.get(url);
+      return response.data;
     },
   });
 

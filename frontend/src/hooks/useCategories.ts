@@ -36,11 +36,11 @@ async function fetchCategories(
   filters: CategoryFilters
 ): Promise<CategoryResponse> {
   try {
-    const { result } = await axiosInstance.get("/categories", {
+    const response = await axiosInstance.get("/categories", {
       params: filters,
     });
 
-    return result;
+    return response.data;
   } catch (err: any) {
     throw new Error(
       err.response?.data?.result.message || "Failed to fetch categories."

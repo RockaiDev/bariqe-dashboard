@@ -1,5 +1,4 @@
 import React from 'react';
-import { useIntl } from 'react-intl';
 import { type LucideIcon } from 'lucide-react';
 
 type SectionCardVariant = 'default' | 'elevated' | 'bordered' | 'flat';
@@ -23,7 +22,6 @@ export default function SectionCard({
   headerAction,
   description
 }: Props) {
-  const intl = useIntl();
 
   const getVariantStyles = () => {
     switch (variant) {

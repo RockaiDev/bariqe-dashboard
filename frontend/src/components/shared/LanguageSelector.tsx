@@ -1,5 +1,5 @@
 // components/LanguageSelector.tsx
-import { Globe, Check } from "lucide-react";
+import { Globe } from "lucide-react";
 import {
   Select,
   SelectContent,

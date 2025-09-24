@@ -176,7 +176,7 @@ export const handleProductFilters: FilterHandler = (filterKey, filterValue, chan
   }
 };
 
-export const createProductFilterGroups = (categories: Category[], t: (key: string) => string) => [
+export const createProductFilterGroups = (_categories: Category[], t: (key: string) => string) => [
   {
     label: t("filters.status"),
     key: "status",

@@ -1,11 +1,6 @@
-import React from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChartContainer } from "@/components/ui/chart"
-// Tabs component not available in the project UI set - we'll use a small inline control below
-import { cn } from "@/lib/utils"
 import {
   LineChart,
   Line,
