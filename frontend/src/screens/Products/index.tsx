@@ -364,7 +364,10 @@ export default function ProductsPage() {
       if (category.categoryNameAr && category.categoryNameEn) {
         return isRTL ? category.categoryNameAr : category.categoryNameEn;
       }
+      // If it's an object but doesn't have the expected properties, return unknown
+      return intl.formatMessage({ id: "products.unknown_category" });
     }
+    // If it's a string or other primitive, return it directly
     return category || intl.formatMessage({ id: "products.unknown_category" });
   };
 
