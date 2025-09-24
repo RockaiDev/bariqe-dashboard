@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import path from "path";
 import express, { Application, Request, Response, NextFunction } from "express";
 import http from "http";
 import cors from "cors";
@@ -10,15 +11,25 @@ import { connectDB } from "./config/db";
 import cookieParser from "cookie-parser";
 import router from "./routes";
 
-dotenv.config();
+// Load environment variables from the correct path
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app: Application = express();
 const server = http.createServer(app);
 
-const { PORT = 8080, DEV_ORIGIN = "http://localhost:5173" } = process.env;
+const { PORT = 8080, DEV_ORIGIN = "http://localhost:5173", NODE_ENV = "development" } = process.env;
 const port = parseInt(PORT as string, 10) || 8080;
 
-app.use(cors({ origin: DEV_ORIGIN, credentials: true }));
+// Configure CORS for production and development
+const corsOptions = {
+  origin: NODE_ENV === "production" 
+    ? [DEV_ORIGIN, "https://*.vercel.app"] 
+    : DEV_ORIGIN,
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(logger("dev"));
 app.use(express.json({ limit: "50mb" }));
