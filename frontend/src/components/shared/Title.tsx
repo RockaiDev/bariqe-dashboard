@@ -7,7 +7,7 @@ export default function Title({ title, subtitle }: TitleProps) {
   return (
     <div
       className="
-        flex flex-col h-[68px] px-4 justify-start items-start  
+        flex flex-col h-auto px-4 justify-start items-start  
         gap-y-1 shrink-0 self-stretch flex-wrap
       "
     >
