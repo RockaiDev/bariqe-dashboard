@@ -5,6 +5,7 @@ import OrderController from "../../controllers/orders";
 import ConsultationRequestsController from "../../controllers/consultationRequests";
 import MaterialRequestController from "../../controllers/materialRequests";
 import EventController from "../../controllers/events";
+import CustomerController from "../../controllers/customer";
 
 // Initialize public routes
 const publicRouter = Router();
@@ -16,7 +17,7 @@ const orderController = new OrderController();
 const consultationRequestsController = new ConsultationRequestsController();
 const materialRequestController = new MaterialRequestController();
 const eventController = new EventController();
-
+const customerController = new CustomerController();
 
 
 
@@ -113,5 +114,27 @@ publicRouter.get(
 );
 
 
+/* ==============================
+   PUBLIC CUSTOMER
+================================ */
+publicRouter.get(
+  "/customers",
+  customerController.getCustomers.bind(customerController)
+);
+
+publicRouter.get(
+  "/customers/:id",
+  customerController.getOne.bind(customerController)
+);
+
+publicRouter.post(
+  "/customers",
+  customerController.addCustomer.bind(customerController)
+);
+
+publicRouter.patch(
+  "/customers/:id",
+  customerController.editCustomer.bind(customerController)
+);
 
 export default publicRouter;
