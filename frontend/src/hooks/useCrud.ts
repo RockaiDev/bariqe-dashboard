@@ -56,7 +56,6 @@ export function useCrud(resource: string, filters = {}) {
     },
   });
 
-  
   // ✅ Delete
   const del = useMutation({
     mutationFn: (id: string) => axiosInstance.delete(`/${resource}/${id}`),
