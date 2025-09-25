@@ -899,7 +899,9 @@
   "table.active_filters": "المرشحات النشطة:",
   "table.date": "التاريخ:",
   "table.search": "البحث:",
-
+  "table.perPage": "لكل صفحة",
+  "tabele.to": "إلى:",
+  
   "categories.exporting_categories": "جاري تصدير الفئات...",
   "categories.categories_exported_success": "تم تصدير الفئات بنجاح!",
 

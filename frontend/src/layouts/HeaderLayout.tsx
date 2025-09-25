@@ -1,6 +1,6 @@
 import { type JSX, type ReactNode } from "react";
 import AppSidebar from "./SideBar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,7 +27,7 @@ type HeaderLayoutProps = { children: ReactNode };
 export default function HeaderLayout({
   children,
 }: HeaderLayoutProps): JSX.Element {
-    useScrollToTop();
+  useScrollToTop();
   return (
     <SidebarProvider className="min-h-screen font-tajawal w-screen !overflow-x-hidden">
       <div className="flex min-h-screen font-tajawal  w-screen !overflow-x-hidden">
@@ -38,7 +38,11 @@ export default function HeaderLayout({
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
           <header className="h-14 flex justify-between items-center border-b border-gray-200 bg-[#021031] px-4 lg:px-6 shrink-0">
+            <div className="">
+              <SidebarTrigger className="lg:hidden text-black bg-white hover:text-primary transition-colors" />
+            </div>
             {/* Search bar in the middle */}
+
             <div className="flex flex-1 max-w-md mx-auto">
               {/* Search functionality can be added here */}
             </div>
@@ -117,7 +121,10 @@ function AvatarArea() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 hover:bg-white/10">
+          <Button
+            variant="ghost"
+            className="relative h-8 w-8 rounded-full p-0 hover:bg-white/10"
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={
@@ -132,7 +139,7 @@ function AvatarArea() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        
+
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
@@ -144,20 +151,26 @@ function AvatarArea() {
               </p>
             </div>
           </DropdownMenuLabel>
-          
+
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem onClick={handleProfile} className="cursor-pointer">
-            {intl.formatMessage({ id: "profile.settings", defaultMessage: "Profile Settings" })}
+            {intl.formatMessage({
+              id: "profile.settings",
+              defaultMessage: "Profile Settings",
+            })}
           </DropdownMenuItem>
-          
+
           <DropdownMenuSeparator />
-          
-          <DropdownMenuItem 
-            onClick={handleLogout} 
+
+          <DropdownMenuItem
+            onClick={handleLogout}
             className="cursor-pointer text-red-600 focus:text-red-600"
           >
-            {intl.formatMessage({ id: "auth.logout", defaultMessage: "Logout" })}
+            {intl.formatMessage({
+              id: "auth.logout",
+              defaultMessage: "Logout",
+            })}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

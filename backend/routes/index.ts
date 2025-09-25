@@ -1,6 +1,7 @@
 import { Router } from "express";
 import AuthController from "../controllers/auth";
 import protectedRouter from "./protected";
+import publicRouter from "./public";
 import { authentication } from "../middlewares/authentication";
 
 const router = Router();
@@ -23,6 +24,9 @@ router.patch('/auth/me', authentication, upload.single('avatar'), auth.me.bind(a
 
 // Keep old profile endpoint for backward compatibility
 router.patch('/auth/profile', authentication, auth.updateProfile.bind(auth));
+
+// ✅ Public routes (accessible without authentication)
+router.use("/public", publicRouter);
 
 // ✅ Protected routes require token
 router.use("/", authentication, protectedRouter);
