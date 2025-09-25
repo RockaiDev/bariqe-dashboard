@@ -339,8 +339,6 @@
   "categories.import_failed_count": "فشل في استيراد {count} فئة",
   "categories.import_summary": "الملخص: {success} نجح، {updated} محدث، {failed} فشل",
 
-
-
   "categories.form.name_ar": "اسم الفئة (عربي)",
   "categories.form.name_en": "اسم الفئة (إنجليزي)",
   "categories.form.description_ar": "وصف الفئة (عربي)",
@@ -612,14 +610,12 @@
   "customers.failed_to_create_customer": "فشل في إنشاء العميل",
   "categories.importing": "جارٍ استيراد الفئات...",
 
-
   "system_settings.title": "إعدادات النظام",
   "system_settings.general": "عام",
   "system_settings.events_logs": "الأحداث والسجلات",
   "system_settings.welcome_message": "مرحباً بك، {name}! تكوين تفضيلات النظام العامة",
   "system_settings.admin": "المدير",
   "system_settings.logged_in_as": "مسجل دخول بـ",
-
 
   "general.cover_image": "صورة الغلاف",
   "general.no_cover_image": "لا توجد صورة غلاف",
@@ -901,12 +897,27 @@
   "table.search": "البحث:",
   "table.perPage": "لكل صفحة",
   "tabele.to": "إلى:",
-  
-  "categories.exporting_categories": "جاري تصدير الفئات...",
-  "categories.categories_exported_success": "تم تصدير الفئات بنجاح!",
 
-  "categories.template_downloaded_success": "تم تحميل النموذج بنجاح!",
+  "categories.image": "الصورة",
 
+  "categories.form.image": "صورة الفئة",
+
+  "categories.upload_image": "رفع صورة",
+  "categories.change_image": "تغيير الصورة",
+  "categories.remove_image": "إزالة الصورة",
+  "categories.remove_from_server": "حذف من الخادم",
+
+  "categories.create.success": "تم إنشاء الفئة بنجاح",
+  "categories.create.failed": "فشل في إنشاء الفئة",
+
+  "categories.image_updated_success": "تم تحديث الصورة بنجاح",
+  "categories.upload_image_failed": "فشل في رفع الصورة",
+  "categories.uploading_image": "جاري رفع الصورة...",
+  "categories.removing_image": "جاري حذف الصورة...",
+  "categories.image_removed_success": "تم حذف الصورة بنجاح",
+  "categories.remove_image_failed": "فشل في حذف الصورة",
+
+  "categories.unknown_category": "فئة غير معروفة",
   "profile.settings": "إعدادات الملف الشخصي",
   "profile.view_profile": "عرض الملف الشخصي",
   "profile.edit_profile": "تعديل الملف الشخصي",

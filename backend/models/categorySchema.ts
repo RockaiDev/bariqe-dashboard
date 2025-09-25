@@ -14,6 +14,12 @@ const categorySchema = new Schema(
       required: [true, "English category name is required"],
       trim: true,
     },
+    categoryImage: {
+      type: String,
+    },
+    categoryPublicId: {
+      type: String,
+    },
     categoryDescriptionAr: {
       type: String,
       required: [true, "Arabic description is required"],
@@ -35,14 +41,13 @@ const categorySchema = new Schema(
 );
 
 // Virtual للحصول على الاسم حسب اللغة (للتوافق مع الكود القديم)
-categorySchema.virtual('categoryName').get(function() {
+categorySchema.virtual("categoryName").get(function () {
   return this.categoryNameEn || this.categoryNameAr;
 });
 
-categorySchema.virtual('categoryDescription').get(function() {
+categorySchema.virtual("categoryDescription").get(function () {
   return this.categoryDescriptionEn || this.categoryDescriptionAr;
 });
-
 
 categorySchema.index({ categoryNameAr: 1 });
 categorySchema.index({ categoryNameEn: 1 });

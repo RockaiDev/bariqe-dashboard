@@ -31,6 +31,9 @@ import {
   Upload,
   FileDown,
   Loader2,
+  Image,
+  Camera,
+  X,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -60,10 +63,10 @@ interface Category {
   categoryDescriptionAr: string;
   categoryDescriptionEn: string;
   categoryStatus: boolean;
+  categoryImage?: string; // ✅ إضافة حقل الصورة
   createdAt?: string;
   updatedAt?: string;
 }
-
 export default function CategoryPage() {
   const intl = useIntl();
   const { isRTL } = useLanguage();
@@ -122,25 +125,60 @@ export default function CategoryPage() {
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string>("");
   const [editForm, setEditForm] = useState({
     categoryNameAr: "",
     categoryNameEn: "",
     categoryDescriptionAr: "",
     categoryDescriptionEn: "",
     categoryStatus: true,
+    categoryImage: "",
   });
 
-  const handleEdit = (c: Category) => {
-    setEditing(c);
-    setEditForm({
-      categoryNameAr: c.categoryNameAr,
-      categoryNameEn: c.categoryNameEn,
-      categoryDescriptionAr: c.categoryDescriptionAr,
-      categoryDescriptionEn: c.categoryDescriptionEn,
-      categoryStatus: Boolean(c.categoryStatus),
-    });
-    setEditOpen(true);
-  };
+// تحديث handleEdit
+const handleEdit = (c: Category) => {
+  setEditing(c);
+  setEditForm({
+    categoryNameAr: c.categoryNameAr,
+    categoryNameEn: c.categoryNameEn,
+    categoryDescriptionAr: c.categoryDescriptionAr,
+    categoryDescriptionEn: c.categoryDescriptionEn,
+    categoryStatus: Boolean(c.categoryStatus),
+    categoryImage: c.categoryImage || "", // ✅ إضافة الصورة
+  });
+  setEditImageFile(null);
+  setEditImagePreview(c.categoryImage || ""); // ✅ تعيين معاينة الصورة
+  setEditOpen(true);
+};
+
+// تحديث hasEditFormChanges
+const hasEditFormChanges = () => {
+  if (!editing) return false;
+
+  return (
+    editForm.categoryNameAr !== editing.categoryNameAr ||
+    editForm.categoryNameEn !== editing.categoryNameEn ||
+    editForm.categoryDescriptionAr !== editing.categoryDescriptionAr ||
+    editForm.categoryDescriptionEn !== editing.categoryDescriptionEn ||
+    editForm.categoryStatus !== Boolean(editing.categoryStatus) ||
+    editImageFile !== null || // ✅ فحص تغيير الصورة
+    editImagePreview !== (editing.categoryImage || "")
+  );
+};
+
+// تحديث handleEditDialogClose
+const handleEditDialogClose = (open: boolean) => {
+  if (!open && hasEditFormChanges()) {
+    editConfirmDialog.showDialog();
+  } else {
+    setEditOpen(false);
+    setEditing(null);
+    setEditImageFile(null); // ✅ إعادة تعيين ملف الصورة
+    setEditImagePreview(""); // ✅ إعادة تعيين معاينة الصورة
+  }
+};
 
   const handleView = (c: Category) => {
     setViewing(c);
@@ -159,28 +197,95 @@ export default function CategoryPage() {
   });
 
   // Check if edit form has changes
-  const hasEditFormChanges = () => {
-    if (!editing) return false;
 
-    return (
-      editForm.categoryNameAr !== editing.categoryNameAr ||
-      editForm.categoryNameEn !== editing.categoryNameEn ||
-      editForm.categoryDescriptionAr !== editing.categoryDescriptionAr ||
-      editForm.categoryDescriptionEn !== editing.categoryDescriptionEn ||
-      editForm.categoryStatus !== Boolean(editing.categoryStatus)
+// ✅ Image upload helpers
+const handleImageFileChange = (
+  file: File | null,
+  setImageFile: (file: File | null) => void,
+  setImagePreview: (preview: string) => void
+) => {
+  setImageFile(file);
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    setImagePreview("");
+  }
+};
+
+// ✅ Change category image only
+const handleChangeCategoryImage = async (
+  categoryId: string,
+  imageFile: File
+) => {
+  setUploadingImage(true);
+  const loadingToast = toast.loading(
+    intl.formatMessage({ id: "categories.uploading_image" })
+  );
+
+  try {
+    const formData = new FormData();
+    formData.append("categoryImage", imageFile);
+
+    const response = await axiosInstance.put(
+      `/categories/${categoryId}/image`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
-  };
 
-  // Handle edit dialog close with confirmation
-  const handleEditDialogClose = (open: boolean) => {
-    if (!open && hasEditFormChanges()) {
-      editConfirmDialog.showDialog();
-    } else {
-      setEditOpen(false);
-      setEditing(null);
-    }
-  };
+    toast.dismiss(loadingToast);
+    toast.success(
+      intl.formatMessage({ id: "categories.image_updated_success" })
+    );
 
+    // Refresh the data
+    list.refetch();
+
+    return response.data.newImageUrl;
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      intl.formatMessage({ id: "categories.upload_image_failed" });
+    toast.error(errorMessage);
+    throw error;
+  } finally {
+    setUploadingImage(false);
+  }
+};
+
+// ✅ Remove category image
+const handleRemoveCategoryImage = async (categoryId: string) => {
+  const loadingToast = toast.loading(
+    intl.formatMessage({ id: "categories.removing_image" })
+  );
+
+  try {
+    await axiosInstance.delete(`/categories/${categoryId}/image`);
+    toast.dismiss(loadingToast);
+    toast.success(
+      intl.formatMessage({ id: "categories.image_removed_success" })
+    );
+
+    // Refresh the data
+    list.refetch();
+  } catch (error: any) {
+    toast.dismiss(loadingToast);
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      intl.formatMessage({ id: "categories.remove_image_failed" });
+    toast.error(errorMessage);
+  }
+};
   // Export Categories Function
 const handleExportCategories = async () => {
   const loadingToast = toast.loading(intl.formatMessage({ id: "categories.exporting" }));
@@ -431,126 +536,146 @@ const handleImportCategories = async () => {
             handleCategoryFilters(filterKey, filterValue, ChangeFilter);
           });
         }}
-        RenderHead={({ sort, onSortChange }) => (
-          <>
-            <TableHead className="text-right">#</TableHead>
-            <SortableTH
-              sortKey={isRTL ? "categoryNameAr" : "categoryNameEn"}
-              label={intl.formatMessage({ id: "categories.name" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "categories.description" })}</TableHead>
-            <SortableTH
-              sortKey="categoryStatus"
-              label={intl.formatMessage({ id: "categories.status" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <SortableTH
-              sortKey="createdAt"
-              label={intl.formatMessage({ id: "categories.created" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <SortableTH
-              sortKey="updatedAt"
-              label={intl.formatMessage({ id: "categories.updated" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <TableHead className="px-4 py-2 text-right">{intl.formatMessage({ id: "categories.actions" })}</TableHead>
-          </>
-        )}
-        RenderBody={({ getRowColor }) => (
-          <>
-            {categories.map((c, i) => (
-              <TableRow
-                key={c._id}
-                className={`
-                  ${getRowColor(i)} 
-                  cursor-pointer 
-                  hover:bg-blue-50 
-                  transition-colors 
-                  duration-150 
-                  border-b 
-                  border-gray-200
-                  sub-title-cgrey
-                `}
-                onClick={() => handleView(c)}
-              >
-                <TableCell className="text-right">{i + 1}</TableCell>
-                <TableCell className="font-medium text-black">
-                  {isRTL ? c.categoryNameAr : c.categoryNameEn}
-                </TableCell>
-                <TableCell className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap">
-                  {isRTL ? c.categoryDescriptionAr : c.categoryDescriptionEn}
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      c.categoryStatus
-                        ? "bg-green-100 text-green-700 border border-green-700 rounded-lg"
-                        : "bg-red-100 text-red-700 border border-red-700 rounded-lg"
-                    }`}
-                  >
-                    {c.categoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm text-gray-500">
-                  {c.createdAt
-                    ? new Date(c.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
-                        year: "2-digit",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "-"}
-                </TableCell>
-                <TableCell className="text-sm text-gray-500">
-                  {c.updatedAt
-                    ? new Date(c.updatedAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
-                        year: "2-digit",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "-"}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div
-                    className={`flex items-center gap-2 ${isRTL ? 'justify-start' : 'justify-center'}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(c);
-                      }}
-                    >
-                      <Pen className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setToDelete(c);
-                        setDeleteOpen(true);
-                      }}
-                    >
-                      <Trash className="w-4 h-4 text-white" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </>
-        )}
+       // تحديث RenderHead في DataTable
+RenderHead={({ sort, onSortChange }) => (
+  <>
+    <TableHead className="text-right">#</TableHead>
+    <TableHead className="px-4 py-2">{intl.formatMessage({ id: "categories.image" })}</TableHead> {/* ✅ عمود الصورة */}
+    <SortableTH
+      sortKey={isRTL ? "categoryNameAr" : "categoryNameEn"}
+      label={intl.formatMessage({ id: "categories.name" })}
+      sort={sort}
+      onSortChange={onSortChange}
+      className="px-4 py-2"
+    />
+    <TableHead className="px-4 py-2">{intl.formatMessage({ id: "categories.description" })}</TableHead>
+    <SortableTH
+      sortKey="categoryStatus"
+      label={intl.formatMessage({ id: "categories.status" })}
+      sort={sort}
+      onSortChange={onSortChange}
+      className="px-4 py-2"
+    />
+    <SortableTH
+      sortKey="createdAt"
+      label={intl.formatMessage({ id: "categories.created" })}
+      sort={sort}
+      onSortChange={onSortChange}
+      className="px-4 py-2"
+    />
+    <SortableTH
+      sortKey="updatedAt"
+      label={intl.formatMessage({ id: "categories.updated" })}
+      sort={sort}
+      onSortChange={onSortChange}
+      className="px-4 py-2"
+    />
+    <TableHead className="px-4 py-2 text-right">{intl.formatMessage({ id: "categories.actions" })}</TableHead>
+  </>
+)}
+
+// تحديث RenderBody في DataTable
+RenderBody={({ getRowColor }) => (
+  <>
+    {categories.map((c, i) => (
+      <TableRow
+        key={c._id}
+        className={`
+          ${getRowColor(i)} 
+          cursor-pointer 
+          hover:bg-blue-50 
+          transition-colors 
+          duration-150 
+          border-b 
+          border-gray-200
+          sub-title-cgrey
+        `}
+        onClick={() => handleView(c)}
+      >
+        <TableCell className="text-right">{i + 1}</TableCell>
+        
+        {/* ✅ عمود الصورة */}
+        <TableCell className="px-4 py-2">
+          <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+            {c.categoryImage ? (
+              <img
+                src={c.categoryImage}
+                alt={isRTL ? c.categoryNameAr : c.categoryNameEn}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Image className="w-6 h-6 text-gray-400" />
+            )}
+          </div>
+        </TableCell>
+
+        <TableCell className="font-medium text-black">
+          {isRTL ? c.categoryNameAr : c.categoryNameEn}
+        </TableCell>
+        <TableCell className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap">
+          {isRTL ? c.categoryDescriptionAr : c.categoryDescriptionEn}
+        </TableCell>
+        <TableCell>
+          <span
+            className={`px-2 py-1 rounded text-xs font-medium ${
+              c.categoryStatus
+                ? "bg-green-100 text-green-700 border border-green-700 rounded-lg"
+                : "bg-red-100 text-red-700 border border-red-700 rounded-lg"
+            }`}
+          >
+            {c.categoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
+          </span>
+        </TableCell>
+        <TableCell className="text-sm text-gray-500">
+          {c.createdAt
+            ? new Date(c.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
+                year: "2-digit",
+                month: "short",
+                day: "numeric",
+              })
+            : "-"}
+        </TableCell>
+        <TableCell className="text-sm text-gray-500">
+          {c.updatedAt
+            ? new Date(c.updatedAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
+                year: "2-digit",
+                month: "short",
+                day: "numeric",
+              })
+            : "-"}
+        </TableCell>
+        <TableCell className="text-right">
+          <div
+            className={`flex items-center gap-2 ${isRTL ? 'justify-start' : 'justify-center'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(c);
+              }}
+            >
+              <Pen className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setToDelete(c);
+                setDeleteOpen(true);
+              }}
+            >
+              <Trash className="w-4 h-4 text-white" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))}
+  </>
+)}
       />
 
       {/* Import Dialog */}
@@ -639,21 +764,37 @@ const handleImportCategories = async () => {
       </Dialog>
 
       {/* View Details Dialog */}
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="view-category-description">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              {intl.formatMessage({ id: "categories.category_details" })}
-            </DialogTitle>
-            <DialogDescription id="view-category-description">
-              {intl.formatMessage({ id: "categories.view.description" })}
-            </DialogDescription>
-          </DialogHeader>
+ <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+  <DialogContent className="sm:max-w-[600px]" aria-describedby="view-category-description">
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2">
+        <Eye className="w-5 h-5" />
+        {intl.formatMessage({ id: "categories.category_details" })}
+      </DialogTitle>
+      <DialogDescription id="view-category-description">
+        {intl.formatMessage({ id: "categories.view.description" })}
+      </DialogDescription>
+    </DialogHeader>
 
-          {viewing && (
-            <div className="space-y-6">
-              {/* Basic Information */}
+    {viewing && (
+      <div className="space-y-6">
+        {/* ✅ Category Image */}
+        {viewing.categoryImage && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-600">
+              {intl.formatMessage({ id: "categories.form.image" })}
+            </Label>
+            <div className="flex justify-center">
+              <div className="w-32 h-32 bg-gray-50 rounded-lg border overflow-hidden">
+                <img
+                  src={viewing.categoryImage}
+                  alt={isRTL ? viewing.categoryNameAr : viewing.categoryNameEn}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
@@ -784,45 +925,133 @@ const handleImportCategories = async () => {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="edit-category-description">
-          <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
-            <DialogDescription id="edit-category-description">
-              {intl.formatMessage({ id: "categories.edit.description" })}
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!editing) return;
-              
-              // Validate required fields
-              if (!editForm.categoryNameAr || !editForm.categoryNameEn || 
-                  !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn) {
-                toast.error(intl.formatMessage({ id: "categories.validation.required_fields" }));
-                return;
-              }
-              
-              update.mutate({
-                id: editing._id,
-                payload: editForm,
-              }, {
-                onSuccess: () => {
-                  toast.success(intl.formatMessage({ id: "categories.edit_success" }));
-                  setEditOpen(false);
-                  setEditing(null);
-                },
-                onError: (error: any) => {
-                  const errorMessage = error?.response?.data?.message ||
-                                      error?.message ||
-                                      intl.formatMessage({ id: "categories.edit_failed" });
-                  toast.error(errorMessage);
-                },
-              });
-            }}
-          >
+ <Dialog open={editOpen} onOpenChange={handleEditDialogClose}>
+  <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto" aria-describedby="edit-category-description">
+    <DialogHeader>
+      <DialogTitle>{intl.formatMessage({ id: "categories.edit_category" })}</DialogTitle>
+      <DialogDescription id="edit-category-description">
+        {intl.formatMessage({ id: "categories.edit.description" })}
+      </DialogDescription>
+    </DialogHeader>
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!editing) return;
+        
+        // Validate required fields
+        if (!editForm.categoryNameAr || !editForm.categoryNameEn || 
+            !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn) {
+          toast.error(intl.formatMessage({ id: "categories.validation.required_fields" }));
+          return;
+        }
+
+        // Prepare payload
+        let payload: any = editForm;
+        if (editImageFile) {
+          const formData = new FormData();
+          formData.append("categoryImage", editImageFile);
+          Object.keys(editForm).forEach((key) => {
+            const value = editForm[key as keyof typeof editForm];
+            formData.append(key, value as string);
+          });
+          payload = formData;
+        }
+        
+        update.mutate({
+          id: editing._id,
+          payload,
+        }, {
+          onSuccess: () => {
+            toast.success(intl.formatMessage({ id: "categories.edit_success" }));
+            setEditOpen(false);
+            setEditing(null);
+            setEditImageFile(null);
+            setEditImagePreview("");
+          },
+          onError: (error: any) => {
+            const errorMessage = error?.response?.data?.message ||
+                                error?.message ||
+                                intl.formatMessage({ id: "categories.edit_failed" });
+            toast.error(errorMessage);
+          },
+        });
+      }}
+    >
+      {/* ✅ Image Upload Section */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          {intl.formatMessage({ id: "categories.form.image" })}
+        </Label>
+        <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
+          <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
+            {editImagePreview ? (
+              <img
+                src={editImagePreview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Layers className="w-8 h-8 text-gray-400" />
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                handleImageFileChange(file, setEditImageFile, setEditImagePreview);
+              }}
+              className="hidden"
+              id="edit-image-input"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById("edit-image-input")?.click()}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {editImageFile
+                ? intl.formatMessage({ id: "categories.change_image" })
+                : intl.formatMessage({ id: "categories.upload_image" })}
+            </Button>
+            {(editImagePreview || editImageFile) && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="text-white"
+                size="sm"
+                onClick={() => {
+                  setEditImageFile(null);
+                  setEditImagePreview("");
+                }}
+              >
+                <X className="w-4 h-4 mr-2 text-white" />
+                {intl.formatMessage({ id: "categories.remove_image" })}
+              </Button>
+            )}
+            {editing?.categoryImage && !editImageFile && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="text-white"
+                size="sm"
+                onClick={() => handleRemoveCategoryImage(editing._id)}
+                disabled={uploadingImage}
+              >
+                {uploadingImage ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+                ) : (
+                  <Trash className="w-4 h-4 mr-2 text-white" />
+                )}
+                {intl.formatMessage({ id: "categories.remove_from_server" })}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 id="edit_categoryNameAr"
@@ -964,24 +1193,30 @@ const handleImportCategories = async () => {
     </div>
   );
 }
-// AddCategory component
+
+
 function AddCategory({
   create,
   isLoading,
 }: {
-  create: (payload: any) => void;
+  create: (payload: any) => Promise<any>; // تأكد أن create ترجع Promise
   isLoading: boolean;
 }) {
   const intl = useIntl();
-  // const { isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
   
   const [open, setOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // إضافة state للـ loading المحلي
+const [loading , setLoading] = useState(true);
   const [form, setForm] = useState({
     categoryNameAr: "",
     categoryNameEn: "",
     categoryDescriptionAr: "",
     categoryDescriptionEn: "",
     categoryStatus: true,
+    categoryImage: "",
   });
 
   // Add Dialog Confirmation
@@ -1005,13 +1240,15 @@ function AddCategory({
       form.categoryNameEn !== "" ||
       form.categoryDescriptionAr !== "" ||
       form.categoryDescriptionEn !== "" ||
-      form.categoryStatus !== true
+      form.categoryStatus !== true ||
+      imageFile !== null ||
+      imagePreview !== ""
     );
   };
 
   // Handle dialog close with confirmation
   const handleDialogClose = (isOpen: boolean) => {
-    if (!isOpen && hasFormChanges()) {
+    if (!isOpen && hasFormChanges() && !isSubmitting) {
       addConfirmDialog.showDialog();
     } else {
       setOpen(isOpen);
@@ -1026,8 +1263,69 @@ function AddCategory({
       categoryDescriptionAr: "",
       categoryDescriptionEn: "",
       categoryStatus: true,
+      categoryImage: "",
     });
+    setImageFile(null);
+    setImagePreview("");
   };
+
+  const handleImageFileChange = (file: File | null) => {
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview("");
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+
+    e.preventDefault();
+    if (!canSubmit || isSubmitting || isLoading) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare payload
+      let payload: any = form;
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("categoryImage", imageFile);
+        Object.keys(form).forEach((key) => {
+          const value = form[key as keyof typeof form];
+          if (key !== "categoryImage") {
+            formData.append(key, value as string);
+          }
+        });
+        payload = formData;
+      }
+      
+      // Call create function
+      await create(payload);
+      
+      // Success
+      toast.success(intl.formatMessage({ id: "categories.create.success" }));
+      resetForm();
+      setOpen(false);
+      
+    } catch (error: any) {
+      // Error handling
+      const errorMessage = error?.response?.data?.message ||
+                          error?.message ||
+                          intl.formatMessage({ id: "categories.create.failed" });
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+      setLoading(false);
+    }
+  };
+
+  const isFormLoading = isSubmitting || isLoading;
 
   return (
     <>
@@ -1037,30 +1335,75 @@ function AddCategory({
             <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "categories.new_category" })}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="add-category-description">
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto" aria-describedby="add-category-description">
           <DialogHeader>
             <DialogTitle>{intl.formatMessage({ id: "categories.new_category" })}</DialogTitle>
             <DialogDescription id="add-category-description">
               {intl.formatMessage({ id: "categories.create.description" })}
             </DialogDescription>
           </DialogHeader>
-          <form
-            className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!canSubmit || isLoading) return;
-              
-              create(form);
-              setForm({
-                categoryNameAr: "",
-                categoryNameEn: "",
-                categoryDescriptionAr: "",
-                categoryDescriptionEn: "",
-                categoryStatus: true,
-              });
-              setOpen(false);
-            }}
-          >
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* ✅ Image Upload Section */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {intl.formatMessage({ id: "categories.form.image" })}
+              </Label>
+              <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
+                <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      handleImageFileChange(file);
+                    }}
+                    className="hidden"
+                    id="image-input"
+                    disabled={isFormLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById("image-input")?.click()}
+                    disabled={isFormLoading}
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {imageFile
+                      ? intl.formatMessage({ id: "categories.change_image" })
+                      : intl.formatMessage({ id: "categories.upload_image" })}
+                  </Button>
+                  {(imagePreview || imageFile) && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="text-white"
+                      size="sm"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview("");
+                      }}
+                      disabled={isFormLoading}
+                    >
+                      <X className="w-4 h-4 mr-2 text-white" />
+                      {intl.formatMessage({ id: "categories.remove_image" })}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 id="categoryNameAr"
@@ -1071,6 +1414,7 @@ function AddCategory({
                 }
                 required
                 dir="rtl"
+                disabled={isFormLoading}
               />
 
               <FormField
@@ -1082,6 +1426,7 @@ function AddCategory({
                 }
                 required
                 dir="ltr"
+                disabled={isFormLoading}
               />
             </div>
 
@@ -1097,6 +1442,7 @@ function AddCategory({
                 }
                 required
                 dir="rtl"
+                disabled={isFormLoading}
               />
 
               <FormField
@@ -1110,6 +1456,7 @@ function AddCategory({
                 }
                 required
                 dir="ltr"
+                disabled={isFormLoading}
               />
             </div>
 
@@ -1126,17 +1473,18 @@ function AddCategory({
                 onCheckedChange={(checked) =>
                   setForm((f) => ({ ...f, categoryStatus: checked }))
                 }
+                disabled={isFormLoading}
               />
             </div>
 
             <DialogFooter className="mt-4">
               <DialogClose asChild>
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" disabled={isFormLoading}>
                   {intl.formatMessage({ id: "categories.cancel" })}
                 </Button>
               </DialogClose>
-              <Button type="submit" className="text-white" disabled={!canSubmit || isLoading}>
-                {isLoading ? (
+              <Button type="submit" className="text-white" disabled={!canSubmit || isFormLoading}>
+                {isFormLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {intl.formatMessage({ id: "categories.saving" })}

@@ -25,10 +25,18 @@ const eventController = new EventController();
 const databaseController = new DatabaseController();
 
 // Multer setup for file uploads
+// Multer setup for file uploads (مُحدث)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir =
-      file.fieldname === "productImage" ? "uploads/temp/" : "uploads/";
+    let uploadDir = "uploads/";
+    
+    // تحديد المجلد حسب نوع الملف
+    if (file.fieldname === "productImage" || file.fieldname === "categoryImage") {
+      uploadDir = "uploads/temp/";
+    } else if (file.fieldname === "file") {
+      uploadDir = "uploads/";
+    }
+    
     if (!require("fs").existsSync(uploadDir)) {
       require("fs").mkdirSync(uploadDir, { recursive: true });
     }
@@ -49,7 +57,9 @@ const upload = multer({
         return cb(new Error("Only Excel files are allowed"));
       }
     }
-    if (file.fieldname === "productImage") {
+    
+    // ✅ إضافة دعم صور الفئات
+    if (file.fieldname === "productImage" || file.fieldname === "categoryImage") {
       // Image files
       const allowedTypes = [
         "image/jpeg",
@@ -61,6 +71,7 @@ const upload = multer({
         return cb(new Error("Only JPEG, PNG, and WebP images are allowed"));
       }
     }
+    
     cb(null, true);
   },
   limits: {
@@ -259,8 +270,9 @@ protectedRouter.delete(
 );
 
 /* ==============================
-   CATEGORY ROUTES
+   CATEGORY ROUTES (مُحدث)
 ================================ */
+
 // Export/Import routes (MUST come before /:id routes)
 protectedRouter.get(
   "/categories/export",
@@ -275,7 +287,30 @@ protectedRouter.post(
   categoryController.importCategories.bind(categoryController)
 );
 
-// CRUD routes
+// ✅ Add category with base64 (يجب أن يأتي قبل /categories)
+protectedRouter.post(
+  "/categories/base64",
+  categoryController.addCategoryWithBase64.bind(categoryController)
+);
+
+// ✅ Image-specific routes (يجب أن تأتي قبل /:id)
+protectedRouter.put(
+  "/categories/:id/image",
+  upload.single("categoryImage"),
+  categoryController.changeCategoryImage.bind(categoryController)
+);
+protectedRouter.delete(
+  "/categories/:id/image",
+  categoryController.removeCategoryImage.bind(categoryController)
+);
+
+// ✅ Edit with base64
+protectedRouter.put(
+  "/categories/:id/base64",
+  categoryController.editCategoryWithBase64.bind(categoryController)
+);
+
+// Basic CRUD routes
 protectedRouter.get(
   "/categories",
   categoryController.getCategories.bind(categoryController)
@@ -284,19 +319,25 @@ protectedRouter.get(
   "/categories/:id",
   categoryController.getOne.bind(categoryController)
 );
+
+// ✅ Add category with file upload
 protectedRouter.post(
   "/categories",
+  upload.single("categoryImage"),
   categoryController.addCategory.bind(categoryController)
 );
+
+// ✅ Edit category with file upload
 protectedRouter.put(
   "/categories/:id",
+  upload.single("categoryImage"),
   categoryController.editCategory.bind(categoryController)
 );
+
 protectedRouter.delete(
   "/categories/:id",
   categoryController.deleteCategory.bind(categoryController)
 );
-
 /* ==============================
    CONSULTATION REQUEST ROUTES
 ================================ */
