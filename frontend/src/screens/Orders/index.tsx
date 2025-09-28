@@ -1197,13 +1197,13 @@ console.log("productsList:", productsList);
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
-                          ${viewing.product.productPrice.toFixed(2)}
+                          {viewing.product.productPrice.toFixed(2)} EGP
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
-                          $
+                         
                           {(
                             viewing.product.productPrice * viewing.quantity
-                          ).toFixed(2)}
+                          ).toFixed(2)} EGP
                         </td>
                       </tr>
                     </tbody>

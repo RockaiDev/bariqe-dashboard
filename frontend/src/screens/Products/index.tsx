@@ -1103,7 +1103,7 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-bold text-lg text-green-600">
-                      ${viewing.productPrice?.toFixed(2)}
+                      {viewing.productPrice?.toFixed(2)} EGP
                     </p>
                   </div>
                 </div>
@@ -1179,7 +1179,7 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
                     <p className="text-yellow-800 font-medium">
-                      {viewing.productDiscount}%{" "}
+                      {viewing.productDiscount}%
                       {intl.formatMessage({ id: "products.discount.off" })}
                     </p>
                   </div>
