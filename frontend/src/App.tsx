@@ -8,7 +8,6 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
-
 import { routes, authenticationRoutes } from "./helper/routes";
 import ScrollToTop from "./hooks/ScrollToTop";
 import HeaderLayout from "./layouts/HeaderLayout";
