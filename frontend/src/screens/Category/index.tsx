@@ -54,6 +54,8 @@ import {
 } from "@/components/shared/filters";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import type { UseMutateFunction } from "@tanstack/react-query";
+import type { AxiosResponse } from "axios";
 
 
 interface Category {
@@ -125,7 +127,7 @@ export default function CategoryPage() {
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-
+const [uploadingImage, setUploadingImage] = useState(false);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string>("");
   const [editForm, setEditForm] = useState({
@@ -219,6 +221,7 @@ const handleImageFileChange = (
 
 // ✅ Remove category image
 const handleRemoveCategoryImage = async (categoryId: string) => {
+  setUploadingImage(true);
   const loadingToast = toast.loading(
     intl.formatMessage({ id: "categories.removing_image" })
   );
@@ -239,6 +242,8 @@ const handleRemoveCategoryImage = async (categoryId: string) => {
       error?.message ||
       intl.formatMessage({ id: "categories.remove_image_failed" });
     toast.error(errorMessage);
+  }finally {
+    setUploadingImage(false); // ✅ إضافة هذا السطر
   }
 };
   // Export Categories Function
@@ -1152,7 +1157,7 @@ function AddCategory({
   create,
   isLoading,
 }: {
-  create: (payload: any) => Promise<any>;
+  create: UseMutateFunction<AxiosResponse<any>, Error, any>;
   isLoading: boolean;
 }) {
   const intl = useIntl();

@@ -66,19 +66,8 @@ const productSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    productPurity: {
-      type: Number,
-      required: true,
-    },
-    productGrade: {
-      type: String,
-      required: true,
-      enum: ["Technical", "Analytical", "USP", "FCC", "Cosmetic Grade"],
-      default: "Technical",
-    },
     productForm: {
       type: String,
-      required: true,
       enum: ["Solid", "Liquid", "Gas", "Powder", "Granular"],
       default: "Solid",
     },

@@ -506,7 +506,9 @@ export const createOrderSearchHandler = (
               [
                 ["customer.customerName", "contains", searchValue],
                 ["customer.customerEmail", "contains", searchValue],
-                ["product.productName", "contains", searchValue],
+                ["product.productNameAr", "contains", searchValue],
+                
+                ["product.productNameEn", "contains", searchValue],
               ],
             ],
           ], "queries");
