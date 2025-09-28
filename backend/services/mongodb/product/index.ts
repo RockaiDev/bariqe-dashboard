@@ -3,6 +3,7 @@ import ApiError from "../../../utils/errors/ApiError";
 import MongooseFeatures from "../features/index";
 import ProductModel from "../../../models/productSchema";
 import CategoryModel from "../../../models/categorySchema";
+import Category from "../../../models/categorySchema";
 import { pick } from 'lodash';
 
 export default class ProductService extends MongooseFeatures {
@@ -20,8 +21,6 @@ export default class ProductService extends MongooseFeatures {
       "productCategory",
       "productImage",
       "productStatus",
-      "productPurity",
-      "productGrade",
       "productForm",
       "productDiscount",
       "productCode",
@@ -73,10 +72,10 @@ export default class ProductService extends MongooseFeatures {
     try {
       if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
           !body.productDescriptionEn || !body.productPrice || !body.productCategory || 
-          !body.productPurity || !body.productGrade || !body.productForm || !body.productCode) {
+         !body.productCode) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productPurity', 'productGrade', 'productForm' are required"
+          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productForm' are required"
         );
       }
       
@@ -143,131 +142,186 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Export products to Excel format - UPDATED FOR NEW CATEGORY STRUCTURE
-// 🟢 Export products to Excel format - مع استخدام الفلاتر المطبقة
-// في ProductService.js
-// 🟢 Export products to Excel format - مع استخدام الفلاتر المطبقة
-// في ProductService.js
-// 🟢 Export products with exact same filtering as GetProducts
-// في ProductService.js - تحديث للدالة الأصلية
-// ProductService.js - تحديث ExportProducts
-public async ExportProducts(query?: any) {
-  try {
-    console.log('Export query received:', query);
-    
-    // استخدام نفس منطق GetProducts بالضبط
-    const keys = this.keys.sort();
-    const {
-      perPage = 999999, // رقم كبير عشان نجيب كل البيانات
-      page = 1,
-      sorts = [],
-      queries = [],
-    } = pick(query, ["perPage", "page", "sorts", "queries"]);
-
-    console.log('Export filters:', { sorts, queries });
-
-    // استخدام PaginateHandler زي GetProducts بالضبط
-    const result = await super.PaginateHandler(
-      ProductModel,
-      Number(perPage),
-      Number(page),
-      sorts,
-      queries
-    );
-
-    console.log(`Found ${result.data.length} products for export out of ${result.count} total`);
-
-    // تحويل البيانات لصيغة الإكسبورت
-    const exportData = result.data.map((product: any) => {
-      let categoryNameEn = '';
-      let categoryNameAr = '';
+  // ✅ Export Products (دالة واحدة فقط - مُصححة)
+  public async ExportProducts(query?: any) {
+    try {
+      console.log('Export query received:', query);
       
-      if (product.productCategory && typeof product.productCategory === 'object') {
-        categoryNameEn = product.productCategory.categoryNameEn || '';
-        categoryNameAr = product.productCategory.categoryNameAr || '';
+      // استخدام نفس منطق GetProducts بالضبط
+      const keys = this.keys.sort();
+      const {
+        perPage = 999999, // رقم كبير عشان نجيب كل البيانات
+        page = 1,
+        sorts = [],
+        queries = [],
+      } = pick(query, ["perPage", "page", "sorts", "queries"]);
+
+      console.log('Export filters:', { sorts, queries });
+
+      // استخدام PaginateHandler زي GetProducts بالضبط
+      const result = await super.PaginateHandler(
+        ProductModel,
+        Number(perPage),
+        Number(page),
+        sorts,
+        queries
+      );
+
+      console.log(`Found ${result.data.length} products for export out of ${result.count} total`);
+
+      // Populate category data
+      if (result.data && result.data.length > 0) {
+        await ProductModel.populate(result.data, { path: 'productCategory' });
       }
 
-      // تحويل discount tiers لـ string format للعرض في الـ main sheet
-      let discountTiersText = '';
-      if (product.discountTiers && product.discountTiers.length > 0) {
-        discountTiersText = product.discountTiers.map((tier: any) => 
-          `${tier.quantity}: ${tier.discount}%`
-        ).join('; ');
-      }
+      // تحويل البيانات لصيغة الإكسبورت
+      const exportData = result.data.map((product: any) => {
+        let categoryNameEn = '';
+        let categoryNameAr = '';
+        let categoryId = '';
+        let categoryStatus = false;
+        
+        if (product.productCategory && typeof product.productCategory === 'object') {
+          categoryNameEn = product.productCategory.categoryNameEn || '';
+          categoryNameAr = product.productCategory.categoryNameAr || '';
+          categoryId = product.productCategory._id || '';
+          categoryStatus = product.productCategory.categoryStatus || false;
+        }
 
-      return {
-        productCode: product.productCode,
-        productNameAr: product?.productNameAr,
-        productNameEn: product?.productNameEn,
-        productDescriptionAr: product?.productDescriptionAr,
-        productDescriptionEn: product?.productDescriptionEn,
-        productPrice: product?.productPrice,
-        categoryNameEn: categoryNameEn,
-        categoryNameAr: categoryNameAr,
-        productPurity: product?.productPurity,
-        productGrade: product?.productGrade,
-        productForm: product?.productForm,
-        productStatus: product?.productStatus ? 'Active' : 'Inactive',
-        productDiscount: product?.productDiscount || 0,
-        discountTiers: discountTiersText, // النسخة النصية
-        discountTiersRaw: product?.discountTiers || [] // النسخة الخام للـ separate sheet
-      }; 
-    });
+        // تحويل discount tiers لـ string format للعرض في الـ main sheet
+        let discountTiersText = '';
+        if (product.discountTiers && product.discountTiers.length > 0) {
+          discountTiersText = product.discountTiers.map((tier: any) => 
+            `${tier.quantity}: ${tier.discount}%`
+          ).join('; ');
+        }
 
-    return exportData;
-  } catch (error) {
-    console.error('Export error:', error);
-    throw error;
+        return {
+          productCode: product.productCode || "",
+          productNameAr: product.productNameAr || "",
+          productNameEn: product.productNameEn || "",
+          productDescriptionAr: product.productDescriptionAr || "",
+          productDescriptionEn: product.productDescriptionEn || "",
+          productPrice: product.productPrice || 0,
+          categoryId: categoryId,
+          categoryNameEn: categoryNameEn,
+          categoryNameAr: categoryNameAr,
+          categoryStatus: categoryStatus,
+          productForm: product.productForm || 'Solid',
+          productStatus: product.productStatus || false,
+          productDiscount: product.productDiscount || 0,
+          discountTiers: discountTiersText,
+          discountTiersRaw: product.discountTiers || [],
+          createdAt: product.createdAt || null,
+          updatedAt: product.updatedAt || null
+        }; 
+      });
+
+      return exportData;
+    } catch (error) {
+      console.error('Export products error:', error);
+      throw error;
+    }
   }
-}
 
-// 🟢 Export discount tiers separately - جديد
-public async ExportDiscountTiers(query?: any) {
-  try {
-    console.log('Export discount tiers query received:', query);
-    
-    const keys = this.keys.sort();
-    const {
-      perPage = 999999,
-      page = 1,
-      sorts = [],
-      queries = [],
-    } = pick(query, ["perPage", "page", "sorts", "queries"]);
+  // ✅ Export discount tiers separately
+  public async ExportDiscountTiers(query?: any) {
+    try {
+      console.log('Export discount tiers query received:', query);
+      
+      const keys = this.keys.sort();
+      const {
+        perPage = 999999,
+        page = 1,
+        sorts = [],
+        queries = [],
+      } = pick(query, ["perPage", "page", "sorts", "queries"]);
 
-    // استخدام نفس الفلتر
-    const result = await super.PaginateHandler(
-      ProductModel,
-      Number(perPage),
-      Number(page),
-      sorts,
-      queries
-    );
+      // استخدام نفس الفلتر
+      const result = await super.PaginateHandler(
+        ProductModel,
+        Number(perPage),
+        Number(page),
+        sorts,
+        queries
+      );
 
-    // تحويل البيانات لصيغة discount tiers
-    const discountTiersData: any[] = [];
-    
-    result.data.forEach((product: any) => {
-      if (product.discountTiers && product.discountTiers.length > 0) {
-        product.discountTiers.forEach((tier: any) => {
-          discountTiersData.push({
-            productCode: product.productCode,
-            productNameAr: product.productNameAr,
-            productNameEn: product.productNameEn,
-            quantity: tier.quantity,
-            discount: tier.discount,
-            tierCode: tier.code || product.productCode
+      // Populate category data
+      if (result.data && result.data.length > 0) {
+        await ProductModel.populate(result.data, { path: 'productCategory' });
+      }
+
+      // تحويل البيانات لصيغة discount tiers
+      const discountTiersData: any[] = [];
+      
+      result.data.forEach((product: any) => {
+        if (product.discountTiers && product.discountTiers.length > 0) {
+          product.discountTiers.forEach((tier: any) => {
+            discountTiersData.push({
+              productCode: product.productCode || "",
+              productNameAr: product.productNameAr || "",
+              productNameEn: product.productNameEn || "",
+              categoryNameEn: product.productCategory?.categoryNameEn || "",
+              categoryNameAr: product.productCategory?.categoryNameAr || "",
+              quantity: tier.quantity || 0,
+              discount: tier.discount || 0,
+              tierCode: tier.code || product.productCode || ""
+            });
           });
-        });
-      }
-    });
+        }
+      });
 
-    console.log(`Found ${discountTiersData.length} discount tiers for export`);
-    return discountTiersData;
-  } catch (error) {
-    console.error('Export discount tiers error:', error);
-    throw error;
+      console.log(`Found ${discountTiersData.length} discount tiers for export`);
+      return discountTiersData;
+    } catch (error) {
+      console.error('Export discount tiers error:', error);
+      throw error;
+    }
   }
-}
+
+  // ✅ Export Categories - دالة جديدة
+  public async ExportCategories(queryParams?: any) {
+    try {
+      console.log('Export categories query received:', queryParams);
+
+      // جلب جميع الفئات مع عدد المنتجات لكل فئة
+      const categories = await Category.aggregate([
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "productCategory",
+            as: "products"
+          }
+        },
+        {
+          $addFields: {
+            productsCount: { $size: "$products" }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            categoryNameAr: 1,
+            categoryNameEn: 1,
+            categoryDescriptionAr: 1,
+            categoryDescriptionEn: 1,
+            categoryStatus: 1,
+            productsCount: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
+        },
+        { $sort: { categoryNameEn: 1 } }
+      ]);
+
+      console.log(`Found ${categories.length} categories for export`);
+      return categories;
+    } catch (error) {
+      console.error("Error exporting categories:", error);
+      throw new Error("Failed to export categories");
+    }
+  }
 
   // 🟢 Import products from Excel - UPDATED FOR NEW CATEGORY STRUCTURE
   public async ImportProducts(productsData: any[]) {

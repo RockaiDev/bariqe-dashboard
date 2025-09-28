@@ -25,7 +25,7 @@ import {
   FileSpreadsheet,
   X,
   Camera,
-  Image as ImageIcon,
+
   Loader2,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
@@ -65,7 +65,7 @@ import {
   handleProductFilters,
 } from "@/components/shared/filters";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-
+import productImage from '@/assets/d-koi-5nI9N2wNcBU-unsplash.jpg'
 // Updated interfaces to match new schema
 interface DiscountTier {
   quantity: number;
@@ -89,8 +89,8 @@ interface Product {
     | string;
   productImage?: string;
   productStatus: boolean;
-  productPurity: number;
-  productGrade: "Technical" | "Analytical" | "USP" | "FCC" | "Cosmetic Grade";
+
+ 
   productForm: "Solid" | "Liquid" | "Gas" | "Powder" | "Granular";
   productDiscount?: number;
   discountTiers?: DiscountTier[];
@@ -234,8 +234,8 @@ export default function ProductsPage() {
     productCategory: "",
     productImage: "",
     productStatus: true,
-    productPurity: 0,
-    productGrade: "Technical" as Product["productGrade"],
+
+
     productForm: "Solid" as Product["productForm"],
     productDiscount: 0,
     discountTiers: [] as DiscountTier[],
@@ -302,8 +302,8 @@ export default function ProductsPage() {
           ? editing.productCategory._id
           : editing.productCategory) ||
       editForm.productStatus !== Boolean(editing.productStatus) ||
-      editForm.productPurity !== (editing.productPurity || 0) ||
-      editForm.productGrade !== (editing.productGrade || "Technical") ||
+
+     
       editForm.productForm !== (editing.productForm || "Solid") ||
       editForm.productDiscount !== (editing.productDiscount || 0) ||
       JSON.stringify(editForm.discountTiers) !==
@@ -328,8 +328,8 @@ export default function ProductsPage() {
           : p.productCategory,
       productImage: p.productImage || "",
       productStatus: Boolean(p.productStatus),
-      productPurity: p.productPurity || 0,
-      productGrade: p.productGrade || "Technical",
+
+     
       productForm: p.productForm || "Solid",
       productDiscount: p.productDiscount || 0,
       discountTiers: p.discountTiers || [],
@@ -610,7 +610,7 @@ const handleExportProducts = async () => {
       const results: any = response;
       console.log("Import results:", results);
       if (results) {
-        const { products, summary, errors } = results?.result?.results;
+        const { products, summary, errors } = results?.results
 
         if (products?.success?.length > 0) {
           toast.success(
@@ -813,13 +813,7 @@ const handleExportProducts = async () => {
               className="px-2 sm:px-4 py-2"
             />
 
-            <SortableTH
-              sortKey="productPurity"
-              label={intl.formatMessage({ id: "products.table.purity" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
+     
 
             <SortableTH
               sortKey="productPrice"
@@ -829,13 +823,7 @@ const handleExportProducts = async () => {
               className="px-2 sm:px-4 py-2"
             />
 
-            <SortableTH
-              sortKey="productGrade"
-              label={intl.formatMessage({ id: "products.table.grade" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
+      
 
             <SortableTH
               sortKey="productForm"
@@ -892,14 +880,15 @@ const handleExportProducts = async () => {
                         src={p.productImage}
                         alt={isRTL ? p.productNameAr : p.productNameEn}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                          e.currentTarget.parentElement!.innerHTML =
-                            '<div class="text-gray-400"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path></svg></div>';
-                        }}
+                     
                       />
                     ) : (
-                      <ImageIcon className="w-6 h-6 text-gray-400" />
+                     <img
+                        src={productImage}
+                        alt={isRTL ? p.productNameAr : p.productNameEn}
+                        className="w-full h-full object-cover"
+                      
+                      />
                     )}
                   </div>
                 </TableCell>
@@ -912,14 +901,11 @@ const handleExportProducts = async () => {
                 <TableCell className="w-4">
                   {getCategoryName(p.productCategory)}
                 </TableCell>
-                <TableCell className="">{p.productPurity}%</TableCell>
+              
                 <TableCell className="font-semibold">
-                  ${p.productPrice?.toFixed(2)}
+                  {p.productPrice?.toFixed(2)} EGP
                 </TableCell>
-                <TableCell className="text-center">
-                  {GRADE_OPTIONS.find((g) => g.value === p.productGrade)
-                    ?.label || p.productGrade}
-                </TableCell>
+              
                 <TableCell className="text-center">
                   {FORM_OPTIONS.find((f) => f.value === p.productForm)?.label ||
                     p.productForm}
@@ -1018,7 +1004,7 @@ const handleExportProducts = async () => {
                   >
                     <div className="w-32 h-32 bg-gray-50 rounded-md border overflow-hidden">
                       <img
-                        src={viewing.productImage}
+                        src={viewing.productImage || productImage}
                         alt={
                           isRTL ? viewing.productNameAr : viewing.productNameEn
                         }
@@ -1120,29 +1106,14 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-bold text-lg text-green-600">
-                      ${viewing.productPrice?.toFixed(2)}
+                      {viewing.productPrice?.toFixed(2)} EGP
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "products.form.purity" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">{viewing.productPurity}%</p>
-                  </div>
-                </div>
+        
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "products.form.grade" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    {GRADE_OPTIONS.find((g) => g.value === viewing.productGrade)
-                      ?.label || viewing.productGrade}
-                  </div>
-                </div>
+    
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
@@ -1211,7 +1182,7 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
                     <p className="text-yellow-800 font-medium">
-                      {viewing.productDiscount}%{" "}
+                      {viewing.productDiscount}%
                       {intl.formatMessage({ id: "products.discount.off" })}
                     </p>
                   </div>
@@ -1357,8 +1328,8 @@ const handleExportProducts = async () => {
                 !editForm.productDescriptionAr ||
                 !editForm.productDescriptionEn ||
                 !editForm.productCategory ||
-                editForm.productPrice <= 0 ||
-                editForm.productPurity <= 0
+                editForm.productPrice <= 0 
+              
               ) {
                 toast.error(
                   intl.formatMessage({
@@ -1469,7 +1440,12 @@ const handleExportProducts = async () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                    <img
+                        src={productImage}
+                        alt={isRTL ? editForm.productNameAr : editForm.productNameEn}
+                        className="w-full h-full object-cover"
+                      
+                      />
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -1607,53 +1583,9 @@ const handleExportProducts = async () => {
                 required
               />
 
-              <FormField
-                id="edit_productPurity"
-                label={intl.formatMessage({
-                  id: "products.form.purity_percent",
-                })}
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={editForm.productPurity}
-                onChange={(e) =>
-                  setEditForm((f) => ({
-                    ...f,
-                    productPurity: parseFloat(e.target.value) || 0,
-                  }))
-                }
-                required
-              />
+        
 
-              {/* Grade Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="edit_productGrade">
-                  {intl.formatMessage({ id: "products.form.grade" })}{" "}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={editForm.productGrade}
-                  onValueChange={(value) =>
-                    setEditForm((f) => ({ ...f, productGrade: value as any }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={intl.formatMessage({
-                        id: "products.form.select_grade",
-                      })}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GRADE_OPTIONS.map((grade) => (
-                      <SelectItem key={grade.value} value={grade.value}>
-                        {grade.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+    
 
               {/* Form Selector */}
               <div className="space-y-2">
@@ -1897,7 +1829,7 @@ const handleExportProducts = async () => {
                   !editForm.productDescriptionEn ||
                   !editForm.productCategory ||
                   editForm.productPrice <= 0 ||
-                  editForm.productPurity <= 0 ||
+          
                   checkingEditCode ||
                   update.isPending
                 }
@@ -2072,7 +2004,7 @@ function AddProduct({
   isLoading,
   categories,
   checkProductCode,
-  gradeOptions,
+
   formOptions,
 }: {
   create: any;
@@ -2099,8 +2031,8 @@ function AddProduct({
     productCategory: "",
     productImage: "",
     productStatus: true,
-    productPurity: 0,
-    productGrade: "Technical" as const,
+
+
     productForm: "Solid" as const,
     productDiscount: 0,
     discountTiers: [] as DiscountTier[],
@@ -2124,8 +2056,8 @@ function AddProduct({
     form.productDescriptionAr.trim() &&
     form.productDescriptionEn.trim() &&
     form.productCategory.trim() &&
-    form.productPrice > 0 &&
-    form.productPurity > 0;
+    form.productPrice > 0 
+  
 
   // Check if form has changes
   const hasFormChanges = () => {
@@ -2137,8 +2069,8 @@ function AddProduct({
       form.productCode !== "" ||
       form.productPrice !== 0 ||
       form.productCategory !== "" ||
-      form.productPurity !== 0 ||
-      form.productGrade !== "Technical" ||
+  
+   
       form.productForm !== "Solid" ||
       form.productDiscount !== 0 ||
       form.discountTiers.length > 0 ||
@@ -2168,8 +2100,8 @@ function AddProduct({
       productCategory: "",
       productImage: "",
       productStatus: true,
-      productPurity: 0,
-      productGrade: "Technical",
+    
+  
       productForm: "Solid",
       productDiscount: 0,
       discountTiers: [],
@@ -2269,8 +2201,8 @@ function AddProduct({
           productCategory: "",
           productImage: "",
           productStatus: true,
-          productPurity: 0,
-          productGrade: "Technical",
+  
+  
           productForm: "Solid",
           productDiscount: 0,
           discountTiers: [],
@@ -2329,7 +2261,12 @@ function AddProduct({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <img
+                        src={productImage}
+                        alt={isRTL ? form.productNameAr : form.productNameEn}
+                        className="w-full h-full object-cover"
+                      
+                      />
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -2462,53 +2399,8 @@ function AddProduct({
                 required
               />
 
-              <FormField
-                id="productPurity"
-                label={intl.formatMessage({
-                  id: "products.form.purity_percent",
-                })}
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={form.productPurity}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    productPurity: parseFloat(e.target.value) || 0,
-                  }))
-                }
-                required
-              />
+           
 
-              {/* Grade Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="productGrade">
-                  {intl.formatMessage({ id: "products.form.grade" })}{" "}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={form.productGrade}
-                  onValueChange={(value) =>
-                    setForm((f) => ({ ...f, productGrade: value as any }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={intl.formatMessage({
-                        id: "products.form.select_grade",
-                      })}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gradeOptions.map((grade) => (
-                      <SelectItem key={grade.value} value={grade.value}>
-                        {grade.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Form Selector */}
               <div className="space-y-2">

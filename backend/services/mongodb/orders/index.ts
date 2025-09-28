@@ -13,23 +13,23 @@ export default class OrderService extends MongooseFeatures {
     super();
     this.keys = [
       "customer",
-      "product", 
+      "product",
       "quantity",
       "orderQuantity",
       "orderDiscount", // Fixed typo
-      "orderStatus",   // Fixed typo
+      "orderStatus", // Fixed typo
     ];
   }
 
   // 🟢 Get all orders
   public async GetOrders(query: any) {
     const keys = this.keys.sort();
-    const { perPage, page, sorts = [], queries = [] } = pick(query, [
-      "perPage",
-      "page",
-      "sorts",
-      "queries",
-    ]);
+    const {
+      perPage,
+      page,
+      sorts = [],
+      queries = [],
+    } = pick(query, ["perPage", "page", "sorts", "queries"]);
 
     // Preprocess queries: if searching by customerName or productName
     // translate those into queries against the customer/product collections
@@ -70,24 +70,59 @@ export default class OrderService extends MongooseFeatures {
             return ["$or", "custom", mappedSub];
           }
 
-          const isCustomerName = ["customerName", "customer.customerName", "customer.name"].includes(field);
-          const isProductName = ["productName", "product.productName", "product.name"].includes(field);
+          const isCustomerName = [
+            "customerName",
+            "customer.customerName",
+            "customer.name",
+          ].includes(field);
+          const isProductName = [
+            "productName",
+            "productNameAr",
+            "productNameEn",
+            "product.productNameAr",
+            "product.productNameEn",
+            "product.name",
+          ].includes(field);
 
           if (isCustomerName) {
             // find matching customers
-            const searchVal = typeof value === 'string' ? value : String(value || '');
-            const regex = new RegExp(searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-            const customers = await CustomerModel.find({ customerName: { $regex: regex } }).select("_id");
+            const searchVal =
+              typeof value === "string" ? value : String(value || "");
+            const regex = new RegExp(
+              searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+              "i"
+            );
+            const customers = await CustomerModel.find({
+              customerName: { $regex: regex },
+            }).select("_id");
             const ids = customers.map((c: any) => c._id);
-            return ["customer", op === "==" ? "==" : "in", ids.length ? ids : [null]];
+            return [
+              "customer",
+              op === "==" ? "==" : "in",
+              ids.length ? ids : [null],
+            ];
           }
 
           if (isProductName) {
-            const searchVal = typeof value === 'string' ? value : String(value || '');
-            const regex = new RegExp(searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-            const products = await ProductModel.find({ productName: { $regex: regex } }).select("_id");
+            const searchVal =
+              typeof value === "string" ? value : String(value || "");
+            const regex = new RegExp(
+              searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+              "i"
+            );
+            const products = await ProductModel.find({
+              $or: [
+                { productNameAr: { $regex: regex } },
+                { productNameEn: { $regex: regex } },
+              ],
+            }).select("_id");
+
             const ids = products.map((p: any) => p._id);
-            return ["product", op === "==" ? "==" : "in", ids.length ? ids : [null]];
+            return [
+              "product",
+              op === "==" ? "==" : "in",
+              ids.length ? ids : [null],
+            ];
           }
 
           return t;
@@ -112,7 +147,11 @@ export default class OrderService extends MongooseFeatures {
 
     const populatedData = await OrderModel.populate(result.data, [
       { path: "customer", select: "customerName customerEmail customerPhone" },
-      { path: "product", select: "productName productPrice productImage productCode" },
+      {
+        path: "product",
+        select:
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode",
+      },
     ]);
 
     return { result: { ...result, data: populatedData }, keys };
@@ -123,7 +162,10 @@ export default class OrderService extends MongooseFeatures {
     try {
       const order = await OrderModel.findById(id)
         .populate("customer", "customerName customerEmail customerPhone")
-        .populate("product", "productName productPrice productImage productCode");
+        .populate(
+          "product",
+          "productNameAr productNameEn productDescriptionAr  productDescriptionEn productPrice productImage productCode"
+        );
 
       if (!order) throw new ApiError("NOT_FOUND", "Order not found");
       return order;
@@ -147,7 +189,10 @@ export default class OrderService extends MongooseFeatures {
 
       const populatedOrder = await OrderModel.findById(order._id)
         .populate("customer", "customerName customerEmail customerPhone")
-        .populate("product", "productName productPrice productImage productCode");
+        .populate(
+          "product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+        );
 
       return populatedOrder;
     } catch (error) {
@@ -159,13 +204,16 @@ export default class OrderService extends MongooseFeatures {
   public async EditOneOrder(id: string, body: any) {
     try {
       const updateData = pick(body, this.keys);
-      
+
       const updatedOrder = await OrderModel.findByIdAndUpdate(id, updateData, {
         new: true,
         runValidators: true,
       })
         .populate("customer", "customerName customerEmail customerPhone")
-        .populate("product", "productName productPrice productImage productCode");
+        .populate(
+          "product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+        );
 
       if (!updatedOrder) {
         throw new ApiError("NOT_FOUND", `Order with id ${id} not found`);
@@ -197,24 +245,33 @@ export default class OrderService extends MongooseFeatures {
       // Get all orders without pagination for export
       const orders = await OrderModel.find({})
         .populate("customer", "customerName customerEmail customerPhone")
-        .populate("product", "productName productPrice productImage productCode")
+        .populate(
+          "product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+        )
         .sort({ createdAt: -1 });
 
       // Format data for Excel export
       const formattedOrders = orders.map((order: any) => ({
         orderNumber: order._id.toString(),
-        customerName: order.customer?.customerName || 'N/A',
-        customerEmail: order.customer?.customerEmail || 'N/A',
-        customerPhone: order.customer?.customerPhone || 'N/A',
-        productCode: order.product?.productCode || 'N/A',
-        productName: order.product?.productName || 'N/A',
+        customerName: order.customer?.customerName || "N/A",
+        customerEmail: order.customer?.customerEmail || "N/A",
+        customerPhone: order.customer?.customerPhone || "N/A",
+        productCode: order.product?.productCode || "N/A",
+        productNameAr: order.product?.productNameAr || "N/A",
+        productNameEn: order.product?.productNameEn || "N/A",
+        productDescriptionAr: order.product?.productDescriptionAr || "N/A",
+        productDescriptionEn: order.product?.productDescriptionEn || "N/A",
         productPrice: order.product?.productPrice || 0,
         quantity: order.quantity || 0,
         orderQuantity: order.orderQuantity || 0,
         orderDiscount: order.orderDiscount || 0,
-        orderStatus: order.orderStatus || 'Pending',
+        orderStatus: order.orderStatus || "Pending",
         totalAmount: (order.product?.productPrice || 0) * (order.quantity || 0),
-        discountedAmount: ((order.product?.productPrice || 0) * (order.quantity || 0)) * (1 - ((order.orderDiscount || 0) / 100)),
+        discountedAmount:
+          (order.product?.productPrice || 0) *
+          (order.quantity || 0) *
+          (1 - (order.orderDiscount || 0) / 100),
         orderDate: order.createdAt,
       }));
 
@@ -235,27 +292,27 @@ export default class OrderService extends MongooseFeatures {
     for (const orderData of ordersData) {
       try {
         // Find customer by email
-        const customer = await CustomerModel.findOne({ 
-          customerEmail: orderData.customerEmail 
+        const customer = await CustomerModel.findOne({
+          customerEmail: orderData.customerEmail,
         });
-        
+
         if (!customer) {
           results.failed.push({
             data: orderData,
-            error: `Customer with email ${orderData.customerEmail} not found`
+            error: `Customer with email ${orderData.customerEmail} not found`,
           });
           continue;
         }
 
         // Find product by product code
-        const product = await ProductModel.findOne({ 
-          productCode: orderData.productCode 
+        const product = await ProductModel.findOne({
+          productCode: orderData.productCode,
         });
-        
+
         if (!product) {
           results.failed.push({
             data: orderData,
-            error: `Product with code ${orderData.productCode} not found`
+            error: `Product with code ${orderData.productCode} not found`,
           });
           continue;
         }
@@ -267,14 +324,14 @@ export default class OrderService extends MongooseFeatures {
           quantity: orderData.quantity,
           orderQuantity: orderData.orderQuantity || orderData.quantity,
           orderDiscount: orderData.orderDiscount || 0,
-          orderStatus: orderData.orderStatus || 'Pending',
+          orderStatus: orderData.orderStatus || "Pending",
         };
 
         // Check if order already exists (optional - you can define your own logic)
         const existingOrder = await OrderModel.findOne({
           customer: customer._id,
           product: product._id,
-          orderNumber: orderData.orderNumber
+          orderNumber: orderData.orderNumber,
         });
 
         if (existingOrder && orderData.orderNumber) {
@@ -285,7 +342,10 @@ export default class OrderService extends MongooseFeatures {
             { new: true }
           )
             .populate("customer", "customerName customerEmail customerPhone")
-            .populate("product", "productName productPrice productImage productCode");
+            .populate(
+              "product",
+              "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+            );
 
           results.updated.push(updatedOrder);
         } else {
@@ -293,15 +353,17 @@ export default class OrderService extends MongooseFeatures {
           const newOrder = await OrderModel.create(newOrderData);
           const populatedOrder = await OrderModel.findById(newOrder._id)
             .populate("customer", "customerName customerEmail customerPhone")
-            .populate("product", "productName productPrice productImage productCode");
+            .populate(
+              "product",
+              "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+            );
 
           results.success.push(populatedOrder);
         }
-
       } catch (error: any) {
         results.failed.push({
           data: orderData,
-          error: error.message || 'Unknown error occurred'
+          error: error.message || "Unknown error occurred",
         });
       }
     }

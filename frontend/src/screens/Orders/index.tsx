@@ -86,7 +86,7 @@ export default function OrdersPage() {
   console.log(list);
   const { list: customersList, create: createCustomer } = useCrud("customers");
   const { list: productsList } = useCrud("products");
-
+console.log("productsList:", productsList);
   // Add Order Dialog State
   const [addOpen, setAddOpen] = useState(false);
   const [createNewCustomer, setCreateNewCustomer] = useState(false);
@@ -676,7 +676,7 @@ export default function OrdersPage() {
 
                 <TableCell className="">{order.quantity}</TableCell>
                 <TableCell className="font-medium">
-                  ${calculateOrderTotal(order).toFixed(2)}
+                  {calculateOrderTotal(order).toFixed(2)}  EGP
                 </TableCell>
                 <TableCell className="">{order.orderDiscount}%</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
@@ -1197,13 +1197,13 @@ export default function OrdersPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
-                          ${viewing.product.productPrice.toFixed(2)}
+                          {viewing.product.productPrice.toFixed(2)} EGP
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
-                          $
+                         
                           {(
                             viewing.product.productPrice * viewing.quantity
-                          ).toFixed(2)}
+                          ).toFixed(2)} EGP
                         </td>
                       </tr>
                     </tbody>
