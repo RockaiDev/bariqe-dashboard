@@ -578,10 +578,10 @@ export default class CategoryController extends BaseApi {
           const categoryImage = String(row.getCell(6).value || "").trim();
 
           // تخطي الصفوف الفارغة
-          if (!categoryNameAr && !categoryNameEn && !categoryDescriptionAr && !categoryDescriptionEn) return;
+          if (!categoryNameAr && !categoryNameEn ) return;
           
           // التحقق من البيانات المطلوبة
-          if (!categoryNameAr || !categoryNameEn || !categoryDescriptionAr || !categoryDescriptionEn) {
+          if (!categoryNameAr || !categoryNameEn) {
             throw new ApiError("BAD_REQUEST", `Row ${rowNum}: Missing required fields (Arabic/English names or descriptions)`);
           }
           

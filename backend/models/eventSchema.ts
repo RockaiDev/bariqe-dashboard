@@ -32,6 +32,14 @@ const eventSchema = new Schema(
       type: String,
       required: true,
     },
+    // صورة الحدث الرئيسية
+    eventImage: {
+      type: String,
+    },
+    eventImagePublicId: {
+      type: String,
+    },
+    // ملفات إضافية (PDF, DOC, etc.)
     files: [{
       filename: {
         type: String,

@@ -270,6 +270,10 @@
   "dashboard.failed_load_data": "فشل في جلب البيانات الحية. عرض بيانات تجريبية.",
   "dashboard.using_cached_data": "استخدام بيانات مخزنة.",
   "dashboard.refresh": "تحديث",
+
+ 
+  "optional": "اختياري",
+
   "categories.all_categories": "جميع الفئات",
   "categories.name": "الاسم",
   "categories.description": "الوصف",
@@ -277,9 +281,12 @@
   "categories.created": "تم الإنشاء",
   "categories.updated": "تم التحديث",
   "categories.actions": "الإجراءات",
+
+  
   "categories.active": "نشط",
   "categories.inactive": "غير نشط",
   "categories.search_placeholder": "البحث في الفئات (الاسم، الوصف، الحالة: نشط/غير نشط)...",
+  
   "categories.new_category": "فئة جديدة",
   "categories.edit_category": "تعديل الفئة",
   "categories.category_details": "تفاصيل الفئة",
@@ -290,6 +297,7 @@
   "categories.created_at": "تاريخ الإنشاء",
   "categories.last_updated": "آخر تحديث",
   "categories.not_available": "غير متوفر",
+  
   "categories.toggle_status": "انقر لتفعيل/إلغاء تفعيل هذه الفئة.",
   "categories.save_changes": "حفظ التغييرات",
   "categories.cancel": "إلغاء",
@@ -297,52 +305,65 @@
   "categories.edit": "تعديل",
   "categories.saving": "جاري الحفظ...",
   "categories.create": "إنشاء",
-
-  "categories.import_categories": "استيراد الفئات",
+  
   "categories.select_file": "اختر ملف إكسل",
   "categories.selected": "محدد",
+  "categories.import_categories": "استيراد الفئات",
+  "categories.importing_categories": "جاري استيراد الفئات...",
 
+  
   "categories.import.title": "استيراد الفئات من إكسل",
   "categories.import.description": "استيراد بيانات الفئات من ملف إكسل باستخدام تنسيق النموذج الخاص بنا",
   "categories.import.download_template": "تحميل نموذج الاستيراد",
-  "categories.import.instructions_title": "التعليمات:",
+  "categories.import.instructions_title": "التعليمات",
   "categories.import.instruction_1": "قم بتحميل نموذج الاستيراد أولاً",
   "categories.import.instruction_2": "املأ بيانات الفئات الخاصة بك باتباع تنسيق النموذج",
   "categories.import.instruction_3": "اسم الفئة والوصف مطلوبان",
   "categories.import.instruction_4": "يجب أن تكون الحالة إما 'نشط' أو 'غير نشط'",
   "categories.import.instruction_5": "احفظ الملف بتنسيق .xlsx أو .xls",
   "categories.import.instruction_6": "ارفع الملف باستخدام الزر أدناه",
-
+  
   "categories.view.description": "عرض المعلومات التفصيلية حول الفئة المحددة",
   "categories.edit.description": "تحديث معلومات الفئة. جميع الحقول المميزة بـ * مطلوبة",
   "categories.create.description": "إضافة فئة جديدة إلى قاعدة البيانات. جميع الحقول المميزة بـ * مطلوبة",
-
+  
   "categories.validation.required_fields": "يرجى ملء جميع الحقول المطلوبة",
-
+  
   "categories.edit_success": "تم تحديث الفئة بنجاح!",
   "categories.edit_failed": "فشل في تحديث الفئة",
+
   "categories.delete.success": "تم حذف الفئة بنجاح!",
   "categories.delete.failed": "فشل في حذف الفئة",
-
+  
   "categories.exporting": "جاري تصدير الفئات...",
   "categories.export_success": "تم تصدير الفئات بنجاح!",
   "categories.export_failed": "فشل في تصدير الفئات",
   "categories.downloading_template": "جاري تحميل النموذج...",
   "categories.template_downloaded": "تم تحميل النموذج بنجاح!",
   "categories.template_download_failed": "فشل في تحميل النموذج",
-
-  "categories.importing_categories": "جاري استيراد الفئات...",
+  
   "categories.import_failed": "فشل في استيراد الفئات",
   "categories.select_file_error": "يرجى اختيار ملف للاستيراد",
   "categories.import_success_count": "تم استيراد {count} فئة بنجاح",
   "categories.import_updated_count": "تم تحديث {count} فئة موجودة",
   "categories.import_failed_count": "فشل في استيراد {count} فئة",
-  "categories.import_summary": "الملخص: {success} نجح، {updated} محدث، {failed} فشل",
-
+  "categories.import_summary": "الملخص: {total} إجمالي، {success} نجح، {updated} محدث، {failed} فشل",
+  
   "categories.form.name_ar": "اسم الفئة (عربي)",
   "categories.form.name_en": "اسم الفئة (إنجليزي)",
   "categories.form.description_ar": "وصف الفئة (عربي)",
   "categories.form.description_en": "وصف الفئة (إنجليزي)",
+
+  "categories.image_preview": "معاينة الصورة",
+  "categories.no_image": "لا توجد صورة",
+  "categories.select_image": "اختر صورة",
+  "categories.image_upload_hint": "اختر صورة لتمثيل هذه الفئة (اختياري)",
+  
+
+  
+  "categories.image_too_large": "حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)",
+  "categories.invalid_image_type": "نوع الصورة غير مدعوم (JPEG, PNG, WebP فقط)",
+  "categories.selected_file": "الملف المحدد",
 
   "material_requests.title": "طلبات المواد",
   "material_requests.subtitle": "إدارة طلبات المواد وحالة الموافقة عليها",
@@ -656,8 +677,9 @@
   "general.confirm_reset_database": "هل أنت متأكد من أنك تريد إعادة تعيين قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.",
   "general.reset_database_not_implemented": "وظيفة إعادة تعيين قاعدة البيانات غير مطبقة حتى الآن",
 
+ 
   "events.import_export_events": "استيراد/تصدير الأحداث",
-  "events.import_events": "استيراد الأحداث",
+  "events.import_events": "استيراد الأحداث", 
   "events.select_excel_file": "اختر ملف إكسل للاستيراد",
   "events.choose_file": "اختر ملف",
   "events.importing": "جاري الاستيراد...",
@@ -687,8 +709,13 @@
   "events.event_content_en_required": "محتوى الحدث (إنجليزي) *",
   "events.enter_event_description_ar": "أدخل وصف الحدث بالعربية...",
   "events.enter_event_description_en": "أدخل وصف الحدث بالإنجليزية...",
+  "events.event_image": "صورة الحدث",
+  "events.select_event_image": "اختر صورة للحدث",
+  "events.choose_image": "اختر صورة",
+  "events.image_requirements": "تنسيقات مدعومة: JPG, PNG, WebP. حد أقصى: 5 ميجابايت",
+  "events.image_too_large": "الصورة كبيرة جداً. الحد الأقصى 5 ميجابايت",
   "events.attach_files": "إرفاق ملفات",
-  "events.select_files_to_upload": "اختر ملفات للرفع (صور، PDF، وورد، نص)",
+  "events.select_files_to_upload": "اختر ملفات للرفع (PDF، وورد، نص)",
   "events.choose_files": "اختر ملفات",
   "events.selected_files": "الملفات المحددة ({count})",
   "events.creating_event": "إنشاء الحدث...",
@@ -713,9 +740,16 @@
   "events.form_reset": "تم إعادة تعيين النموذج",
   "events.please_select_image_file": "يرجى اختيار ملف صورة",
   "events.image_selected": "تم اختيار الصورة",
-  "events.confirm_delete": "هل أنت متأكد من أنك تريد حذف \"{title}\"؟",
+  "events.delete_event": "حذف الحدث",
+  "events.delete_event_confirmation": "هل أنت متأكد من أنك تريد حذف الحدث \"{title}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+  "events.delete": "حذف",
   "events.failed_to_delete_event": "فشل في حذف الحدث",
-  "events.confirm_remove_file": "هل أنت متأكد من أنك تريد إزالة \"{fileName}\"؟",
+  "events.event_deleted_success": "تم حذف الحدث بنجاح",
+  "events.remove_file": "إزالة الملف",
+  "events.remove_file_confirmation": "هل أنت متأكد من أنك تريد إزالة الملف \"{fileName}\"؟",
+  "events.remove": "إزالة",
+  "events.file_removed_success": "تم إزالة الملف بنجاح",
+  "events.failed_to_remove_file": "فشل في إزالة الملف",
   "events.editing_mode_enabled": "تم تمكين وضع التعديل",
   "events.edit_cancelled": "تم إلغاء التعديل",
   "events.updating_event": "تحديث الحدث...",
@@ -746,8 +780,9 @@
   "events.english_content": "المحتوى الإنجليزي",
   "events.attached_files": "الملفات المرفقة ({count})",
   "events.no_files_attached": "لا توجد ملفات مرفقة",
-  "events.event_image": "صورة الحدث",
   "events.no_image_attached": "لا توجد صورة مرفقة",
+  "events.has_image": "يحتوي على صورة",
+  "events.click_to_view_full": "اضغط لعرض بالحجم الكامل",
   "events.created": "تم الإنشاء",
   "events.failed_to_load_event_details": "فشل في تحميل تفاصيل الحدث",
   "events.close": "إغلاق",
@@ -757,7 +792,9 @@
   "events.enter_event_content_ar": "أدخل محتوى الحدث بالعربية",
   "events.enter_event_content_en": "أدخل محتوى الحدث بالإنجليزية",
   "events.remove_existing": "إزالة الموجود",
-  "events.existing_image_will_be_removed": "سيتم إزالة الصورة الموجودة",
+  "events.keep_existing": "الاحتفاظ بالموجود",
+  "events.image_will_be_removed": "سيتم إزالة الصورة",
+  "events.select_new_image": "اختر صورة جديدة",
   "events.add_new_files": "إضافة ملفات جديدة",
   "events.select_additional_files": "اختر ملفات إضافية للرفع",
   "events.new_files_to_add": "ملفات جديدة لإضافتها ({count})",

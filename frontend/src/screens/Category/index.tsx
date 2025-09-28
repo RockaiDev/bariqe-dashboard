@@ -125,7 +125,7 @@ export default function CategoryPage() {
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-    const [uploadingImage, setUploadingImage] = useState(false);
+
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string>("");
   const [editForm, setEditForm] = useState({
@@ -216,51 +216,6 @@ const handleImageFileChange = (
   }
 };
 
-// ✅ Change category image only
-const handleChangeCategoryImage = async (
-  categoryId: string,
-  imageFile: File
-) => {
-  setUploadingImage(true);
-  const loadingToast = toast.loading(
-    intl.formatMessage({ id: "categories.uploading_image" })
-  );
-
-  try {
-    const formData = new FormData();
-    formData.append("categoryImage", imageFile);
-
-    const response = await axiosInstance.put(
-      `/categories/${categoryId}/image`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    toast.dismiss(loadingToast);
-    toast.success(
-      intl.formatMessage({ id: "categories.image_updated_success" })
-    );
-
-    // Refresh the data
-    list.refetch();
-
-    return response.data.newImageUrl;
-  } catch (error: any) {
-    toast.dismiss(loadingToast);
-    const errorMessage =
-      error?.response?.data?.message ||
-      error?.message ||
-      intl.formatMessage({ id: "categories.upload_image_failed" });
-    toast.error(errorMessage);
-    throw error;
-  } finally {
-    setUploadingImage(false);
-  }
-};
 
 // ✅ Remove category image
 const handleRemoveCategoryImage = async (categoryId: string) => {
@@ -940,8 +895,7 @@ RenderBody={({ getRowColor }) => (
         if (!editing) return;
         
         // Validate required fields
-        if (!editForm.categoryNameAr || !editForm.categoryNameEn || 
-            !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn) {
+        if (!editForm.categoryNameAr || !editForm.categoryNameEn ) {
           toast.error(intl.formatMessage({ id: "categories.validation.required_fields" }));
           return;
         }
@@ -992,7 +946,7 @@ RenderBody={({ getRowColor }) => (
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Layers className="w-8 h-8 text-gray-400" />
+              <Image className="w-8 h-8 text-gray-400" />
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -1089,7 +1043,7 @@ RenderBody={({ getRowColor }) => (
                     categoryDescriptionAr: e.target.value,
                   }))
                 }
-                required
+                
                 dir="rtl"
               />
 
@@ -1105,7 +1059,7 @@ RenderBody={({ getRowColor }) => (
                     categoryDescriptionEn: e.target.value,
                   }))
                 }
-                required
+                
                 dir="ltr"
               />
             </div>
@@ -1136,8 +1090,7 @@ RenderBody={({ getRowColor }) => (
                 type="submit"
                 className="text-white"
                 disabled={
-                  !editForm.categoryNameAr || !editForm.categoryNameEn || 
-                  !editForm.categoryDescriptionAr || !editForm.categoryDescriptionEn || 
+                  !editForm.categoryNameAr || !editForm.categoryNameEn  || 
                   update.isPending
                 }
               >
@@ -1199,7 +1152,7 @@ function AddCategory({
   create,
   isLoading,
 }: {
-  create: (payload: any) => Promise<any>; // تأكد أن create ترجع Promise
+  create: (payload: any) => Promise<any>;
   isLoading: boolean;
 }) {
   const intl = useIntl();
@@ -1209,7 +1162,7 @@ function AddCategory({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false); // إضافة state للـ loading المحلي
-const [loading , setLoading] = useState(true);
+
   const [form, setForm] = useState({
     categoryNameAr: "",
     categoryNameEn: "",
@@ -1230,8 +1183,7 @@ const [loading , setLoading] = useState(true);
     }
   });
 
-  const canSubmit = form.categoryNameAr.trim() && form.categoryNameEn.trim() && 
-                   form.categoryDescriptionAr.trim() && form.categoryDescriptionEn.trim();
+  const canSubmit = form.categoryNameAr.trim() && form.categoryNameEn.trim() 
 
   // Check if form has changes
   const hasFormChanges = () => {
@@ -1321,7 +1273,7 @@ const [loading , setLoading] = useState(true);
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
-      setLoading(false);
+  
     }
   };
 
@@ -1440,7 +1392,7 @@ const [loading , setLoading] = useState(true);
                 onChange={(e) =>
                   setForm((f) => ({ ...f, categoryDescriptionAr: e.target.value }))
                 }
-                required
+              
                 dir="rtl"
                 disabled={isFormLoading}
               />
@@ -1454,7 +1406,7 @@ const [loading , setLoading] = useState(true);
                 onChange={(e) =>
                   setForm((f) => ({ ...f, categoryDescriptionEn: e.target.value }))
                 }
-                required
+                
                 dir="ltr"
                 disabled={isFormLoading}
               />

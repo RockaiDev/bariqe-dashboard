@@ -63,11 +63,11 @@ export default class CategoryService extends MongooseFeatures {
 
   // 🟢 Add new category
   public async AddCategory(body: any) {
-    if (!body.categoryNameAr || !body.categoryNameEn || 
-        !body.categoryDescriptionAr || !body.categoryDescriptionEn) {
+    if (!body.categoryNameAr || !body.categoryNameEn 
+        ) {
       throw new ApiError(
         "BAD_REQUEST",
-        "Fields 'categoryNameAr', 'categoryNameEn', 'categoryDescriptionAr', and 'categoryDescriptionEn' are required"
+        "Fields 'categoryNameAr', 'categoryNameEn' are required"
       );
     }
 
@@ -186,8 +186,7 @@ export default class CategoryService extends MongooseFeatures {
           console.log(`   Input Arabic: "${categoryData.categoryNameAr}"`);
 
           // التحقق من البيانات المطلوبة
-          if (!categoryData.categoryNameAr?.trim() || !categoryData.categoryNameEn?.trim() ||
-              !categoryData.categoryDescriptionAr?.trim() || !categoryData.categoryDescriptionEn?.trim()) {
+          if (!categoryData.categoryNameAr?.trim() || !categoryData.categoryNameEn?.trim() ) {
             console.log("❌ Missing required fields");
             results.failed.push({
               categoryName: categoryData.categoryNameEn || categoryData.categoryNameAr || "UNKNOWN",

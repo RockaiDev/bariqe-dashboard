@@ -25,16 +25,20 @@ const eventController = new EventController();
 const databaseController = new DatabaseController();
 
 // Multer setup for file uploads
-// Multer setup for file uploads (مُحدث)
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadDir = "uploads/";
     
     // تحديد المجلد حسب نوع الملف
-    if (file.fieldname === "productImage" || file.fieldname === "categoryImage") {
+    if (file.fieldname === "productImage" || 
+        file.fieldname === "categoryImage" || 
+        file.fieldname === "eventImage") {
       uploadDir = "uploads/temp/";
     } else if (file.fieldname === "file") {
       uploadDir = "uploads/";
+    } else if (file.fieldname === "eventFiles") {
+      uploadDir = "uploads/events/";
     }
     
     if (!require("fs").existsSync(uploadDir)) {
@@ -58,12 +62,14 @@ const upload = multer({
       }
     }
     
-    // ✅ إضافة دعم صور الفئات
-    if (file.fieldname === "productImage" || file.fieldname === "categoryImage") {
+    // ✅ إضافة دعم صور المنتجات والفئات والأحداث
+    if (file.fieldname === "productImage" || 
+        file.fieldname === "categoryImage" || 
+        file.fieldname === "eventImage") {
       // Image files
       const allowedTypes = [
         "image/jpeg",
-        "image/jpg",
+        "image/jpg", 
         "image/png",
         "image/webp",
       ];
@@ -72,10 +78,27 @@ const upload = multer({
       }
     }
     
+    // ✅ إضافة دعم ملفات الأحداث (PDF, DOC, etc.)
+    if (file.fieldname === "eventFiles") {
+      const allowedTypes = [
+        "application/pdf",
+        "text/plain", 
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp"
+      ];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error("File type not allowed for event files"));
+      }
+    }
+    
     cb(null, true);
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit للأحداث، 5MB للباقي
   },
 });
 
@@ -427,7 +450,7 @@ protectedRouter.get(
   dashboardController.getMonthlyRevenue.bind(dashboardController)
 );
 /* ==============================
-   EVENT ROUTES
+   EVENT ROUTES (مُحدث لدعم الصور)
 ================================ */
 // Export/Import routes (MUST come before /:id routes)
 protectedRouter.get(
@@ -443,25 +466,59 @@ protectedRouter.post(
   eventController.importEvents.bind(eventController)
 );
 
-// File management routes
+// ✅ Add event with base64 image (يجب أن يأتي قبل /events)
+protectedRouter.post(
+  "/events/base64",
+  eventController.addEventWithBase64.bind(eventController)
+);
+
+// ✅ Image-specific routes (يجب أن تأتي قبل /:id)
+protectedRouter.put(
+  "/events/:id/image",
+  upload.single("eventImage"),
+  eventController.changeEventImage.bind(eventController)
+);
+protectedRouter.delete(
+  "/events/:id/image",
+  eventController.removeEventImage.bind(eventController)
+);
+
+// ✅ Edit with base64 image
+protectedRouter.put(
+  "/events/:id/base64",
+  eventController.editEventWithBase64.bind(eventController)
+);
+
+// File management routes للملفات الإضافية (وليس الصور)
 protectedRouter.delete(
   "/events/:eventId/files/:fileId",
   eventController.removeEventFile.bind(eventController)
 );
 
-// CRUD routes
+// Basic CRUD routes
 protectedRouter.get("/events", eventController.getEvents.bind(eventController));
 protectedRouter.get("/events/:id", eventController.getOne.bind(eventController));
+
+// ✅ Add event with image upload + files
 protectedRouter.post(
   "/events",
-  upload.array("eventFiles", 10), // Allow up to 10 files
+  upload.fields([
+    { name: 'eventImage', maxCount: 1 },
+    { name: 'eventFiles', maxCount: 10 }
+  ]),
   eventController.addEvent.bind(eventController)
 );
+
+// ✅ Edit event with image upload + files  
 protectedRouter.put(
   "/events/:id",
-  upload.array("eventFiles", 10),
+  upload.fields([
+    { name: 'eventImage', maxCount: 1 },
+    { name: 'eventFiles', maxCount: 10 }
+  ]),
   eventController.editEvent.bind(eventController)
 );
+
 protectedRouter.delete(
   "/events/:id",
   eventController.deleteEvent.bind(eventController)

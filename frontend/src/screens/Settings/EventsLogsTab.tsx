@@ -1,3 +1,4 @@
+// EventsLogsTab.tsx - محدث لدعم الصور
 import { useState, useRef } from "react";
 import { useIntl } from 'react-intl';
 import { useForm, type SubmitHandler } from 'react-hook-form';
@@ -16,7 +17,9 @@ import {
   Tag,
   FileImage,
   FilePlus2,
-  Trash2
+  Trash2,
+  ImagePlus,
+  Camera
 } from "lucide-react";
 
 import toast from 'react-hot-toast';
@@ -45,11 +48,14 @@ export default function EventsLogsTab() {
   const intl = useIntl();
   const { admin } = useAuth();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [importProgress, setImportProgress] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
   const { create } = useEvents();
@@ -89,8 +95,39 @@ export default function EventsLogsTab() {
     fileInputRef.current?.click();
   }
 
+  function onChooseImage() {
+    imageInputRef.current?.click();
+  }
+
   function onChooseImportFile() {
     importInputRef.current?.click();
+  }
+
+  function onImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate image file
+    if (!file.type.startsWith('image/')) {
+      toast.error(intl.formatMessage({ id: "events.please_select_image_file" }));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(intl.formatMessage({ id: "events.image_too_large" }));
+      return;
+    }
+
+    setSelectedImage(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    toast.success(intl.formatMessage({ id: "events.image_selected" }));
   }
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -129,6 +166,15 @@ export default function EventsLogsTab() {
     }
   }
 
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+    toast.success(intl.formatMessage({ id: "events.image_removed" }));
+  };
+
   const removeFile = (index: number) => {
     setSelectedFiles(files => files.filter((_, i) => i !== index));
     toast.success(intl.formatMessage({ id: "events.file_removed" }));
@@ -153,6 +199,14 @@ export default function EventsLogsTab() {
       status: 'draft',
     });
     setSelectedFiles([]);
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     toast.success(intl.formatMessage({ id: "events.form_reset" }));
   };
 
@@ -169,6 +223,12 @@ export default function EventsLogsTab() {
         }
       });
 
+      // Add image if selected
+      if (selectedImage) {
+        formData.append('eventImage', selectedImage);
+      }
+
+      // Add files
       selectedFiles.forEach((file) => {
         formData.append('eventFiles', file);
       });
@@ -191,16 +251,7 @@ export default function EventsLogsTab() {
       toast.dismiss(loadingToast);
       toast.success(intl.formatMessage({ id: "events.event_created_success" }));
       
-      reset({
-        titleAr: '',
-        titleEn: '',
-        date: '',
-        tags: '',
-        contentAr: '',
-        contentEn: '',
-        status: 'draft',
-      });
-      setSelectedFiles([]);
+      resetForm();
       setUploadProgress(0);
       
     } catch (error: any) {
@@ -537,6 +588,60 @@ export default function EventsLogsTab() {
               </div>
             </div>
 
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <ImagePlus className="inline h-4 w-4 ml-1" />
+                {intl.formatMessage({ id: "events.event_image" })}
+              </label>
+              
+              {imagePreview ? (
+                <div className="mb-4">
+                  <div className="relative inline-block">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-48 h-32 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      disabled={create.isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                  <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 mb-3">
+                    {intl.formatMessage({ id: "events.select_event_image" })}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onChooseImage}
+                    disabled={create.isPending}
+                  >
+                    {intl.formatMessage({ id: "events.choose_image" })}
+                  </Button>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onImageChange}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                {intl.formatMessage({ id: "events.image_requirements" })}
+              </p>
+            </div>
+
             {/* File Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -560,7 +665,7 @@ export default function EventsLogsTab() {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  accept=".pdf,.doc,.docx,.txt"
                   className="hidden"
                   onChange={onFileChange}
                 />

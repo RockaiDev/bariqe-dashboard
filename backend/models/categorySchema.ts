@@ -22,12 +22,12 @@ const categorySchema = new Schema(
     },
     categoryDescriptionAr: {
       type: String,
-      required: [true, "Arabic description is required"],
+
       trim: true,
     },
     categoryDescriptionEn: {
       type: String,
-      required: [true, "English description is required"],
+    
       trim: true,
     },
     categoryStatus: {
