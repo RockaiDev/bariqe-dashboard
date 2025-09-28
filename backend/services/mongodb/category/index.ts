@@ -12,10 +12,25 @@ export default class CategoryService extends MongooseFeatures {
     this.keys = [
       "categoryNameAr",
       "categoryNameEn",
-      "categoryDescriptionAr",
+      "categoryDescriptionAr", 
       "categoryDescriptionEn",
       "categoryStatus",
+      "categoryImage", // تصحيح الخطأ الإملائي
     ];
+  }
+
+  /**
+   * Helper method to get existing category image safely
+   */
+  private getExistingCategoryImage(category: any): string | null {
+    if (!category) return null;
+
+    // Try different possible structures
+    if (category.categoryImage) return category.categoryImage;
+    if (category.data?.categoryImage) return category.data.categoryImage;
+    if (category._doc?.categoryImage) return category._doc.categoryImage;
+
+    return null;
   }
 
   // 🟢 Get all categories with pagination & sorting
@@ -48,20 +63,21 @@ export default class CategoryService extends MongooseFeatures {
 
   // 🟢 Add new category
   public async AddCategory(body: any) {
-    if (!body.categoryName || !body.categoryDescription) {
+    if (!body.categoryNameAr || !body.categoryNameEn 
+        ) {
       throw new ApiError(
         "BAD_REQUEST",
-        "Fields 'categoryName' and 'categoryDescription' are required"
+        "Fields 'categoryNameAr', 'categoryNameEn' are required"
       );
     }
 
     // Check if category already exists (case-insensitive)
-  let existingCategory = await CategoryModel.findOne({
-            $or: [
-              { categoryNameEn: body.categoryNameEn },
-              { categoryNameAr: body.categoryNameAr },
-            ],
-          });
+    let existingCategory = await CategoryModel.findOne({
+      $or: [
+        { categoryNameEn: body.categoryNameEn },
+        { categoryNameAr: body.categoryNameAr },
+      ],
+    });
 
     if (existingCategory) {
       throw new ApiError(
@@ -133,6 +149,7 @@ export default class CategoryService extends MongooseFeatures {
         categoryDescriptionAr: category.categoryDescriptionAr,
         categoryDescriptionEn: category.categoryDescriptionEn,
         categoryStatus: category.categoryStatus ? "Active" : "Inactive",
+        categoryImage: category.categoryImage || "",
         createdAt: category.createdAt?.toISOString() || "",
         updatedAt: category.updatedAt?.toISOString() || "",
       }));
@@ -153,20 +170,6 @@ export default class CategoryService extends MongooseFeatures {
         "categories"
       );
 
-      // أولاً، اجلب جميع الفئات الموجودة
-      const existingCategories = await CategoryModel.find({}).lean();
-      console.log(
-        "📊 Found",
-        existingCategories.length,
-        "existing categories in database"
-      );
-
-      existingCategories.forEach((cat, i) => {
-        console.log(
-          `${i + 1}. "${cat.categoryNameEn}" / "${cat.categoryNameAr}"`
-        );
-      });
-
       const results = {
         success: [] as string[],
         failed: [] as any[],
@@ -183,8 +186,7 @@ export default class CategoryService extends MongooseFeatures {
           console.log(`   Input Arabic: "${categoryData.categoryNameAr}"`);
 
           // التحقق من البيانات المطلوبة
-          if (!categoryData.categoryNameAr?.trim() || !categoryData.categoryNameEn?.trim() ||
-              !categoryData.categoryDescriptionAr?.trim() || !categoryData.categoryDescriptionEn?.trim()) {
+          if (!categoryData.categoryNameAr?.trim() || !categoryData.categoryNameEn?.trim() ) {
             console.log("❌ Missing required fields");
             results.failed.push({
               categoryName: categoryData.categoryNameEn || categoryData.categoryNameAr || "UNKNOWN",
@@ -202,18 +204,17 @@ export default class CategoryService extends MongooseFeatures {
             categoryStatus:
               String(categoryData.categoryStatus || "Active").toLowerCase() ===
               "active",
+            categoryImage: categoryData.categoryImage || null,
           };
 
           console.log("💾 Prepared data:", {
             nameEn: categoryToSave.categoryNameEn,
             nameAr: categoryToSave.categoryNameAr,
             status: categoryToSave.categoryStatus,
+            hasImage: !!categoryToSave.categoryImage,
           });
 
-          // البحث الدقيق عن فئة موجودة
-          console.log("🔍 Searching for existing category...");
-
-          // البحث بالأسماء الدقيقة أولاً
+          // البحث عن فئة موجودة
           let existingCategory = await CategoryModel.findOne({
             $or: [
               { categoryNameEn: categoryToSave.categoryNameEn },
@@ -221,41 +222,9 @@ export default class CategoryService extends MongooseFeatures {
             ],
           });
 
-          // إذا لم نجد، نبحث باستخدام case-insensitive
-          if (!existingCategory) {
-            existingCategory = await CategoryModel.findOne({
-              $or: [
-                {
-                  categoryNameEn: {
-                    $regex: new RegExp(
-                      `^${categoryToSave.categoryNameEn}$`,
-                      "i"
-                    ),
-                  },
-                },
-                {
-                  categoryNameAr: {
-                    $regex: new RegExp(
-                      `^${categoryToSave.categoryNameAr}$`,
-                      "i"
-                    ),
-                  },
-                },
-              ],
-            });
-          }
-
-          console.log(
-            "🔍 Search result:",
-            existingCategory ? `Found: ${existingCategory._id}` : "Not found"
-          );
-
           if (existingCategory) {
             console.log("📝 Updating existing category:", existingCategory._id);
-            console.log("   Old English:", existingCategory.categoryNameEn);
-            console.log("   New English:", categoryToSave.categoryNameEn);
-
-            // تحديث الفئة الموجودة
+            
             const updatedCategory = await CategoryModel.findByIdAndUpdate(
               existingCategory._id,
               categoryToSave,
@@ -274,23 +243,6 @@ export default class CategoryService extends MongooseFeatures {
           } else {
             console.log("➕ Creating new category");
 
-            // التحقق مرة أخيرة من عدم وجود duplicate
-            const duplicateCheck = await CategoryModel.findOne({
-              $or: [
-                { categoryNameEn: categoryToSave.categoryNameEn },
-                { categoryNameAr: categoryToSave.categoryNameAr },
-              ],
-            });
-
-            if (duplicateCheck) {
-              console.log(
-                "❌ Duplicate found during final check:",
-                duplicateCheck._id
-              );
-              throw new Error("Category name already exists");
-            }
-
-            // إنشاء فئة جديدة
             const newCategory = new CategoryModel(categoryToSave);
             const savedCategory = await newCategory.save();
 
@@ -310,7 +262,6 @@ export default class CategoryService extends MongooseFeatures {
 
           let errorMessage = error.message;
 
-          // التعامل مع أخطاء الـ duplicate key
           if (error.code === 11000) {
             errorMessage = "Category name already exists (duplicate key)";
           }

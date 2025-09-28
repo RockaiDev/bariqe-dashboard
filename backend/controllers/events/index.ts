@@ -5,12 +5,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
-import EventService from '../../services/mongodb/events/index';
+import EventService from "../../services/mongodb/events/index";
+import CloudinaryService from "../../services/cloudinary/CloudinaryService";
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = file.fieldname === "file" ? "uploads/temp/" : "uploads/events/";
+    const uploadDir =
+      file.fieldname === "file" ? "uploads/temp/" : "uploads/events/";
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -30,12 +32,24 @@ const upload = multer({
       if (ext !== ".xlsx" && ext !== ".xls") {
         return cb(new Error("Only Excel files are allowed"));
       }
-    } else if (file.fieldname === "eventFiles") {
-      // Any files for events
+    } else if (file.fieldname === "eventImage") {
+      // Images for events
       const allowedTypes = [
-        "image/jpeg", "image/jpg", "image/png", "image/webp",
-        "application/pdf", "text/plain", "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error("Only JPEG, PNG, and WebP images are allowed"));
+      }
+    } else if (file.fieldname === "eventFiles") {
+      // Other documents
+      const allowedTypes = [
+        "application/pdf",
+        "text/plain",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ];
       if (!allowedTypes.includes(file.mimetype)) {
         return cb(new Error("File type not allowed"));
@@ -51,6 +65,23 @@ const upload = multer({
 const eventService = new EventService();
 
 export default class EventController extends BaseApi {
+  /**
+   * Helper method to get existing event image safely
+   */
+  private getExistingEventImage(event: any): string | null {
+    if (!event) return null;
+
+    // Try different possible structures
+    if (event.eventImage) return event.eventImage;
+    if (event.data?.eventImage) return event.data.eventImage;
+    if (event._doc?.eventImage) return event._doc.eventImage;
+
+    return null;
+  }
+
+  /**
+   * Helper method to clean up uploaded file
+   */
   private cleanupFile(filePath: string) {
     try {
       if (fs.existsSync(filePath)) {
@@ -80,36 +111,322 @@ export default class EventController extends BaseApi {
     }
   }
 
+  // 🟢 Add event (with image support)
+  // في EventController - تحديث addEvent
   public async addEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const files = req.files as Express.Multer.File[];
-      const data = await eventService.AddEvent(req.body, files);
+      let eventData = { ...req.body };
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      let documentFiles: Express.Multer.File[] = [];
+      let imageFile: Express.Multer.File | undefined;
+
+      // Separate image from other files
+      if (files) {
+        imageFile = files["eventImage"] ? files["eventImage"][0] : undefined;
+        documentFiles = files["eventFiles"] || [];
+      }
+
+      // Handle image upload if present
+      if (imageFile) {
+        const publicId = `event_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadFromPath(
+          imageFile.path,
+          "events",
+          publicId
+        );
+        eventData.eventImage = imageUrl;
+        eventData.eventImagePublicId = publicId;
+
+        // Clean up temporary file
+        this.cleanupFile(imageFile.path);
+      }
+
+      const data = await eventService.AddEvent(eventData, documentFiles);
       super.send(res, data);
     } catch (err) {
+      // Clean up uploaded files in case of error
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      if (files) {
+        Object.values(files)
+          .flat()
+          .forEach((file) => this.cleanupFile(file.path));
+      }
       next(err);
     }
   }
 
+  // في EventController - تحديث editEvent
   public async editEvent(req: Request, res: Response, next: NextFunction) {
     try {
+      let eventData = { ...req.body };
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      let documentFiles: Express.Multer.File[] = [];
+      let imageFile: Express.Multer.File | undefined;
+
+      // Separate image from other files
+      if (files) {
+        imageFile = files["eventImage"] ? files["eventImage"][0] : undefined;
+        documentFiles = files["eventFiles"] || [];
+      }
+
+      // Get existing event to check for old image
+      const existingEvent = await eventService.GetOneEvent(req.params.id);
+      const oldImageUrl = this.getExistingEventImage(existingEvent);
+
+      // Handle image upload if present
+      if (imageFile) {
+        const publicId = `event_${req.params.id}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadFromPath(
+          imageFile.path,
+          "events",
+          publicId
+        );
+        eventData.eventImage = imageUrl;
+        eventData.eventImagePublicId = publicId;
+
+        // Clean up temporary file
+        this.cleanupFile(imageFile.path);
+
+        // Delete old image if it exists and upload was successful
+        if (oldImageUrl) {
+          await CloudinaryService.deleteImage(oldImageUrl);
+        }
+      }
+
+      const data = await eventService.EditOneEvent(
+        req.params.id,
+        eventData,
+        documentFiles
+      );
+      super.send(res, data);
+    } catch (err) {
+      // Clean up uploaded files in case of error
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      if (files) {
+        Object.values(files)
+          .flat()
+          .forEach((file) => this.cleanupFile(file.path));
+      }
+      next(err);
+    }
+  }
+
+  // 🟢 Add event with base64 image
+  public async addEventWithBase64(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let eventData = { ...req.body };
       const files = req.files as Express.Multer.File[];
-      const data = await eventService.EditOneEvent(req.params.id, req.body, files);
+
+      // Handle base64 image upload if present
+      if (eventData.eventImageBase64) {
+        const publicId = `event_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadImageFromBase64(
+          eventData.eventImageBase64,
+          "events",
+          publicId
+        );
+        eventData.eventImage = imageUrl;
+        eventData.eventImagePublicId = publicId;
+
+        // Remove base64 data from request
+        delete eventData.eventImageBase64;
+      }
+
+      const data = await eventService.AddEvent(eventData, files);
       super.send(res, data);
     } catch (err) {
       next(err);
     }
   }
 
+  // 🟢 Edit event (with image support)
+
+  // 🟢 Edit event with base64 image
+  public async editEventWithBase64(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let eventData = { ...req.body };
+      const files = req.files as Express.Multer.File[];
+
+      // Get existing event to check for old image
+      const existingEvent = await eventService.GetOneEvent(req.params.id);
+      const oldImageUrl = this.getExistingEventImage(existingEvent);
+
+      // Handle base64 image upload if present
+      if (eventData.eventImageBase64) {
+        const publicId = `event_${req.params.id}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadImageFromBase64(
+          eventData.eventImageBase64,
+          "events",
+          publicId
+        );
+        eventData.eventImage = imageUrl;
+        eventData.eventImagePublicId = publicId;
+
+        // Remove base64 data from request
+        delete eventData.eventImageBase64;
+
+        // Delete old image if it exists and upload was successful
+        if (oldImageUrl) {
+          await CloudinaryService.deleteImage(oldImageUrl);
+        }
+      }
+
+      const data = await eventService.EditOneEvent(
+        req.params.id,
+        eventData,
+        files
+      );
+      super.send(res, data);
+    } catch (err) {
+      console.error("Edit with base64 error:", err);
+      next(err);
+    }
+  }
+
+  // 🟢 Change event image only
+  public async changeEventImage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const eventId = req.params.id;
+
+      // Get existing event
+      const existingEvent = await eventService.GetOneEvent(eventId);
+      if (!existingEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      const oldImageUrl = this.getExistingEventImage(existingEvent);
+      let newImageUrl: string | null = null;
+      let publicId: string | null = null;
+
+      // Handle different upload types
+      if (req.file) {
+        // File upload
+        publicId = `event_${eventId}_${Date.now()}`;
+        newImageUrl = await CloudinaryService.uploadFromPath(
+          req.file.path,
+          "events",
+          publicId
+        );
+        this.cleanupFile(req.file.path);
+      } else if (req.body.eventImageBase64) {
+        // Base64 upload
+        publicId = `event_${eventId}_${Date.now()}`;
+        newImageUrl = await CloudinaryService.uploadImageFromBase64(
+          req.body.eventImageBase64,
+          "events",
+          publicId
+        );
+      } else {
+        return res.status(400).json({ message: "No image provided" });
+      }
+
+      // Update event with new image
+      const data = await eventService.EditOneEvent(eventId, {
+        eventImage: newImageUrl,
+        eventImagePublicId: publicId,
+      });
+
+      // Delete old image if update was successful
+      if (oldImageUrl && data) {
+        await CloudinaryService.deleteImage(oldImageUrl);
+      }
+
+      super.send(res, {
+        message: "Event image updated successfully",
+        data: data,
+        newImageUrl: newImageUrl,
+      });
+    } catch (err) {
+      // Clean up uploaded file in case of error
+      if (req.file) {
+        this.cleanupFile(req.file.path);
+      }
+      next(err);
+    }
+  }
+
+  // 🟢 Remove event image only
+  public async removeEventImage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const eventId = req.params.id;
+
+      // Get existing event
+      const existingEvent = await eventService.GetOneEvent(eventId);
+      if (!existingEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      const oldImageUrl = this.getExistingEventImage(existingEvent);
+
+      if (!oldImageUrl) {
+        return res
+          .status(400)
+          .json({ message: "Event has no image to remove" });
+      }
+
+      // Remove image from event
+      const data = await eventService.EditOneEvent(eventId, {
+        eventImage: null,
+        eventImagePublicId: null,
+      });
+
+      // Delete image from Cloudinary if update was successful
+      if (data) {
+        await CloudinaryService.deleteImage(oldImageUrl);
+      }
+
+      super.send(res, {
+        message: "Event image removed successfully",
+        data: data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // 🟢 Delete event (with image cleanup)
   public async deleteEvent(req: Request, res: Response, next: NextFunction) {
     try {
+      // Get existing event to delete image
+      const existingEvent = await eventService.GetOneEvent(req.params.id);
+      const imageUrl = this.getExistingEventImage(existingEvent);
+
       const result = await eventService.DeleteOneEvent(req.params.id);
+
+      // Delete image from Cloudinary if event deletion was successful
+      if (imageUrl && result) {
+        await CloudinaryService.deleteImage(imageUrl);
+      }
+
       super.send(res, result);
     } catch (err) {
       next(err);
     }
   }
 
-  public async removeEventFile(req: Request, res: Response, next: NextFunction) {
+  public async removeEventFile(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { eventId, fileId } = req.params;
       const result = await eventService.RemoveEventFile(eventId, fileId);
@@ -119,7 +436,7 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Export events to Excel - محدث للحقول الجديدة
+  // 🟢 Export events to Excel
   public async exportEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const events = await eventService.ExportEvents(req.query);
@@ -138,7 +455,6 @@ export default class EventController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // تحديث الأعمدة للحقول الجديدة
       eventsSheet.columns = [
         { header: "Title (Arabic)", key: "titleAr", width: 30 },
         { header: "Title (English)", key: "titleEn", width: 30 },
@@ -148,6 +464,7 @@ export default class EventController extends BaseApi {
         { header: "Content (English)", key: "contentEn", width: 50 },
         { header: "Status", key: "status", width: 15 },
         { header: "Author", key: "author", width: 20 },
+        { header: "Has Image", key: "hasImage", width: 15 },
         { header: "Files Count", key: "filesCount", width: 15 },
         { header: "Created At", key: "createdAt", width: 20 },
         { header: "Updated At", key: "updatedAt", width: 20 },
@@ -204,8 +521,12 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Download import template - محدث للحقول الجديدة
-  public async downloadTemplate(req: Request, res: Response, next: NextFunction) {
+  // 🟢 Download import template
+  public async downloadTemplate(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const workbook = new ExcelJS.Workbook();
       workbook.creator = "AlexChem";
@@ -213,7 +534,6 @@ export default class EventController extends BaseApi {
 
       const eventsSheet = workbook.addWorksheet("Events");
 
-      // تحديث الأعمدة للحقول الجديدة
       eventsSheet.columns = [
         { header: "Title (Arabic)", key: "titleAr", width: 30 },
         { header: "Title (English)", key: "titleEn", width: 30 },
@@ -237,7 +557,7 @@ export default class EventController extends BaseApi {
         horizontal: "center",
       };
 
-      // Add sample data - محدث للحقول الجديدة
+      // Add sample data
       eventsSheet.addRow({
         titleAr: "حدث تجريبي",
         titleEn: "Sample Event",
@@ -288,6 +608,7 @@ export default class EventController extends BaseApi {
         "- Both Arabic and English titles are required",
         "- Both Arabic and English content are required",
         "- Date format should be recognizable (DD/MM/YYYY or MM/DD/YYYY)",
+        "- Images must be uploaded separately after import",
       ];
 
       instructions.forEach((text, index) => {
@@ -312,7 +633,7 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Import events from Excel - محدث للحقول الجديدة
+  // 🟢 Import events from Excel
   public async importEvents(req: Request, res: Response, next: NextFunction) {
     const uploadSingle = upload.single("file");
 
@@ -341,20 +662,21 @@ export default class EventController extends BaseApi {
         eventsSheet.eachRow((row, rowNumber) => {
           if (rowNumber > 1) {
             try {
-              // تحديث قراءة البيانات للحقول الجديدة
               const titleAr = String(row.getCell(1).value || "").trim();
               const titleEn = String(row.getCell(2).value || "").trim();
               const date = row.getCell(3).value;
               const tags = String(row.getCell(4).value || "").trim();
               const contentAr = String(row.getCell(5).value || "").trim();
               const contentEn = String(row.getCell(6).value || "").trim();
-              const status = String(row.getCell(7).value || "").trim() || "draft";
-              const author = String(row.getCell(8).value || "").trim() || "System";
+              const status =
+                String(row.getCell(7).value || "").trim() || "draft";
+              const author =
+                String(row.getCell(8).value || "").trim() || "System";
 
               // Skip empty rows
               if (!titleAr && !titleEn && !contentAr && !contentEn) return;
 
-              // Validation - التحقق من الحقول المطلوبة
+              // Validation
               if (!titleAr || !titleEn) {
                 throw new Error("Missing Arabic or English title");
               }
@@ -414,9 +736,10 @@ export default class EventController extends BaseApi {
         fs.unlinkSync(req.file.path);
 
         super.send(res, {
-          message: eventErrors.length > 0 
-            ? "Import completed with some issues" 
-            : "Import completed successfully",
+          message:
+            eventErrors.length > 0
+              ? "Import completed with some issues"
+              : "Import completed successfully",
           results: importResults,
         });
       } catch (error: any) {

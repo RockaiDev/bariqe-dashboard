@@ -401,9 +401,9 @@ export const useImportEvents = () => {
 
   return useMutation({
     mutationFn: eventsApi.import,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      toast.success(data.message || 'Events imported successfully!');
+      toast.success( 'Events imported successfully!');
     },
     onError: (error: any) => {
       console.error('Import mutation error:', error);

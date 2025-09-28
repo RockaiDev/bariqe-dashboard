@@ -271,6 +271,11 @@
   "dashboard.using_cached_data": "Using cached data.",
   "dashboard.refresh": "Refresh",
 
+  
+
+
+  "optional": "Optional",
+
   "categories.all_categories": "All Categories",
   "categories.name": "Name",
   "categories.description": "Description",
@@ -278,9 +283,12 @@
   "categories.created": "Created",
   "categories.updated": "Updated",
   "categories.actions": "Actions",
+  "categories.image": "Image",
+  
   "categories.active": "Active",
   "categories.inactive": "Inactive",
   "categories.search_placeholder": "Search categories (name, description, status:active/inactive)...",
+  
   "categories.new_category": "New Category",
   "categories.edit_category": "Edit Category",
   "categories.category_details": "Category Details",
@@ -291,6 +299,7 @@
   "categories.created_at": "Created At",
   "categories.last_updated": "Last Updated",
   "categories.not_available": "Not available",
+  
   "categories.toggle_status": "Toggle to activate/deactivate this category.",
   "categories.save_changes": "Save Changes",
   "categories.cancel": "Cancel",
@@ -298,53 +307,78 @@
   "categories.edit": "Edit",
   "categories.saving": "Saving...",
   "categories.create": "Create",
-
-  "categories.import_categories": "Import Categories",
+  
   "categories.select_file": "Select Excel File",
   "categories.selected": "Selected",
+  "categories.import_categories": "Import Categories",
+  "categories.importing_categories": "Importing categories...",
 
+  
   "categories.import.title": "Import Categories from Excel",
   "categories.import.description": "Import category data from an Excel file using our template format",
   "categories.import.download_template": "Download Import Template",
-  "categories.import.instructions_title": "Instructions:",
+  "categories.import.instructions_title": "Instructions",
   "categories.import.instruction_1": "Download the import template first",
   "categories.import.instruction_2": "Fill in your category data following the template format",
   "categories.import.instruction_3": "Category Name and Description are required",
   "categories.import.instruction_4": "Status should be either 'Active' or 'Inactive'",
   "categories.import.instruction_5": "Save the file as .xlsx or .xls format",
   "categories.import.instruction_6": "Upload the file using the button below",
-
+  
   "categories.view.description": "View detailed information about the selected category",
   "categories.edit.description": "Update category information. All fields marked with * are required",
   "categories.create.description": "Add a new category to your database. All fields marked with * are required",
-
+  
   "categories.validation.required_fields": "Please fill in all required fields",
-
+  
   "categories.edit_success": "Category updated successfully!",
   "categories.edit_failed": "Failed to update category",
+  "categories.create.success": "Category created successfully!",
+  "categories.create.failed": "Failed to create category",
   "categories.delete.success": "Category deleted successfully!",
   "categories.delete.failed": "Failed to delete category",
-
+  
   "categories.exporting": "Exporting categories...",
   "categories.export_success": "Categories exported successfully!",
   "categories.export_failed": "Failed to export categories",
   "categories.downloading_template": "Downloading template...",
   "categories.template_downloaded": "Template downloaded successfully!",
   "categories.template_download_failed": "Failed to download template",
-
-  "categories.importing_categories": "Importing categories...",
+  
   "categories.import_failed": "Failed to import categories",
   "categories.select_file_error": "Please select a file to import",
   "categories.import_success_count": "Successfully imported {count} categories",
   "categories.import_updated_count": "Updated {count} existing categories",
   "categories.import_failed_count": "Failed to import {count} categories",
-  "categories.import_summary": "Summary: {success} success, {updated} updated, {failed} failed",
-
+  "categories.import_summary": "Summary: {total} total, {success} success, {updated} updated, {failed} failed",
+  
   "categories.form.name_ar": "Category Name (Arabic)",
   "categories.form.name_en": "Category Name (English)",
   "categories.form.description_ar": "Category Description (Arabic)",
   "categories.form.description_en": "Category Description (English)",
-"categories.importing": "Importing categories...",
+  "categories.form.image": "Category Image",
+  
+  "categories.upload_image": "Upload Image",
+  "categories.change_image": "Change Image",
+  "categories.remove_image": "Remove Image",
+  "categories.remove_from_server": "Remove from Server",
+  "categories.image_preview": "Image Preview",
+  "categories.no_image": "No Image",
+  "categories.select_image": "Select Image",
+  "categories.image_upload_hint": "Choose an image to represent this category (optional)",
+  
+  "categories.uploading_image": "Uploading image...",
+  "categories.removing_image": "Removing image...",
+  "categories.image_updated_success": "Image updated successfully",
+  "categories.image_removed_success": "Image removed successfully",
+  "categories.upload_image_failed": "Failed to upload image",
+  "categories.remove_image_failed": "Failed to remove image",
+  
+  "categories.image_too_large": "Image size is too large (maximum 5MB)",
+  "categories.invalid_image_type": "Unsupported image type (only JPEG, PNG, WebP allowed)",
+  "categories.selected_file": "Selected file",
+
+  "categories.importing": "Importing categories...",
   "material_requests.title": "Material Requests",
   "material_requests.subtitle": "Manage material requests and their approval status",
   "material_requests.requested_materials": "Requested Materials",
@@ -678,8 +712,13 @@
   "events.event_content_en_required": "Event Content (English) *",
   "events.enter_event_description_ar": "Enter event description in Arabic...",
   "events.enter_event_description_en": "Enter event description in English...",
+  "events.event_image": "Event Image",
+  "events.select_event_image": "Select event image",
+  "events.choose_image": "Choose Image",
+  "events.image_requirements": "Supported formats: JPG, PNG, WebP. Max size: 5MB",
+  "events.image_too_large": "Image is too large. Maximum size is 5MB",
   "events.attach_files": "Attach Files",
-  "events.select_files_to_upload": "Select files to upload (images, PDF, Word, text)",
+  "events.select_files_to_upload": "Select files to upload (PDF, Word, text)",
   "events.choose_files": "Choose Files",
   "events.selected_files": "Selected Files ({count})",
   "events.creating_event": "Creating Event...",
@@ -704,9 +743,16 @@
   "events.form_reset": "Form reset",
   "events.please_select_image_file": "Please select an image file",
   "events.image_selected": "Image selected",
-  "events.confirm_delete": "Are you sure you want to delete \"{title}\"?",
+  "events.delete_event": "Delete Event",
+  "events.delete_event_confirmation": "Are you sure you want to delete the event \"{title}\"? This action cannot be undone.",
+  "events.delete": "Delete",
   "events.failed_to_delete_event": "Failed to delete event",
-  "events.confirm_remove_file": "Are you sure you want to remove \"{fileName}\"?",
+  "events.event_deleted_success": "Event deleted successfully",
+  "events.remove_file": "Remove File",
+  "events.remove_file_confirmation": "Are you sure you want to remove the file \"{fileName}\"?",
+  "events.remove": "Remove",
+  "events.file_removed_success": "File removed successfully",
+  "events.failed_to_remove_file": "Failed to remove file",
   "events.editing_mode_enabled": "Editing mode enabled",
   "events.edit_cancelled": "Edit cancelled",
   "events.updating_event": "Updating event...",
@@ -737,8 +783,9 @@
   "events.english_content": "English Content",
   "events.attached_files": "Attached Files ({count})",
   "events.no_files_attached": "No files attached",
-  "events.event_image": "Event Image",
   "events.no_image_attached": "No image attached",
+  "events.has_image": "Has image",
+  "events.click_to_view_full": "Click to view full size",
   "events.created": "Created",
   "events.failed_to_load_event_details": "Failed to load event details",
   "events.close": "Close",
@@ -748,7 +795,9 @@
   "events.enter_event_content_ar": "Enter event content in Arabic",
   "events.enter_event_content_en": "Enter event content in English",
   "events.remove_existing": "Remove Existing",
-  "events.existing_image_will_be_removed": "Existing image will be removed",
+  "events.keep_existing": "Keep Existing",
+  "events.image_will_be_removed": "Image will be removed",
+  "events.select_new_image": "Select new image",
   "events.add_new_files": "Add New Files",
   "events.select_additional_files": "Select additional files to upload",
   "events.new_files_to_add": "New files to add ({count})",
@@ -890,6 +939,7 @@
   "table.active_filters": "Active Filters:",
   "table.date": "Date:",
   "table.search": "Search:",
+  "table.perPage": "perPage",
   "profile.settings": "Profile Settings",
   "profile.view_profile": "View Profile",
   "profile.edit_profile": "Edit Profile",

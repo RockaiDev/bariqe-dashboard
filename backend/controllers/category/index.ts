@@ -7,11 +7,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import ApiError from "../../utils/errors/ApiError";
+import CloudinaryService from "../../services/cloudinary/CloudinaryService";
 
-// 📂 Configure multer for Excel upload
+// 📂 Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = "uploads/";
+    const uploadDir = file.fieldname === "categoryImage" ? "uploads/temp/" : "uploads/";
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -24,19 +25,63 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext !== ".xlsx" && ext !== ".xls") {
-      return cb(new ApiError("BAD_REQUEST", "Only Excel files are allowed"));
+    // Check if it's Excel file
+    if (file.fieldname === "file") {
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (ext !== ".xlsx" && ext !== ".xls") {
+        return cb(new Error("Only Excel files are allowed"));
+      }
+    }
+    // Check if it's image file for category
+    if (file.fieldname === "categoryImage") {
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg", 
+        "image/png",
+        "image/webp",
+      ];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error("Only JPEG, PNG, and WebP images are allowed"));
+      }
     }
     cb(null, true);
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
 });
 
 const categoryService = new CategoryService();
 
 export default class CategoryController extends BaseApi {
+  /**
+   * Helper method to get existing category image safely
+   */
+  private getExistingCategoryImage(category: any): string | null {
+    if (!category) return null;
+
+    if (category.categoryImage) return category.categoryImage;
+    if (category.data?.categoryImage) return category.data.categoryImage;
+    if (category._doc?.categoryImage) return category._doc.categoryImage;
+
+    return null;
+  }
+
+  /**
+   * Helper method to clean up uploaded file
+   */
+  private cleanupFile(filePath: string) {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log("Cleaned up temp file:", filePath);
+      }
+    } catch (error) {
+      console.error("Error cleaning up file:", error);
+    }
+  }
+
   // 🟢 Get all categories
   public async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
@@ -57,33 +102,271 @@ export default class CategoryController extends BaseApi {
     }
   }
 
-  // 🟢 Add category
+  // 🟢 Add category (with image support)
   public async addCategory(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await categoryService.AddCategory(req.body);
+      let categoryData = { ...req.body };
+
+      // Handle image upload if present
+      if (req.file) {
+        const publicId = `category_${categoryData.categoryNameEn || Date.now()}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadFromPath(
+          req.file.path,
+          "categories",
+          publicId
+        );
+        categoryData.categoryImage = imageUrl;
+
+        // Clean up temporary file
+        this.cleanupFile(req.file.path);
+      }
+
+      const data = await categoryService.AddCategory(categoryData);
+      super.send(res, data);
+    } catch (err) {
+      // Clean up uploaded file in case of error
+      if (req.file) {
+        this.cleanupFile(req.file.path);
+      }
+      next(err);
+    }
+  }
+
+  // 🟢 Add category with base64 image
+  public async addCategoryWithBase64(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let categoryData = { ...req.body };
+
+      // Handle base64 image upload if present
+      if (categoryData.categoryImageBase64) {
+        const publicId = `category_${categoryData.categoryNameEn || Date.now()}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadImageFromBase64(
+          categoryData.categoryImageBase64,
+          "categories",
+          publicId
+        );
+        categoryData.categoryImage = imageUrl;
+
+        // Remove base64 data from request
+        delete categoryData.categoryImageBase64;
+      }
+
+      const data = await categoryService.AddCategory(categoryData);
       super.send(res, data);
     } catch (err) {
       next(err);
     }
   }
 
-  // 🟢 Edit category
+  // 🟢 Edit category (with image support)
   public async editCategory(req: Request, res: Response, next: NextFunction) {
     try {
+      let categoryData = { ...req.body };
+
+      // Get existing category to check for old image
+      const existingCategory = await categoryService.GetOneCategory(req.params.id);
+      const oldImageUrl = this.getExistingCategoryImage(existingCategory);
+
+      // Handle image upload if present
+      if (req.file) {
+        const publicId = `category_${categoryData.categoryNameEn || req.params.id}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadFromPath(
+          req.file.path,
+          "categories",
+          publicId
+        );
+        categoryData.categoryImage = imageUrl;
+
+        // Clean up temporary file
+        this.cleanupFile(req.file.path);
+
+        // Delete old image if it exists and upload was successful
+        if (oldImageUrl) {
+          await CloudinaryService.deleteImage(oldImageUrl);
+        }
+      }
+
       const data = await categoryService.EditOneCategory(
         req.params.id,
-        req.body
+        categoryData
       );
       super.send(res, data);
     } catch (err) {
+      // Clean up uploaded file in case of error
+      if (req.file) {
+        this.cleanupFile(req.file.path);
+      }
       next(err);
     }
   }
 
-  // 🟢 Delete category
+  // 🟢 Edit category with base64 image
+  public async editCategoryWithBase64(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let categoryData = { ...req.body };
+
+      // Get existing category to check for old image
+      const existingCategory = await categoryService.GetOneCategory(req.params.id);
+      const oldImageUrl = this.getExistingCategoryImage(existingCategory);
+
+      // Handle base64 image upload if present
+      if (categoryData.categoryImageBase64) {
+        const publicId = `category_${categoryData.categoryNameEn || req.params.id}_${Date.now()}`;
+        const imageUrl = await CloudinaryService.uploadImageFromBase64(
+          categoryData.categoryImageBase64,
+          "categories",
+          publicId
+        );
+        categoryData.categoryImage = imageUrl;
+
+        // Remove base64 data from request
+        delete categoryData.categoryImageBase64;
+
+        // Delete old image if it exists and upload was successful
+        if (oldImageUrl) {
+          await CloudinaryService.deleteImage(oldImageUrl);
+        }
+      }
+
+      const data = await categoryService.EditOneCategory(
+        req.params.id,
+        categoryData
+      );
+      super.send(res, data);
+    } catch (err) {
+      console.error("Edit category with base64 error:", err);
+      next(err);
+    }
+  }
+
+  // 🟢 Change category image only
+  public async changeCategoryImage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const categoryId = req.params.id;
+
+      // Get existing category
+      const existingCategory = await categoryService.GetOneCategory(categoryId);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      const oldImageUrl = this.getExistingCategoryImage(existingCategory);
+      let newImageUrl: string | null = null;
+
+      // Handle different upload types
+      if (req.file) {
+        // File upload
+        const publicId = `category_${categoryId}_${Date.now()}`;
+        newImageUrl = await CloudinaryService.uploadFromPath(
+          req.file.path,
+          "categories",
+          publicId
+        );
+        this.cleanupFile(req.file.path);
+      } else if (req.body.categoryImageBase64) {
+        // Base64 upload
+        const publicId = `category_${categoryId}_${Date.now()}`;
+        newImageUrl = await CloudinaryService.uploadImageFromBase64(
+          req.body.categoryImageBase64,
+          "categories",
+          publicId
+        );
+      } else {
+        return res.status(400).json({ message: "No image provided" });
+      }
+
+      // Update category with new image
+      const data = await categoryService.EditOneCategory(categoryId, {
+        categoryImage: newImageUrl,
+      });
+
+      // Delete old image if update was successful
+      if (oldImageUrl && data) {
+        await CloudinaryService.deleteImage(oldImageUrl);
+      }
+
+      super.send(res, {
+        message: "Category image updated successfully",
+        data: data,
+        newImageUrl: newImageUrl,
+      });
+    } catch (err) {
+      // Clean up uploaded file in case of error
+      if (req.file) {
+        this.cleanupFile(req.file.path);
+      }
+      next(err);
+    }
+  }
+
+  // 🟢 Remove category image only
+  public async removeCategoryImage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const categoryId = req.params.id;
+
+      // Get existing category
+      const existingCategory = await categoryService.GetOneCategory(categoryId);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      const oldImageUrl = this.getExistingCategoryImage(existingCategory);
+
+      if (!oldImageUrl) {
+        return res
+          .status(400)
+          .json({ message: "Category has no image to remove" });
+      }
+
+      // Remove image from category
+      const data = await categoryService.EditOneCategory(categoryId, {
+        categoryImage: null,
+      });
+
+      // Delete image from Cloudinary if update was successful
+      if (data) {
+        await CloudinaryService.deleteImage(oldImageUrl);
+      }
+
+      super.send(res, {
+        message: "Category image removed successfully",
+        data: data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // 🟢 Delete category (with image cleanup)
   public async deleteCategory(req: Request, res: Response, next: NextFunction) {
     try {
+      // Get existing category to delete image
+      const existingCategory = await categoryService.GetOneCategory(req.params.id);
+      const imageUrl = this.getExistingCategoryImage(existingCategory);
+
       const result = await categoryService.DeleteOneCategory(req.params.id);
+
+      // Delete image from Cloudinary if category deletion was successful
+      if (imageUrl && result) {
+        await CloudinaryService.deleteImage(imageUrl);
+      }
+
       super.send(res, result);
     } catch (err) {
       next(err);
@@ -121,6 +404,7 @@ export default class CategoryController extends BaseApi {
         { header: "Description (Arabic)", key: "categoryDescriptionAr", width: 50 },
         { header: "Description (English)", key: "categoryDescriptionEn", width: 50 },
         { header: "Status", key: "categoryStatus", width: 15 },
+        { header: "Image URL", key: "categoryImage", width: 50 },
         { header: "Created At", key: "createdAt", width: 20 },
         { header: "Updated At", key: "updatedAt", width: 20 },
       ];
@@ -187,6 +471,7 @@ export default class CategoryController extends BaseApi {
         { header: "Description (Arabic)", key: "categoryDescriptionAr", width: 50 },
         { header: "Description (English)", key: "categoryDescriptionEn", width: 50 },
         { header: "Status", key: "categoryStatus", width: 15 },
+        { header: "Image URL (Optional)", key: "categoryImage", width: 50 },
       ];
       
       sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -203,6 +488,7 @@ export default class CategoryController extends BaseApi {
         categoryDescriptionAr: "وصف الفئة التجريبية",
         categoryDescriptionEn: "Example category description",
         categoryStatus: "Active",
+        categoryImage: "https://example.com/image.jpg (optional)",
       });
       sheet.addRow({
         categoryNameAr: "فئة أخرى",
@@ -210,12 +496,37 @@ export default class CategoryController extends BaseApi {
         categoryDescriptionAr: "وصف فئة أخرى",
         categoryDescriptionEn: "Another sample category",
         categoryStatus: "Inactive",
+        categoryImage: "",
       });
+
+      // Add data validation for Status
+      sheet.getCell("E2").dataValidation = {
+        type: "list",
+        allowBlank: false,
+        formulae: ['"Active,Inactive"'],
+      };
+      sheet.getCell("E3").dataValidation = {
+        type: "list",
+        allowBlank: false,
+        formulae: ['"Active,Inactive"'],
+      };
 
       const instructions = workbook.addWorksheet("Instructions");
       instructions.addRow(["How to use this template:"]);
       instructions.addRow([
-        "1. Do not modify headers. 2. Fill required fields (Arabic and English names/descriptions). 3. Status must be Active/Inactive.",
+        "1. Do not modify headers.",
+      ]);
+      instructions.addRow([
+        "2. Fill required fields (Arabic and English names/descriptions).",
+      ]);
+      instructions.addRow([
+        "3. Status must be Active/Inactive.",
+      ]);
+      instructions.addRow([
+        "4. Image URL is optional - leave empty if no image.",
+      ]);
+      instructions.addRow([
+        "5. All Arabic and English fields are required.",
       ]);
 
       res.setHeader(
@@ -264,12 +575,13 @@ export default class CategoryController extends BaseApi {
           const categoryDescriptionAr = String(row.getCell(3).value || "").trim();
           const categoryDescriptionEn = String(row.getCell(4).value || "").trim();
           const status = String(row.getCell(5).value || "Active").trim();
+          const categoryImage = String(row.getCell(6).value || "").trim();
 
           // تخطي الصفوف الفارغة
-          if (!categoryNameAr && !categoryNameEn && !categoryDescriptionAr && !categoryDescriptionEn) return;
+          if (!categoryNameAr && !categoryNameEn ) return;
           
           // التحقق من البيانات المطلوبة
-          if (!categoryNameAr || !categoryNameEn || !categoryDescriptionAr || !categoryDescriptionEn) {
+          if (!categoryNameAr || !categoryNameEn) {
             throw new ApiError("BAD_REQUEST", `Row ${rowNum}: Missing required fields (Arabic/English names or descriptions)`);
           }
           
@@ -283,6 +595,7 @@ export default class CategoryController extends BaseApi {
             categoryDescriptionAr,
             categoryDescriptionEn,
             categoryStatus: status,
+            categoryImage: categoryImage || null,
           });
         });
 

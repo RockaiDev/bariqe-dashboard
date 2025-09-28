@@ -13,11 +13,13 @@ export default class EventService extends MongooseFeatures {
     super();
     this.keys = [
       "titleAr",
-      "titleEn",
+      "titleEn", 
       "date",
       "tags",
       "contentAr",
       "contentEn",
+      "eventImage",
+      "eventImagePublicId",
       "files",
       "status",
       "author",
@@ -29,7 +31,7 @@ export default class EventService extends MongooseFeatures {
     const keys = this.keys.sort();
     const { perPage, page, sorts = [], queries = [] } = pick(query, [
       "perPage",
-      "page",
+      "page", 
       "sorts",
       "queries",
     ]);
@@ -59,7 +61,7 @@ export default class EventService extends MongooseFeatures {
   // 🟢 Add new event
   public async AddEvent(body: any, files?: any[]) {
     try {
-      if (!body.titleAr || !body.titleEn || !body.date || 
+      if (!body.titleAr || !body.titleEn || !body.date ||
           !body.contentAr || !body.contentEn) {
         throw new ApiError(
           "BAD_REQUEST",
@@ -74,7 +76,7 @@ export default class EventService extends MongooseFeatures {
 
       const newEvent = pick(body, this.keys);
       
-      // Handle file uploads
+      // Handle file uploads (documents only, images handled separately)
       if (files && files.length > 0) {
         newEvent.files = files.map(file => ({
           filename: file.filename,
@@ -110,7 +112,7 @@ export default class EventService extends MongooseFeatures {
 
       const updateData = pick(body, this.keys);
       
-      // Handle new file uploads
+      // Handle new file uploads (documents only)
       if (files && files.length > 0) {
         const newFiles = files.map(file => ({
           filename: file.filename,
@@ -174,7 +176,7 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Remove file from event
+  // 🟢 Remove file from event (for documents, not images)
   public async RemoveEventFile(eventId: string, fileId: string) {
     try {
       const event = await EventModel.findById(eventId);
@@ -202,7 +204,7 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Export events for Excel - محدث للحقول الجديدة
+  // 🟢 Export events for Excel
   public async ExportEvents(query: any) {
     try {
       const events = await EventModel.find({})
@@ -217,6 +219,7 @@ export default class EventService extends MongooseFeatures {
         contentEn: event.contentEn,
         status: event.status,
         author: event.author,
+        hasImage: event.eventImage ? 'Yes' : 'No',
         filesCount: event.files ? event.files.length : 0,
         createdAt: event.createdAt,
         updatedAt: event.updatedAt,
@@ -228,7 +231,7 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Import events from Excel data - محدث للحقول الجديدة
+  // 🟢 Import events from Excel data
   public async ImportEvents(eventsData: any[]) {
     const results = {
       success: [] as any[],
