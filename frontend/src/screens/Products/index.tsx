@@ -65,7 +65,7 @@ import {
   handleProductFilters,
 } from "@/components/shared/filters";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import productImage from '@/assets/d-koi-5nI9N2wNcBU-unsplash.jpg'
+import productImage from '@/assets/category.jpg'
 // Updated interfaces to match new schema
 interface DiscountTier {
   quantity: number;
