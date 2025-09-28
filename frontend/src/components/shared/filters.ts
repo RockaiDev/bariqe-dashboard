@@ -190,18 +190,7 @@ export const createProductFilterGroups = (categories: Category[], t: (key: strin
       { label: t("filters.inactive"), value: "inactive" },
     ],
   },
-  {
-    label: t("filters.grade"),
-    key: "grade",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.technical"), value: "technical" },
-      { label: t("filters.analytical"), value: "analytical" },
-      { label: t("filters.usp"), value: "usp" },
-      { label: t("filters.fcc"), value: "fcc" },
-      { label: t("filters.cosmetic"), value: "cosmetic" },
-    ],
-  },
+  
   {
     label: t("filters.form"),
     key: "form",
@@ -596,8 +585,9 @@ export const createCategorySearchHandler = (
               "$or",
               "custom",
               [
-                ["categoryName", "contains", searchValue],
-                ["categoryDescription", "contains", searchValue],
+                ["categoryNameAr", "contains", searchValue],
+                ["categoryNameEn", "contains", searchValue],
+           
               ],
             ],
           ], "queries");

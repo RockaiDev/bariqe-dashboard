@@ -36,10 +36,8 @@ export const createProductSearchHandler = (
         return changeFilterFn([["productCode", "contains", code]], "queries");
       } else if (searchValue.startsWith("name:")) {
         const name = searchValue.replace("name:", "");
-        return changeFilterFn([["productName", "contains", name]], "queries");
-      } else if (searchValue.startsWith("grade:")) {
-        const grade = searchValue.replace("grade:", "");
-        return changeFilterFn([["productGrade", "==", grade]], "queries");
+        return changeFilterFn([["productNameAr", "contains", name]], "queries");
+      
       } else if (searchValue.startsWith("form:")) {
         const form = searchValue.replace("form:", "");
         return changeFilterFn([["productForm", "==", form]], "queries");
@@ -54,10 +52,10 @@ export const createProductSearchHandler = (
             "$or",
             "custom",
             [
-              ["productName", "contains", searchValue],
+              ["productNameAr", "contains", searchValue],
+              ["productNameEn", "contains", searchValue],
               ["productCode", "contains", searchValue],
-              ["productGrade", "contains", searchValue],
-              ["productForm", "contains", searchValue],
+         
             ],
           ],
         ], "queries");
