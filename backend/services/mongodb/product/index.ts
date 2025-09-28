@@ -364,8 +364,8 @@ export default class ProductService extends MongooseFeatures {
             if (!category && productData.categoryName) {
               category = await CategoryModel.findOne({
                 $or: [
-                  { categoryNameEn: productData.categoryName },
-                  { categoryNameAr: productData.categoryName }
+                  { categoryNameEn: productData.categoryNameEn},
+                  { categoryNameAr: productData.categoryNameAr  }
                 ]
               });
             }
