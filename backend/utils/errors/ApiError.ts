@@ -6,6 +6,5 @@ export default class ApiError extends Error {
     super();
     this.status = getStatusCode(ReasonPhrases[status]);
     this.message = message;
-  }
-  
+  } 
 }
