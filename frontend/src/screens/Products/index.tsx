@@ -25,7 +25,6 @@ import {
   FileSpreadsheet,
   X,
   Camera,
-
   Loader2,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
@@ -66,11 +65,18 @@ import {
 } from "@/components/shared/filters";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import productImage from '@/assets/d-koi-5nI9N2wNcBU-unsplash.jpg'
+
 // Updated interfaces to match new schema
 interface DiscountTier {
   quantity: number;
   discount: number;
   code: string;
+}
+
+interface SubCategory {
+  _id: string;
+  subCategoryNameAr: string;
+  subCategoryNameEn: string;
 }
 
 interface Product {
@@ -84,13 +90,14 @@ interface Product {
   productCategory:
     | {
         _id: string;
-        categoryName: string;
+        categoryNameAr: string;
+        categoryNameEn: string;
+        subCategories?: SubCategory[];
       }
     | string;
+  productSubCategory?: string; // ✅ إضافة SubCategory
   productImage?: string;
   productStatus: boolean;
-
- 
   productForm: "Solid" | "Liquid" | "Gas" | "Powder" | "Granular";
   productDiscount?: number;
   discountTiers?: DiscountTier[];
@@ -103,6 +110,7 @@ interface Category {
   categoryNameAr: string;
   categoryNameEn: string;
   categoryStatus: boolean;
+  subCategories?: SubCategory[];
 }
 
 export default function ProductsPage() {
@@ -159,6 +167,9 @@ export default function ProductsPage() {
   const { list, create, update, del } = useCrud("products", filters);
   const { list: categoriesList } = useCrud("categories", { perPage: 100 });
 
+  // ✅ State for subcategories
+  // const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+
   // State for file upload
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -177,7 +188,7 @@ export default function ProductsPage() {
 
   // Sort handling
   const currentSort =
-    filters.sorts.length > 0
+    filters.sorts?.length > 0
       ? {
           key: filters.sorts[0].field,
           direction: filters.sorts[0].direction,
@@ -232,14 +243,16 @@ export default function ProductsPage() {
     productCode: "",
     productPrice: 0,
     productCategory: "",
+    productSubCategory: "", // ✅ إضافة SubCategory
     productImage: "",
     productStatus: true,
-
-
-    productForm: "Solid" as Product["productForm"],
+    productForm: "" as Product["productForm"],
     productDiscount: 0,
     discountTiers: [] as DiscountTier[],
   });
+
+  // ✅ State for edit subcategories
+  const [editSubCategories, setEditSubCategories] = useState<SubCategory[]>([]);
 
   // Image upload states
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -256,11 +269,25 @@ export default function ProductsPage() {
       setEditing(null);
       setEditImageFile(null);
       setEditImagePreview("");
+      setEditSubCategories([]); // ✅ Reset subcategories
     },
     onCancel: () => {
       // Handle cancel - stay in dialog
     },
   });
+
+  // ✅ Function to fetch subcategories by category ID
+// ✅ Function to fetch subcategories by category ID - إصلاح الخطأ
+const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> => {
+  try {
+    const response = await axiosInstance.get(`/products/subcategories/${categoryId}`);
+
+    return response as any ; 
+  } catch (error) {
+    console.error("Error fetching subcategories:", error);
+    return [];
+  }
+};
 
   // Function to check if product code exists
   const checkProductCode = async (
@@ -301,10 +328,9 @@ export default function ProductsPage() {
         (typeof editing.productCategory === "object"
           ? editing.productCategory._id
           : editing.productCategory) ||
+      editForm.productSubCategory !== (editing.productSubCategory || "") || // ✅ Check subcategory changes
       editForm.productStatus !== Boolean(editing.productStatus) ||
-
-     
-      editForm.productForm !== (editing.productForm || "Solid") ||
+      editForm.productForm !== (editing.productForm ) ||
       editForm.productDiscount !== (editing.productDiscount || 0) ||
       JSON.stringify(editForm.discountTiers) !==
         JSON.stringify(editing.discountTiers || []) ||
@@ -313,7 +339,7 @@ export default function ProductsPage() {
     );
   };
 
-  const handleEdit = (p: Product) => {
+  const handleEdit = async (p: Product) => {
     setEditing(p);
     setEditForm({
       productNameAr: p.productNameAr,
@@ -326,16 +352,25 @@ export default function ProductsPage() {
         typeof p.productCategory === "object"
           ? p.productCategory._id
           : p.productCategory,
+      productSubCategory: p.productSubCategory || "", // ✅ Set subcategory
       productImage: p.productImage || "",
       productStatus: Boolean(p.productStatus),
-
-     
-      productForm: p.productForm || "Solid",
+      productForm: p.productForm ,
       productDiscount: p.productDiscount || 0,
       discountTiers: p.discountTiers || [],
     });
     setEditImageFile(null);
     setEditImagePreview(p.productImage || "");
+    
+    // ✅ Fetch subcategories for the product's category
+    const categoryId = typeof p.productCategory === "object" 
+      ? p.productCategory._id 
+      : p.productCategory;
+    if (categoryId) {
+      const subs = await fetchSubCategories(categoryId);
+      setEditSubCategories(subs);
+    }
+    
     setEditOpen(true);
   };
 
@@ -353,10 +388,10 @@ export default function ProductsPage() {
       setEditing(null);
       setEditImageFile(null);
       setEditImagePreview("");
+      setEditSubCategories([]); // ✅ Reset subcategories
     }
   };
 
-  // Helper function to get category name
   // Helper function to get category name
   const getCategoryName = (category: any) => {
     if (typeof category === "object" && category) {
@@ -366,6 +401,21 @@ export default function ProductsPage() {
       }
     }
     return category || intl.formatMessage({ id: "products.unknown_category" });
+  };
+
+  // ✅ Helper function to get subcategory name
+  const getSubCategoryName = (product: Product) => {
+    if (!product.productSubCategory) return "-";
+    
+    if (typeof product.productCategory === "object" && product.productCategory.subCategories) {
+      const subCategory = product.productCategory.subCategories.find(
+        sub => sub._id === product.productSubCategory
+      );
+      if (subCategory) {
+        return isRTL ? subCategory.subCategoryNameAr : subCategory.subCategoryNameEn;
+      }
+    }
+    return product.productSubCategory;
   };
 
   // Image upload helpers
@@ -458,7 +508,6 @@ export default function ProductsPage() {
   };
 
   // Export functions
-// Export functions
 const handleExportProducts = async () => {
   const loadingToast = toast.loading(
     intl.formatMessage({ id: "products.exporting" })
@@ -510,7 +559,7 @@ const handleExportProducts = async () => {
     toast.dismiss(loadingToast);
     
     // إضافة رسالة تأكيد تتضمن عدد المنتجات المصدرة
-    const filteredCount = products.length;
+    const filteredCount = products?.length;
     const totalCount = pagination.total;
     
     if (filteredCount < totalCount) {
@@ -734,6 +783,7 @@ const handleExportProducts = async () => {
             checkProductCode={checkProductCode}
             gradeOptions={GRADE_OPTIONS}
             formOptions={FORM_OPTIONS}
+            fetchSubCategories={fetchSubCategories} // ✅ Pass fetchSubCategories
           />
         </div>
       </div>
@@ -743,7 +793,7 @@ const handleExportProducts = async () => {
         icon={Package}
         loading={list.isLoading}
         isEmpty={!products?.length}
-        columnCount={11}
+        columnCount={12} // ✅ تحديث عدد الأعمدة
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
@@ -810,7 +860,14 @@ const handleExportProducts = async () => {
               className="px-2 sm:px-4 py-2"
             />
 
-     
+            {/* ✅ إضافة عمود SubCategory */}
+            <SortableTH
+              sortKey="productSubCategory"
+              label={intl.formatMessage({ id: "products.table.subcategory" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-2 sm:px-4 py-2"
+            />
 
             <SortableTH
               sortKey="productPrice"
@@ -819,8 +876,6 @@ const handleExportProducts = async () => {
               onSortChange={onSortChange}
               className="px-2 sm:px-4 py-2"
             />
-
-      
 
             <SortableTH
               sortKey="productForm"
@@ -854,7 +909,7 @@ const handleExportProducts = async () => {
         )}
         RenderBody={({ getRowColor }) => (
           <>
-            {products.map((p, i) => (
+            {products?.map((p, i) => (
               <TableRow
                 key={p._id}
                 className={`
@@ -898,11 +953,13 @@ const handleExportProducts = async () => {
                 <TableCell className="w-4">
                   {getCategoryName(p.productCategory)}
                 </TableCell>
-              
+                {/* ✅ إضافة خلية SubCategory */}
+                <TableCell className="w-4">
+                  {getSubCategoryName(p)}
+                </TableCell>
                 <TableCell className="font-semibold">
                   {p.productPrice?.toFixed(2)} EGP
                 </TableCell>
-              
                 <TableCell className="text-center">
                   {FORM_OPTIONS.find((f) => f.value === p.productForm)?.label ||
                     p.productForm}
@@ -1097,6 +1154,18 @@ const handleExportProducts = async () => {
                   </div>
                 </div>
 
+                {/* ✅ إضافة عرض SubCategory */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "products.form.subcategory" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <p className="font-medium">
+                      {getSubCategoryName(viewing)}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({ id: "products.form.price" })}
@@ -1107,10 +1176,6 @@ const handleExportProducts = async () => {
                     </p>
                   </div>
                 </div>
-
-        
-
-    
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
@@ -1187,7 +1252,7 @@ const handleExportProducts = async () => {
               )}
 
               {/* Discount Tiers */}
-              {viewing.discountTiers && viewing.discountTiers.length > 0 && (
+              {viewing.discountTiers && viewing.discountTiers?.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({
@@ -1198,7 +1263,7 @@ const handleExportProducts = async () => {
                     <div className="space-y-2">
                       {viewing.discountTiers
                         .sort((a, b) => a.quantity - b.quantity)
-                        .map((tier, index) => (
+                        ?.map((tier, index) => (
                           <div
                             key={index}
                             className="flex justify-between items-center p-2 bg-white rounded"
@@ -1325,8 +1390,8 @@ const handleExportProducts = async () => {
                 !editForm.productDescriptionAr ||
                 !editForm.productDescriptionEn ||
                 !editForm.productCategory ||
+                !editForm.productSubCategory || // ✅ Add subcategory validation
                 editForm.productPrice <= 0 
-              
               ) {
                 toast.error(
                   intl.formatMessage({
@@ -1407,6 +1472,7 @@ const handleExportProducts = async () => {
                     setEditing(null);
                     setEditImageFile(null);
                     setEditImagePreview("");
+                    setEditSubCategories([]); // ✅ Reset subcategories
                   },
                   onError: (error: any) => {
                     const errorMessage =
@@ -1502,7 +1568,7 @@ const handleExportProducts = async () => {
                   setEditForm((f) => ({
                     ...f,
                     productCode: e.target.value,
-                    discountTiers: f.discountTiers.map((tier) => ({
+                    discountTiers: f.discountTiers?.map((tier) => ({
                       ...tier,
                       code: e.target.value,
                     })),
@@ -1541,9 +1607,16 @@ const handleExportProducts = async () => {
                 </Label>
                 <Select
                   value={editForm.productCategory}
-                  onValueChange={(value) =>
-                    setEditForm((f) => ({ ...f, productCategory: value }))
-                  }
+                  onValueChange={async (value) => {
+                    setEditForm((f) => ({ 
+                      ...f, 
+                      productCategory: value,
+                      productSubCategory: "" // ✅ Reset subcategory when category changes
+                    }));
+                    // ✅ Fetch subcategories for the new category
+                    const subs = await fetchSubCategories(value);
+                    setEditSubCategories(subs);
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue
@@ -1553,11 +1626,43 @@ const handleExportProducts = async () => {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {activeCategories.map((category) => (
+                    {activeCategories?.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
                            {isRTL
                           ? category.categoryNameAr 
                           : category.categoryNameEn }
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* ✅ SubCategory Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="edit_productSubCategory">
+                  {intl.formatMessage({ id: "products.form.subcategory" })}{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={editForm.productSubCategory}
+                  onValueChange={(value) =>
+                    setEditForm((f) => ({ ...f, productSubCategory: value }))
+                  }
+                  disabled={!editForm.productCategory || editSubCategories?.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_subcategory",
+                      })}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {editSubCategories?.map((subCategory) => (
+                      <SelectItem key={subCategory._id} value={subCategory._id}>
+                        {isRTL
+                          ? subCategory.subCategoryNameAr 
+                          : subCategory.subCategoryNameEn }
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1580,15 +1685,11 @@ const handleExportProducts = async () => {
                 required
               />
 
-        
-
-    
-
               {/* Form Selector */}
               <div className="space-y-2">
                 <Label htmlFor="edit_productForm">
                   {intl.formatMessage({ id: "products.form.form" })}{" "}
-                  <span className="text-red-500">*</span>
+                
                 </Label>
                 <Select
                   value={editForm.productForm}
@@ -1604,7 +1705,7 @@ const handleExportProducts = async () => {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {FORM_OPTIONS.map((form) => (
+                    {FORM_OPTIONS?.map((form) => (
                       <SelectItem key={form.value} value={form.value}>
                         {form.label}
                       </SelectItem>
@@ -1675,7 +1776,7 @@ const handleExportProducts = async () => {
                 {intl.formatMessage({ id: "products.form.tiered_discounts" })}
               </Label>
               <div className="border rounded-md p-4 space-y-3">
-                {editForm.discountTiers.map((tier, index) => (
+                {editForm.discountTiers?.map((tier, index) => (
                   <div
                     key={index}
                     className="grid grid-cols-12 gap-2 items-end"
@@ -1825,8 +1926,8 @@ const handleExportProducts = async () => {
                   !editForm.productDescriptionAr ||
                   !editForm.productDescriptionEn ||
                   !editForm.productCategory ||
+                  !editForm.productSubCategory || // ✅ Add subcategory validation
                   editForm.productPrice <= 0 ||
-          
                   checkingEditCode ||
                   update.isPending
                 }
@@ -1995,14 +2096,15 @@ const handleExportProducts = async () => {
     </div>
   );
 }
+
 // Add Product Dialog Component with Product Code Validation
 function AddProduct({
   create,
   isLoading,
   categories,
   checkProductCode,
-
   formOptions,
+  fetchSubCategories, // ✅ Add fetchSubCategories prop
 }: {
   create: any;
   isLoading: boolean;
@@ -2010,6 +2112,7 @@ function AddProduct({
   checkProductCode: (code: string) => Promise<boolean>;
   gradeOptions: { label: string; value: string }[];
   formOptions: { label: string; value: string }[];
+  fetchSubCategories: (categoryId: string) => Promise<SubCategory[]>; // ✅ Add type
 }) {
   const intl = useIntl();
   const { isRTL } = useLanguage();
@@ -2018,6 +2121,7 @@ function AddProduct({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [checkingCode, setCheckingCode] = useState(false);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]); // ✅ Add subcategories state
   const [form, setForm] = useState({
     productNameAr: "",
     productNameEn: "",
@@ -2026,11 +2130,10 @@ function AddProduct({
     productCode: "",
     productPrice: 0,
     productCategory: "",
+    productSubCategory: "", // ✅ Add subcategory
     productImage: "",
     productStatus: true,
-
-
-    productForm: "Solid" as const,
+    productForm: "" as const,
     productDiscount: 0,
     discountTiers: [] as DiscountTier[],
   });
@@ -2053,8 +2156,8 @@ function AddProduct({
     form.productDescriptionAr.trim() &&
     form.productDescriptionEn.trim() &&
     form.productCategory.trim() &&
-    form.productPrice > 0 
-  
+    form.productSubCategory.trim() && // ✅ Add subcategory validation
+    form.productPrice > 0;
 
   // Check if form has changes
   const hasFormChanges = () => {
@@ -2066,11 +2169,10 @@ function AddProduct({
       form.productCode !== "" ||
       form.productPrice !== 0 ||
       form.productCategory !== "" ||
-  
-   
-      form.productForm !== "Solid" ||
+      form.productSubCategory !== "" || // ✅ Add subcategory check
+      form.productForm !== "" ||
       form.productDiscount !== 0 ||
-      form.discountTiers.length > 0 ||
+      form.discountTiers?.length > 0 ||
       imageFile !== null ||
       imagePreview !== ""
     );
@@ -2095,16 +2197,16 @@ function AddProduct({
       productCode: "",
       productPrice: 0,
       productCategory: "",
+      productSubCategory: "", // ✅ Reset subcategory
       productImage: "",
       productStatus: true,
-    
-  
-      productForm: "Solid",
+      productForm: "",
       productDiscount: 0,
       discountTiers: [],
     });
     setImageFile(null);
     setImagePreview("");
+    setSubCategories([]); // ✅ Reset subcategories
   };
 
   const handleImageFileChange = (file: File | null) => {
@@ -2196,16 +2298,16 @@ function AddProduct({
           productCode: "",
           productPrice: 0,
           productCategory: "",
+          productSubCategory: "", // ✅ Reset subcategory
           productImage: "",
           productStatus: true,
-  
-  
-          productForm: "Solid",
+          productForm: "",
           productDiscount: 0,
           discountTiers: [],
         });
         setImageFile(null);
         setImagePreview("");
+        setSubCategories([]); // ✅ Reset subcategories
         setOpen(false);
       },
       onError: (error: any) => {
@@ -2357,9 +2459,16 @@ function AddProduct({
                 </Label>
                 <Select
                   value={form.productCategory}
-                  onValueChange={(value) =>
-                    setForm((f) => ({ ...f, productCategory: value }))
-                  }
+                  onValueChange={async (value) => {
+                    setForm((f) => ({ 
+                      ...f, 
+                      productCategory: value,
+                      productSubCategory: "" // ✅ Reset subcategory when category changes
+                    }));
+                    // ✅ Fetch subcategories for the new category
+                    const subs = await fetchSubCategories(value);
+                    setSubCategories(subs);
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue
@@ -2369,11 +2478,43 @@ function AddProduct({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
                         {isRTL
                           ? category.categoryNameAr 
                           : category.categoryNameEn }
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* ✅ SubCategory Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="productSubCategory">
+                  {intl.formatMessage({ id: "products.form.subcategory" })}{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={form.productSubCategory}
+                  onValueChange={(value) =>
+                    setForm((f) => ({ ...f, productSubCategory: value }))
+                  }
+                  disabled={!form.productCategory || subCategories.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={intl.formatMessage({
+                        id: "products.form.select_subcategory",
+                      })}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subCategories?.map((subCategory) => (
+                      <SelectItem key={subCategory._id} value={subCategory._id}>
+                        {isRTL
+                          ? subCategory.subCategoryNameAr 
+                          : subCategory.subCategoryNameEn }
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2396,14 +2537,11 @@ function AddProduct({
                 required
               />
 
-           
-
-
               {/* Form Selector */}
               <div className="space-y-2">
                 <Label htmlFor="productForm">
                   {intl.formatMessage({ id: "products.form.form" })}{" "}
-                  <span className="text-red-500">*</span>
+                 
                 </Label>
                 <Select
                   value={form.productForm}
@@ -2419,7 +2557,7 @@ function AddProduct({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {formOptions.map((formOption) => (
+                    {formOptions?.map((formOption) => (
                       <SelectItem
                         key={formOption.value}
                         value={formOption.value}
@@ -2495,7 +2633,7 @@ function AddProduct({
                 })}
               </Label>
               <div className="border rounded-md p-4 space-y-3">
-                {form.discountTiers.map((tier, index) => (
+                {form.discountTiers?.map((tier, index) => (
                   <div
                     key={index}
                     className="grid grid-cols-12 gap-2 items-end"

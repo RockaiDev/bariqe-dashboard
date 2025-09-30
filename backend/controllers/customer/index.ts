@@ -51,7 +51,7 @@ export default class CustomerController extends BaseApi {
       console.error("Error cleaning up file:", error);
     }
   }
-
+ 
   // 🟢 Get all customers
   public async getCustomers(req: Request, res: Response, next: NextFunction) {
     try {
@@ -105,7 +105,7 @@ export default class CustomerController extends BaseApi {
     }
   }
 
-  // 🟢 Export customers to Excel
+  // ✅ Export customers to Excel
   public async exportCustomers(req: Request, res: Response, next: NextFunction) {
     try {
       const customers = await customerService.ExportCustomers(req.query);
@@ -126,13 +126,14 @@ export default class CustomerController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // Define columns for customers sheet
+      // ✅ Define columns for customers sheet
       customersSheet.columns = [
         { header: "Customer Name", key: "customerName", width: 30 },
-        { header: "Email", key: "customerEmail", width: 30 },
         { header: "Phone", key: "customerPhone", width: 20 },
+        { header: "Email", key: "customerEmail", width: 30 },
         { header: "Address", key: "customerAddress", width: 40 },
         { header: "Source", key: "customerSource", width: 20 },
+        { header: "Location", key: "customerLocation", width: 30 },
         { header: "Notes", key: "customerNotes", width: 40 },
         { header: "Created Date", key: "createdAt", width: 20 },
         { header: "Last Updated", key: "updatedAt", width: 20 },
@@ -192,14 +193,13 @@ export default class CustomerController extends BaseApi {
 
       // Write to response
       await workbook.xlsx.write(res);
-      // Don't call res.end() - ExcelJS handles it
     } catch (err) {
       console.error("Export error:", err);
       next(err);
     }
   }
 
-  // 🟢 Download import template
+  // ✅ Download import template
   public async downloadTemplate(
     req: Request,
     res: Response,
@@ -217,13 +217,14 @@ export default class CustomerController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // Define columns
+      // ✅ Define columns
       customersSheet.columns = [
         { header: "Customer Name", key: "customerName", width: 30 },
-        { header: "Email", key: "customerEmail", width: 30 },
         { header: "Phone", key: "customerPhone", width: 20 },
+        { header: "Email", key: "customerEmail", width: 30 },
         { header: "Address", key: "customerAddress", width: 40 },
         { header: "Source", key: "customerSource", width: 20 },
+        { header: "Location", key: "customerLocation", width: 30 },
         { header: "Notes", key: "customerNotes", width: 40 },
       ];
 
@@ -242,21 +243,22 @@ export default class CustomerController extends BaseApi {
         horizontal: "center",
       };
 
-      // Add sample data
+      // ✅ Add sample data
       const sampleRow = customersSheet.addRow({
         customerName: "John Doe",
-        customerEmail: "john.doe@example.com",
         customerPhone: "+1234567890",
+        customerEmail: "john.doe@example.com",
         customerAddress: "123 Main St, City, Country",
-        customerSource: "Website",
+        customerSource: "order",
+        customerLocation: "Cairo, Egypt",
         customerNotes: "VIP Customer",
       });
 
-      // Add data validation for Source
+      // ✅ Add data validation for Source
       customersSheet.getCell("E2").dataValidation = {
         type: "list",
-        allowBlank: true,
-        formulae: ['"Website,Referral,Direct,Social Media,Trade Show,Other"'],
+        allowBlank: false,
+        formulae: ['"order,consultation,material_request,other"'],
       };
 
       // Add instructions sheet
@@ -276,35 +278,37 @@ export default class CustomerController extends BaseApi {
         fgColor: { argb: "FFFF0000" },
       };
 
-      // Add instruction rows
+      // ✅ Add instruction rows
       const instructions = [
         "How to use this template:",
         "",
         "1. Customers Sheet:",
-        "   - Customer Name: Full name of the customer (required)",
-        "   - Email: Customer email address (required, must be unique)",
-        "   - Phone: Customer phone number (required, must be unique)",
-        "   - Address: Customer address (optional)",
-        "   - Source: How the customer found you (optional)",
-        "     Options: Website, Referral, Direct, Social Media, Trade Show, Other",
+        "   - Customer Name: Full name of the customer (REQUIRED)",
+        "   - Phone: Customer phone number (REQUIRED, must be unique)",
+        "   - Email: Customer email address (optional, must be unique if provided)",
+        "   - Address: Customer address (REQUIRED)",
+        "   - Source: How the customer found you (REQUIRED)",
+        "     Options: order, consultation, material_request, other",
+        "   - Location: Customer location/city (optional)",
         "   - Notes: Any additional notes about the customer (optional)",
         "",
         "2. Important Notes:",
         "   - Do not modify column headers",
-        "   - Email and phone must be unique across all customers",
-        "   - If a customer with the same email or phone exists, they will be updated",
+        "   - Name, Phone, Address, and Source are required fields",
+        "   - Name, Email and phone must be unique across all customers",
+        "   - If a customer with the same name, email or phone exists, they will be updated",
         "   - Leave no empty rows between data",
         "   - Phone numbers should include country code",
         "",
         "3. Tips:",
         "   - You can export existing customers first to see the format",
-        "   - Make sure email addresses are valid",
+        "   - Email addresses should be valid if provided",
         "   - Use consistent phone number format",
+        "   - Customer name and phone are used as identifiers",
       ];
 
       instructions.forEach((text, index) => {
         if (index > 0) {
-          // Skip header row
           instructionsSheet.addRow([text]);
         }
       });
@@ -333,14 +337,13 @@ export default class CustomerController extends BaseApi {
 
       // Write to response
       await workbook.xlsx.write(res);
-      // Don't call res.end() - ExcelJS handles it
     } catch (err) {
       console.error("Template download error:", err);
       next(err);
     }
   }
 
-  // 🟢 Import customers from Excel
+  // ✅ Import customers from Excel
   public async importCustomers(req: Request, res: Response, next: NextFunction) {
     const uploadSingle = upload.single("file");
 
@@ -358,7 +361,6 @@ export default class CustomerController extends BaseApi {
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(req.file.path);
 
-        // ✅ Customers sheet
         const customersSheet = workbook.getWorksheet("Customers");
         if (!customersSheet) {
           throw new Error("Missing 'Customers' sheet in the uploaded file");
@@ -371,52 +373,54 @@ export default class CustomerController extends BaseApi {
           if (rowNumber > 1) {
             try {
               const customerName = String(row.getCell(1).value || "").trim();
-              const customerEmail = String(row.getCell(2).value || "").trim();
-              const customerPhone = String(row.getCell(3).value || "").trim();
+              const customerPhone = String(row.getCell(2).value || "").trim();
+              const customerEmail = String(row.getCell(3).value || "").trim();
               const customerAddress = String(row.getCell(4).value || "").trim();
               const customerSource = String(row.getCell(5).value || "").trim();
-              const customerNotes = String(row.getCell(6).value || "").trim();
+              const customerLocation = String(row.getCell(6).value || "").trim();
+              const customerNotes = String(row.getCell(7).value || "").trim();
 
               // Skip empty rows
-              if (!customerName && !customerEmail && !customerPhone) return;
+              if (!customerName && !customerPhone && !customerAddress && !customerSource) return;
 
-              // Validation
-              if (!customerName || !customerEmail || !customerPhone) {
-                throw new Error("Missing required fields (name, email, or phone)");
+              // ✅ Validation - الحقول المطلوبة الجديدة
+              if (!customerName || !customerPhone || !customerAddress || !customerSource) {
+                throw new Error("Missing required fields (name, phone, address, or source)");
               }
 
-              // Basic email validation
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(customerEmail)) {
-                throw new Error(`Invalid email format: ${customerEmail}`);
+              // Basic email validation if email is provided
+              if (customerEmail) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(customerEmail)) {
+                  throw new Error(`Invalid email format: ${customerEmail}`);
+                }
               }
 
-              // Validate source if provided
+              // ✅ Validate source
               const validSources = [
-                "Website",
-                "Referral",
-                "Direct",
-                "Social Media",
-                "Trade Show",
-                "Other",
+                "order",
+                "consultation",
+                "material_request",
+                "other",
               ];
               if (customerSource && !validSources.includes(customerSource)) {
-                throw new Error(`Invalid source: ${customerSource}`);
+                throw new Error(`Invalid source: ${customerSource}. Valid options: ${validSources.join(', ')}`);
               }
 
               customersData.push({
                 customerName,
-                customerEmail,
                 customerPhone,
+                customerEmail: customerEmail || undefined,
                 customerAddress,
                 customerSource,
+                customerLocation,
                 customerNotes,
               });
             } catch (err: any) {
               customerErrors.push({
                 row: rowNumber,
                 customerName: String(row.getCell(1).value || "").trim() || null,
-                customerEmail: String(row.getCell(2).value || "").trim() || null,
+                customerPhone: String(row.getCell(2).value || "").trim() || null,
                 error: err.message,
               });
             }
@@ -433,7 +437,7 @@ export default class CustomerController extends BaseApi {
           });
         }
 
-        // ✅ Import valid rows
+        // Import valid rows
         const customerResults = await customerService.ImportCustomers(
           customersData
         );
@@ -446,14 +450,14 @@ export default class CustomerController extends BaseApi {
             success: customerResults.success?.length || 0,
             updated: customerResults.updated?.length || 0,
             failed: (customerResults.failed?.length || 0) + customerErrors.length,
-                        validationErrors: customerErrors.length,
+            validationErrors: customerErrors.length,
           },
         };
 
-        // ✅ Clean up file
+        // Clean up file
         this.cleanupFile(req.file.path);
 
-        // ✅ Final response
+        // Final response
         super.send(res, {
           message:
             customerErrors.length > 0
@@ -483,12 +487,12 @@ export default class CustomerController extends BaseApi {
         });
       }
 
-      // Validate each customer has at least an email
-      const invalidCustomers = customers.filter(c => !c.customerEmail);
+      // Validate each customer has at least a phone number (now primary identifier)
+      const invalidCustomers = customers.filter(c => !c.customerPhone);
       if (invalidCustomers.length > 0) {
         return res.status(400).json({
           success: false,
-          error: "All customers must have an email address for bulk update",
+          error: "All customers must have a phone number for bulk update",
         });
       }
 
@@ -508,7 +512,7 @@ export default class CustomerController extends BaseApi {
     }
   }
 
-  // 🟢 Export customers template for bulk operations
+  // ✅ Export customers template for bulk operations
   public async exportBulkTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const workbook = new ExcelJS.Workbook();
@@ -522,13 +526,14 @@ export default class CustomerController extends BaseApi {
         properties: { tabColor: { argb: "00FF00" } },
       });
 
-      // Define columns
+      // ✅ Define columns
       bulkSheet.columns = [
-        { header: "Email (Required)", key: "customerEmail", width: 30 },
+        { header: "Phone (Required)", key: "customerPhone", width: 20 },
         { header: "Customer Name", key: "customerName", width: 30 },
-        { header: "Phone", key: "customerPhone", width: 20 },
+        { header: "Email", key: "customerEmail", width: 30 },
         { header: "Address", key: "customerAddress", width: 40 },
         { header: "Source", key: "customerSource", width: 20 },
+        { header: "Location", key: "customerLocation", width: 30 },
         { header: "Notes", key: "customerNotes", width: 40 },
       ];
 
@@ -547,21 +552,22 @@ export default class CustomerController extends BaseApi {
         horizontal: "center",
       };
 
-      // Add sample data
+      // ✅ Add sample data
       bulkSheet.addRow({
-        customerEmail: "existing.customer@example.com",
-        customerName: "Updated Name",
         customerPhone: "+1234567890",
+        customerName: "Updated Name",
+        customerEmail: "updated.email@example.com",
         customerAddress: "New Address",
-        customerSource: "Referral",
+        customerSource: "consultation",
+        customerLocation: "Alexandria, Egypt",
         customerNotes: "Updated notes",
       });
 
-      // Add data validation for Source
+      // ✅ Add data validation for Source
       bulkSheet.getCell("E2").dataValidation = {
         type: "list",
         allowBlank: true,
-        formulae: ['"Website,Referral,Direct,Social Media,Trade Show,Other"'],
+        formulae: ['"order,consultation,material_request,other"'],
       };
 
       // Add borders
@@ -593,19 +599,25 @@ export default class CustomerController extends BaseApi {
         fgColor: { argb: "FFFF0000" },
       };
 
-      // Add instruction rows
+      // ✅ Add instruction rows
       const instructions = [
         "How to use this bulk update template:",
         "",
-        "1. Email is REQUIRED for identifying customers to update",
+        "1. Phone is REQUIRED for identifying customers to update",
         "2. Only fill in the fields you want to update",
         "3. Leave fields empty if you don't want to change them",
-        "4. Email field cannot be updated (it's used as identifier)",
+        "4. Phone field cannot be updated (it's used as identifier)",
         "",
         "Important Notes:",
-        "- Customer must exist with the given email",
-        "- Phone numbers must be unique if you're updating them",
-        "- Source options: Website, Referral, Direct, Social Media, Trade Show, Other",
+        "- Customer must exist with the given phone number",
+        "- Email addresses must be unique if you're updating them",
+        "- Source options: order, consultation, material_request, other",
+        "- Phone number is used as the primary identifier",
+        "- Location field is optional",
+        "",
+        "Tips:",
+        "- Export existing customers first to get their phone numbers",
+        "- Use the exact same phone format as in your database",
       ];
 
       instructions.forEach((text, index) => {
@@ -626,7 +638,6 @@ export default class CustomerController extends BaseApi {
 
       // Write to response
       await workbook.xlsx.write(res);
-      // Don't call res.end() - ExcelJS handles it
     } catch (err) {
       console.error("Bulk template error:", err);
       next(err);

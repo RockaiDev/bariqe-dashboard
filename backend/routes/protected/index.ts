@@ -10,6 +10,7 @@ import ConsultationRequestsController from "../../controllers/consultationReques
 import DashboardController from "../../controllers/dashboard/index";
 import EventController from "../../controllers/events";
 import DatabaseController from "../../controllers/database";
+
 // Initialize protected routes
 const protectedRouter = Router();
 
@@ -25,7 +26,6 @@ const eventController = new EventController();
 const databaseController = new DatabaseController();
 
 // Multer setup for file uploads
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadDir = "uploads/";
@@ -140,6 +140,10 @@ protectedRouter.post(
   upload.single("productImage"),
   productController.addProduct.bind(productController)
 );
+protectedRouter.get(
+  "/products/subcategories/:categoryId",
+  productController.getSubCategoriesByCategory.bind(productController)
+);
 
 // ✅ Edit product routes with different upload methods
 protectedRouter.put(
@@ -250,8 +254,20 @@ protectedRouter.delete(
 );
 
 /* ==============================
-   MATERIAL REQUEST ROUTES
+   MATERIAL REQUEST ROUTES (✅ محدث مع Customer support)
 ================================ */
+// ✅ Stats and Analytics routes (MUST come before /:id routes)
+protectedRouter.get(
+  "/materialRequests/stats",
+  materialRequestController.getStats.bind(materialRequestController)
+);
+
+// ✅ Customer-specific routes (MUST come before /:id routes)
+protectedRouter.get(
+  "/materialRequests/customer/:customerId",
+  materialRequestController.getByCustomer.bind(materialRequestController)
+);
+
 // Export/Import routes (MUST come before /:id routes)
 protectedRouter.get(
   "/materialRequests/export",
@@ -293,10 +309,10 @@ protectedRouter.delete(
 );
 
 /* ==============================
-   CATEGORY ROUTES (مُحدث)
+   CATEGORY ROUTES (مُحدث مع الـ SubCategories)
 ================================ */
 
-// Export/Import routes (MUST come before /:id routes)
+// 🟢 Export/Import routes (MUST come before /:id routes)
 protectedRouter.get(
   "/categories/export",
   categoryController.exportCategories.bind(categoryController)
@@ -310,10 +326,44 @@ protectedRouter.post(
   categoryController.importCategories.bind(categoryController)
 );
 
+// 🟢 Special utility routes (MUST come before /:id routes)
+protectedRouter.get(
+  "/categories/active",
+  categoryController.getActiveCategories.bind(categoryController)
+);
+protectedRouter.get(
+  "/categories/stats",
+  categoryController.getCategoryStats.bind(categoryController)
+);
+
+// 🟢 Bulk operations (MUST come before /:id routes)
+protectedRouter.delete(
+  "/categories/bulk-delete",
+  categoryController.bulkDeleteCategories.bind(categoryController)
+);
+
 // ✅ Add category with base64 (يجب أن يأتي قبل /categories)
 protectedRouter.post(
   "/categories/base64",
   categoryController.addCategoryWithBase64.bind(categoryController)
+);
+
+// 🟢 SubCategory routes (MUST come before general /:id routes)
+protectedRouter.get(
+  "/categories/:categoryId/subcategories",
+  categoryController.getSubCategories.bind(categoryController)
+);
+protectedRouter.post(
+  "/categories/:categoryId/subcategories",
+  categoryController.addSubCategory.bind(categoryController)
+);
+protectedRouter.put(
+  "/categories/:categoryId/subcategories/:subCategoryId",
+  categoryController.editSubCategory.bind(categoryController)
+);
+protectedRouter.delete(
+  "/categories/:categoryId/subcategories/:subCategoryId",
+  categoryController.deleteSubCategory.bind(categoryController)
 );
 
 // ✅ Image-specific routes (يجب أن تأتي قبل /:id)
@@ -325,6 +375,12 @@ protectedRouter.put(
 protectedRouter.delete(
   "/categories/:id/image",
   categoryController.removeCategoryImage.bind(categoryController)
+);
+
+// 🟢 Status toggle route
+protectedRouter.patch(
+  "/categories/:id/toggle-status",
+  categoryController.toggleCategoryStatus.bind(categoryController)
 );
 
 // ✅ Edit with base64
@@ -361,6 +417,7 @@ protectedRouter.delete(
   "/categories/:id",
   categoryController.deleteCategory.bind(categoryController)
 );
+
 /* ==============================
    CONSULTATION REQUEST ROUTES
 ================================ */
@@ -405,10 +462,10 @@ protectedRouter.delete(
   "/consultation-requests/:id",
   consultationRequestsController.delete.bind(consultationRequestsController)
 );
+
 /* ==============================
    DASHBOARD ROUTES
 ================================ */
-
 protectedRouter.get(
   "/dashboard",
   dashboardController.getDashboardData.bind(dashboardController)
@@ -449,6 +506,7 @@ protectedRouter.get(
   "/dashboard/revenue",
   dashboardController.getMonthlyRevenue.bind(dashboardController)
 );
+
 /* ==============================
    EVENT ROUTES (مُحدث لدعم الصور)
 ================================ */
@@ -541,4 +599,5 @@ protectedRouter.get(
   "/database/download-template",
   databaseController.downloadTemplate.bind(databaseController)
 );
+
 export default protectedRouter;

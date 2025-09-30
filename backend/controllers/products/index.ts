@@ -101,6 +101,17 @@ export default class ProductController extends BaseApi {
     }
   }
 
+  // ✅ Get SubCategories by Category ID - NEW ENDPOINT
+  public async getSubCategoriesByCategory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { categoryId } = req.params;
+      const data = await productService.GetSubCategoriesByCategory(categoryId);
+      super.send(res, data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // 🟢 Add product (with image support)
   public async addProduct(req: Request, res: Response, next: NextFunction) {
     try {
@@ -428,272 +439,257 @@ export default class ProductController extends BaseApi {
     }
   }
 
-  // ✅ Export Products (مُحدث ومُصحح)
-  public async exportProducts(req: Request, res: Response) {
-    try {
-      // تمرير جميع query parameters للـ service
-      const [exportData, discountTiersData, categoriesData] = await Promise.all([
-        productService.ExportProducts(req.query),
-        productService.ExportDiscountTiers(req.query),
-        productService.ExportCategories(req.query), // ✅ الآن الدالة موجودة في ProductService
-      ]);
+  // ✅ Export Products - محدث لدعم SubCategory
+ public async exportProducts(req: Request, res: Response) {
+  try {
+    // تمرير جميع query parameters للـ service
+    const [exportData, discountTiersData, categoriesData] = await Promise.all([
+      productService.ExportProducts(req.query),
+      productService.ExportDiscountTiers(req.query),
+      productService.ExportCategories(req.query),
+    ]);
 
-      console.log(
-        `Exporting ${exportData.length} products, ${discountTiersData.length} discount tiers, and ${categoriesData.length} categories`
-      );
+    console.log(
+      `Exporting ${exportData.length} products, ${discountTiersData.length} discount tiers, and ${categoriesData.length} categories`
+    );
 
-      // إنشاء Excel file
-      const workbook = new ExcelJS.Workbook();
+    // إنشاء Excel file
+    const workbook = new ExcelJS.Workbook();
 
-      // 📋 Products Sheet (محسن)
-      const productsWorksheet = workbook.addWorksheet("Products");
+    // 📋 Products Sheet - محدث لتطابق Template
+    const productsWorksheet = workbook.addWorksheet("Products");
 
-      // إضافة headers للمنتجات (محسن مع تفاصيل الفئات)
-      productsWorksheet.columns = [
-        { header: "Product Code", key: "productCode", width: 15 },
-        { header: "Product Name (AR)", key: "productNameAr", width: 25 },
-        { header: "Product Name (EN)", key: "productNameEn", width: 25 },
-        { header: "Description (AR)", key: "productDescriptionAr", width: 30 },
-        { header: "Description (EN)", key: "productDescriptionEn", width: 30 },
-        { header: "Price", key: "productPrice", width: 12 },
-        { header: "Category ID", key: "categoryId", width: 15 },
-        { header: "Category (AR)", key: "categoryNameAr", width: 20 },
-        { header: "Category (EN)", key: "categoryNameEn", width: 20 },
-        { header: "Category Status", key: "categoryStatus", width: 15 },
-        { header: "Form", key: "productForm", width: 12 },
-        { header: "Product Status", key: "productStatus", width: 12 },
-        { header: "Discount %", key: "productDiscount", width: 12 },
-        { header: "Discount Tiers", key: "discountTiers", width: 30 },
-        { header: "Created Date", key: "createdAt", width: 15 },
-        { header: "Updated Date", key: "updatedAt", width: 15 },
-      ];
+    // ✅ أعمدة مطابقة للـ Template بالضبط
+    productsWorksheet.columns = [
+      { header: "Product Code", key: "productCode", width: 20 },
+      { header: "Product Name (Arabic)", key: "productNameAr", width: 30 },
+      { header: "Product Name (English)", key: "productNameEn", width: 30 },
+      { header: "Description (Arabic)", key: "productDescriptionAr", width: 40 },
+      { header: "Description (English)", key: "productDescriptionEn", width: 40 },
+      { header: "Price", key: "productPrice", width: 15 },
+      { header: "Category (English)", key: "categoryNameEn", width: 25 },
+      { header: "Category (Arabic)", key: "categoryNameAr", width: 25 },
+      { header: "SubCategory (English)", key: "subCategoryNameEn", width: 25 },
+      { header: "SubCategory (Arabic)", key: "subCategoryNameAr", width: 25 },
+      { header: "Form", key: "productForm", width: 15 },
+      { header: "Status", key: "productStatus", width: 15 },
+      { header: "General Discount %", key: "productDiscount", width: 20 },
+    ];
 
-      // تنسيق header للمنتجات
-      const productHeaderRow = productsWorksheet.getRow(1);
-      productHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-      productHeaderRow.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FF4472C4" },
-      };
-      productHeaderRow.alignment = { vertical: "middle", horizontal: "center" };
+    // تنسيق header للمنتجات
+    const productHeaderRow = productsWorksheet.getRow(1);
+    productHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    productHeaderRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF4472C4" },
+    };
+    productHeaderRow.alignment = { vertical: "middle", horizontal: "center" };
 
-      // إضافة بيانات المنتجات (مع التحقق الآمن من الخصائص)
-      exportData.forEach((product: any) => {
-        productsWorksheet.addRow({
-          productCode: product.productCode || "",
-          productNameAr: product.productNameAr || "",
-          productNameEn: product.productNameEn || "",
-          productDescriptionAr: product.productDescriptionAr || "",
-          productDescriptionEn: product.productDescriptionEn || "",
-          productPrice: product.productPrice || 0,
-          categoryId: product.categoryId || "",
-          categoryNameEn: product.categoryNameEn || "",
-          categoryNameAr: product.categoryNameAr || "",
-          categoryStatus: product.categoryStatus ? "Active" : "Inactive",
-          productForm: product.productForm || "",
-          productStatus: product.productStatus ? "Active" : "Inactive",
-          productDiscount: product.productDiscount || 0,
-          discountTiers: product.discountTiers || "",
-          createdAt: product.createdAt 
-            ? new Date(product.createdAt).toLocaleDateString() 
-            : "",
-          updatedAt: product.updatedAt 
-            ? new Date(product.updatedAt).toLocaleDateString() 
-            : "",
-        });
+    // ✅ إضافة بيانات المنتجات بنفس تنسيق الـ Template
+    exportData.forEach((product: any) => {
+      productsWorksheet.addRow({
+        productCode: product.productCode || "",
+        productNameAr: product.productNameAr || "",
+        productNameEn: product.productNameEn || "",
+        productDescriptionAr: product.productDescriptionAr || "",
+        productDescriptionEn: product.productDescriptionEn || "",
+        productPrice: product.productPrice || 0,
+        categoryNameEn: product.categoryNameEn || "",
+        categoryNameAr: product.categoryNameAr || "",
+        subCategoryNameEn: product.subCategoryNameEn || "",
+        subCategoryNameAr: product.subCategoryNameAr || "",
+        productForm: product.productForm || "Solid",
+        productStatus: product.productStatus ? "Active" : "Inactive",
+        productDiscount: product.productDiscount || 0,
       });
+    });
 
-     
+    // 🎯 Discount Tiers Sheet - بنفس التنسيق
+    if (discountTiersData.length > 0) {
+      const discountWorksheet = workbook.addWorksheet("Discount Tiers");
 
-
-
-      // 🎯 Discount Tiers Sheet - إذا كان في discount tiers
-      if (discountTiersData.length > 0) {
-        const discountWorksheet = workbook.addWorksheet("Discount Tiers");
-
-        // إضافة headers للخصومات
-        discountWorksheet.columns = [
-          { header: "Product Code", key: "productCode", width: 15 },
-          { header: "Product Name (AR)", key: "productNameAr", width: 25 },
-          { header: "Product Name (EN)", key: "productNameEn", width: 25 },
-          // { header: "Category (EN)", key: "categoryNameEn", width: 20 },
-          // { header: "Category (AR)", key: "categoryNameAr", width: 20 },
-          { header: "Minimum Quantity", key: "quantity", width: 15 },
-          { header: "Discount %", key: "discount", width: 12 },
-          { header: "Tier Code", key: "tierCode", width: 15 },
-        ];
-
-        // تنسيق header للخصومات
-        const discountHeaderRow = discountWorksheet.getRow(1);
-        discountHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-        discountHeaderRow.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FF70AD47" },
-        };
-        discountHeaderRow.alignment = {
-          vertical: "middle",
-          horizontal: "center",
-        };
-
-        // إضافة بيانات الخصومات
-        discountTiersData.forEach((tier: any) => {
-          discountWorksheet.addRow({
-            productCode: tier.productCode || "",
-            productNameAr: tier.productNameAr || "",
-            productNameEn: tier.productNameEn || "",
-            // categoryNameEn: tier.categoryNameEn || "",
-            // categoryNameAr: tier.categoryNameAr || "",
-            quantity: tier.quantity || 0,
-            discount: tier.discount || 0,
-            tierCode: tier.tierCode || "",
-          });
-        });
-
-        // إضافة borders للـ discount sheet
-        discountWorksheet.eachRow((row) => {
-          row.eachCell((cell) => {
-            cell.border = {
-              top: { style: "thin" },
-              left: { style: "thin" },
-              bottom: { style: "thin" },
-              right: { style: "thin" },
-            };
-          });
-        });
-      }
-
-      // 📊 Categories Statistics Sheet
-      const categoryStatsWorksheet = workbook.addWorksheet("Category Statistics");
-
-      categoryStatsWorksheet.columns = [
-        { header: "Category Name (EN)", key: "categoryNameEn", width: 25 },
-        { header: "Category Name (AR)", key: "categoryNameAr", width: 25 },
-        { header: "Total Products", key: "totalProducts", width: 15 },
-        { header: "Active Products", key: "activeProducts", width: 15 },
-        { header: "Inactive Products", key: "inactiveProducts", width: 15 },
-        { header: "Avg Price", key: "avgPrice", width: 12 },
-        { header: "Min Price", key: "minPrice", width: 12 },
-        { header: "Max Price", key: "maxPrice", width: 12 },
-        { header: "Products with Discount", key: "discountedProducts", width: 18 },
+      discountWorksheet.columns = [
+        { header: "Product Code", key: "productCode", width: 20 },
+        { header: "Product Name (Arabic)", key: "productNameAr", width: 30 },
+        { header: "Product Name (English)", key: "productNameEn", width: 30 },
+        { header: "Quantity", key: "quantity", width: 15 },
+        { header: "Discount %", key: "discount", width: 15 },
       ];
 
-      // تنسيق header للإحصائيات
-      const statsHeaderRow = categoryStatsWorksheet.getRow(1);
-      statsHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-      statsHeaderRow.fill = {
+      // تنسيق header للخصومات
+      const discountHeaderRow = discountWorksheet.getRow(1);
+      discountHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      discountHeaderRow.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FF9966CC" },
+        fgColor: { argb: "FF70AD47" },
       };
-      statsHeaderRow.alignment = {
+      discountHeaderRow.alignment = {
         vertical: "middle",
         horizontal: "center",
       };
 
-      // حساب إحصائيات الفئات
-      const categoryStats: Record<string, any> = {};
-      exportData.forEach((product: any) => {
-        const categoryKey = product.categoryNameEn || "Unknown";
-        
-        if (!categoryStats[categoryKey]) {
-          categoryStats[categoryKey] = {
-            categoryNameEn: product.categoryNameEn || "Unknown",
-            categoryNameAr: product.categoryNameAr || "غير معروف",
-            products: [],
+      // إضافة بيانات الخصومات
+      discountTiersData.forEach((tier: any) => {
+        discountWorksheet.addRow({
+          productCode: tier.productCode || "",
+          productNameAr: tier.productNameAr || "",
+          productNameEn: tier.productNameEn || "",
+          quantity: tier.quantity || 0,
+          discount: tier.discount || 0,
+        });
+      });
+
+      // إضافة borders للـ discount sheet
+      discountWorksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
           };
-        }
-        
-        categoryStats[categoryKey].products.push(product);
-      });
-
-      // إضافة بيانات الإحصائيات
-      Object.values(categoryStats).forEach((stat: any) => {
-        const activeProducts = stat.products.filter((p: any) => p.productStatus).length;
-        const inactiveProducts = stat.products.length - activeProducts;
-        const prices = stat.products.map((p: any) => parseFloat(p.productPrice) || 0);
-        const discountedProducts = stat.products.filter((p: any) => (p.productDiscount || 0) > 0).length;
-
-        categoryStatsWorksheet.addRow({
-          categoryNameEn: stat.categoryNameEn,
-          categoryNameAr: stat.categoryNameAr,
-          totalProducts: stat.products.length,
-          activeProducts: activeProducts,
-          inactiveProducts: inactiveProducts,
-          avgPrice: prices.length > 0 ? (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2) : "0.00",
-          minPrice: prices.length > 0 ? Math.min(...prices).toFixed(2) : "0.00",
-          maxPrice: prices.length > 0 ? Math.max(...prices).toFixed(2) : "0.00",
-          discountedProducts: discountedProducts,
         });
-      });
-
-      // 📊 Summary Sheet (محدث)
-      const summaryWorksheet = workbook.addWorksheet("Export Summary");
-      summaryWorksheet.columns = [
-        { header: "Export Information", key: "info", width: 30 },
-        { header: "Value", key: "value", width: 20 },
-      ];
-
-      const summaryHeaderRow = summaryWorksheet.getRow(1);
-      summaryHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-      summaryHeaderRow.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FF000000" },
-      };
-
-      const exportDate = new Date().toLocaleDateString();
-      const exportTime = new Date().toLocaleTimeString();
-
-      summaryWorksheet.addRow({ info: "Export Date", value: exportDate });
-      summaryWorksheet.addRow({ info: "Export Time", value: exportTime });
-      summaryWorksheet.addRow({ info: "Total Products", value: exportData.length });
-      summaryWorksheet.addRow({ info: "Total Categories", value: categoriesData.length });
-      summaryWorksheet.addRow({ info: "Active Categories", value: categoriesData.filter((c: any) => c.categoryStatus).length });
-      summaryWorksheet.addRow({ info: "Inactive Categories", value: categoriesData.filter((c: any) => !c.categoryStatus).length });
-      summaryWorksheet.addRow({ info: "Total Discount Tiers", value: discountTiersData.length });
-      summaryWorksheet.addRow({ info: "Products with Discounts", value: discountTiersData.length > 0 ? new Set(discountTiersData.map((t: any) => t.productCode)).size : 0 });
-      summaryWorksheet.addRow({ info: "Categories with Products", value: Object.keys(categoryStats).length });
-
-      // إضافة borders لجميع الـ sheets
-      [productsWorksheet,  categoryStatsWorksheet, summaryWorksheet].forEach(worksheet => {
-        worksheet.eachRow((row) => {
-          row.eachCell((cell) => {
-            cell.border = {
-              top: { style: "thin" },
-              left: { style: "thin" },
-              bottom: { style: "thin" },
-              right: { style: "thin" },
-            };
-          });
-        });
-      });
-
-      // تحديد نوع الاستجابة
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=products_complete_export_${new Date().toISOString().split("T")[0]}.xlsx`
-      );
-
-      // إرسال الملف
-      await workbook.xlsx.write(res);
-      res.end();
-
-    } catch (error: any) {
-      console.error("Export error:", error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "Failed to export products with categories",
       });
     }
-  }
 
-  // 🟢 Download import template - UPDATED FOR NEW CATEGORY STRUCTURE
+    // 📊 Category Statistics Sheet - مبسط
+    const categoryStatsWorksheet = workbook.addWorksheet("Category Statistics");
+
+    categoryStatsWorksheet.columns = [
+      { header: "Category Name (English)", key: "categoryNameEn", width: 25 },
+      { header: "Category Name (Arabic)", key: "categoryNameAr", width: 25 },
+      { header: "SubCategories Count", key: "subCategoriesCount", width: 18 },
+      { header: "Total Products", key: "totalProducts", width: 15 },
+      { header: "Active Products", key: "activeProducts", width: 15 },
+      { header: "Inactive Products", key: "inactiveProducts", width: 15 },
+      { header: "Avg Price", key: "avgPrice", width: 12 },
+      { header: "Products with Discount", key: "discountedProducts", width: 18 },
+    ];
+
+    // تنسيق header للإحصائيات
+    const statsHeaderRow = categoryStatsWorksheet.getRow(1);
+    statsHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    statsHeaderRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF9966CC" },
+    };
+    statsHeaderRow.alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+
+    // حساب إحصائيات الفئات
+    const categoryStats: Record<string, any> = {};
+    exportData.forEach((product: any) => {
+      const categoryKey = product.categoryNameEn || "Unknown";
+      
+      if (!categoryStats[categoryKey]) {
+        categoryStats[categoryKey] = {
+          categoryNameEn: product.categoryNameEn || "Unknown",
+          categoryNameAr: product.categoryNameAr || "غير معروف",
+          products: [],
+          subCategories: new Set(),
+        };
+      }
+      
+      categoryStats[categoryKey].products.push(product);
+      
+      if (product.subCategoryNameEn) {
+        categoryStats[categoryKey].subCategories.add(product.subCategoryNameEn);
+      }
+    });
+
+    // إضافة بيانات الإحصائيات
+    Object.values(categoryStats).forEach((stat: any) => {
+      const activeProducts = stat.products.filter((p: any) => p.productStatus).length;
+      const inactiveProducts = stat.products.length - activeProducts;
+      const prices = stat.products.map((p: any) => parseFloat(p.productPrice) || 0);
+      const discountedProducts = stat.products.filter((p: any) => (p.productDiscount || 0) > 0).length;
+
+      categoryStatsWorksheet.addRow({
+        categoryNameEn: stat.categoryNameEn,
+        categoryNameAr: stat.categoryNameAr,
+        subCategoriesCount: stat.subCategories.size,
+        totalProducts: stat.products.length,
+        activeProducts: activeProducts,
+        inactiveProducts: inactiveProducts,
+        avgPrice: prices.length > 0 ? (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2) : "0.00",
+        discountedProducts: discountedProducts,
+      });
+    });
+
+    // 📊 Summary Sheet
+    const summaryWorksheet = workbook.addWorksheet("Export Summary");
+    summaryWorksheet.columns = [
+      { header: "Export Information", key: "info", width: 30 },
+      { header: "Value", key: "value", width: 20 },
+    ];
+
+    const summaryHeaderRow = summaryWorksheet.getRow(1);
+    summaryHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    summaryHeaderRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF000000" },
+    };
+
+    const exportDate = new Date().toLocaleDateString();
+    const exportTime = new Date().toLocaleTimeString();
+
+    const totalSubCategories = categoriesData.reduce((sum: number, cat: any) => sum + (cat.subCategoriesCount || 0), 0);
+    const productsWithSubCategories = exportData.filter((p: any) => p.subCategoryNameEn).length;
+
+    summaryWorksheet.addRow({ info: "Export Date", value: exportDate });
+    summaryWorksheet.addRow({ info: "Export Time", value: exportTime });
+    summaryWorksheet.addRow({ info: "Total Products", value: exportData.length });
+    summaryWorksheet.addRow({ info: "Products with SubCategories", value: productsWithSubCategories });
+    summaryWorksheet.addRow({ info: "Total Categories", value: categoriesData.length });
+    summaryWorksheet.addRow({ info: "Total SubCategories", value: totalSubCategories });
+    summaryWorksheet.addRow({ info: "Active Categories", value: categoriesData.filter((c: any) => c.categoryStatus).length });
+    summaryWorksheet.addRow({ info: "Total Discount Tiers", value: discountTiersData.length });
+    summaryWorksheet.addRow({ info: "Products with Discounts", value: discountTiersData.length > 0 ? new Set(discountTiersData.map((t: any) => t.productCode)).size : 0 });
+
+    // إضافة borders لجميع الـ sheets
+    [productsWorksheet, categoryStatsWorksheet, summaryWorksheet].forEach(worksheet => {
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        });
+      });
+    });
+
+    // تحديد نوع الاستجابة
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=products_export_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+
+    // إرسال الملف
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (error: any) {
+    console.error("Export error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to export products",
+    });
+  }
+}
+
+  // ✅ Download Template - محدث لدعم SubCategory
   public async downloadTemplate(
     req: Request,
     res: Response,
@@ -711,7 +707,7 @@ export default class ProductController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // Define columns - UPDATED for new category structure
+      // ✅ Define columns مع SubCategory
       productsSheet.columns = [
         { header: "Product Code", key: "productCode", width: 20 },
         { header: "Product Name (Arabic)", key: "productNameAr", width: 30 },
@@ -729,6 +725,8 @@ export default class ProductController extends BaseApi {
         { header: "Price", key: "productPrice", width: 15 },
         { header: "Category (English)", key: "categoryNameEn", width: 25 },
         { header: "Category (Arabic)", key: "categoryNameAr", width: 25 },
+        { header: "SubCategory (English)", key: "subCategoryNameEn", width: 25 }, // ✅ جديد
+        { header: "SubCategory (Arabic)", key: "subCategoryNameAr", width: 25 }, // ✅ جديد
         { header: "Form", key: "productForm", width: 15 },
         { header: "Status", key: "productStatus", width: 15 },
         { header: "General Discount %", key: "productDiscount", width: 20 },
@@ -749,7 +747,7 @@ export default class ProductController extends BaseApi {
         horizontal: "center",
       };
 
-      // Add sample data - UPDATED for new category structure
+      // ✅ Add sample data مع SubCategory
       const sampleRow = productsSheet.addRow({
         productCode: "PROD001",
         productNameAr: "منتج تجريبي",
@@ -759,20 +757,22 @@ export default class ProductController extends BaseApi {
         productPrice: 100,
         categoryNameEn: "Category Name English (must exist in system)",
         categoryNameAr: "اسم الفئة بالعربي (يجب أن تكون موجودة في النظام)",
+        subCategoryNameEn: "SubCategory Name English (must exist in selected category)", // ✅ جديد
+        subCategoryNameAr: "اسم الفئة الفرعية بالعربي (يجب أن تكون موجودة في الفئة المحددة)", // ✅ جديد
         productForm: "Solid",
         productStatus: "Active",
         productDiscount: 5,
       });
 
-      // Add data validation for Form (column I - updated position)
-      productsSheet.getCell("I2").dataValidation = {
+      // ✅ Add data validation for Form (column K - updated position)
+      productsSheet.getCell("K2").dataValidation = {
         type: "list",
         allowBlank: false,
         formulae: ['"Solid,Liquid,Gas,Powder,Granular"'],
       };
 
-      // Add data validation for Status (column J - updated position)
-      productsSheet.getCell("J2").dataValidation = {
+      // ✅ Add data validation for Status (column L - updated position)
+      productsSheet.getCell("L2").dataValidation = {
         type: "list",
         allowBlank: false,
         formulae: ['"Active,Inactive"'],
@@ -840,7 +840,7 @@ export default class ProductController extends BaseApi {
         fgColor: { argb: "FFFF0000" },
       };
 
-      // Add instruction rows - UPDATED for new category structure
+      // ✅ Add instruction rows مع SubCategory
       const instructions = [
         "How to use this template:",
         "",
@@ -853,6 +853,8 @@ export default class ProductController extends BaseApi {
         "   - Price: Product price in numbers (required)",
         "   - Category (English): Must match an existing English category name in the system (required)",
         "   - Category (Arabic): Must match an existing Arabic category name in the system (required)",
+        "   - SubCategory (English): Must match an existing English subcategory name in the selected category (required)", // ✅ جديد
+        "   - SubCategory (Arabic): Must match an existing Arabic subcategory name in the selected category (required)", // ✅ جديد
         "   - Form: Choose from: Solid, Liquid, Gas, Powder, Granular (required)",
         "   - Status: Active or Inactive",
         "   - General Discount %: Default discount percentage (optional)",
@@ -866,8 +868,9 @@ export default class ProductController extends BaseApi {
         "",
         "3. Important Notes:",
         "   - Do not modify column headers",
-        "   - Categories must exist in the system before import",
-        "   - You can provide either English or Arabic category name (or both)",
+        "   - Categories and SubCategories must exist in the system before import",
+        "   - SubCategory must belong to the selected Category",
+        "   - You can provide either English or Arabic names (or both) for categories and subcategories",
         "   - Product codes must be unique",
         "   - Both Arabic and English names are required",
         "   - Both Arabic and English descriptions are required",
@@ -913,7 +916,7 @@ export default class ProductController extends BaseApi {
     }
   }
 
-  // 🟢 Import products from Excel - UPDATED FOR NEW CATEGORY STRUCTURE
+  // ✅ Import products - محدث لدعم SubCategory
   public async importProducts(req: Request, res: Response, next: NextFunction) {
     const uploadSingle = upload.single("file");
 
@@ -953,16 +956,18 @@ export default class ProductController extends BaseApi {
                 row.getCell(5).value || ""
               ).trim();
               const productPrice = Number(row.getCell(6).value) || 0;
-              const categoryNameEn = String(row.getCell(7).value || "").trim(); // Column 7 - English category
-              const categoryNameAr = String(row.getCell(8).value || "").trim(); // Column 8 - Arabic category
-              const productForm = String(row.getCell(9).value || "").trim();
-              const productStatus = String(row.getCell(10).value || "").trim();
-              const productDiscount = Number(row.getCell(11).value) || 0;
+              const categoryNameEn = String(row.getCell(7).value || "").trim();
+              const categoryNameAr = String(row.getCell(8).value || "").trim();
+              const subCategoryNameEn = String(row.getCell(9).value || "").trim(); // ✅ جديد
+              const subCategoryNameAr = String(row.getCell(10).value || "").trim(); // ✅ جديد
+              const productForm = String(row.getCell(11).value || "").trim(); // ✅ تحديث position
+              const productStatus = String(row.getCell(12).value || "").trim(); // ✅ تحديث position
+              const productDiscount = Number(row.getCell(13).value) || 0; // ✅ تحديث position
 
               // Skip empty rows
               if (!productCode && !productNameAr && !productNameEn) return;
 
-              // Validation - UPDATED for new category structure
+              // ✅ Validation محدث لدعم SubCategory
               if (!productCode || !productNameAr || !productNameEn) {
                 throw new Error(
                   "Missing product code, Arabic name, or English name"
@@ -971,13 +976,16 @@ export default class ProductController extends BaseApi {
               if (!productDescriptionAr || !productDescriptionEn) {
                 throw new Error("Missing Arabic or English description");
               }
-              if ((!categoryNameEn && !categoryNameAr) ) {
+              if ((!categoryNameEn && !categoryNameAr)) {
                 throw new Error(
                   "Missing required fields (category)"
                 );
               }
-
-              
+              if ((!subCategoryNameEn && !subCategoryNameAr)) { // ✅ جديد
+                throw new Error(
+                  "Missing required fields (subcategory)"
+                );
+              }
 
               productsData.push({
                 productCode,
@@ -986,8 +994,10 @@ export default class ProductController extends BaseApi {
                 productDescriptionAr,
                 productDescriptionEn,
                 productPrice,
-                categoryNameEn, // English category name
-                categoryNameAr, // Arabic category name
+                categoryNameEn,
+                categoryNameAr,
+                subCategoryNameEn, // ✅ جديد
+                subCategoryNameAr, // ✅ جديد
                 productForm,
                 productStatus,
                 productDiscount,
@@ -1041,8 +1051,8 @@ export default class ProductController extends BaseApi {
           discountSheet.eachRow((row, rowNumber) => {
             if (rowNumber > 1) {
               const productCode = String(row.getCell(1).value || "").trim();
-              const quantity = Number(row.getCell(4).value) || 0; // Column 4
-              const discount = Number(row.getCell(5).value) || 0; // Column 5
+              const quantity = Number(row.getCell(4).value) || 0;
+              const discount = Number(row.getCell(5).value) || 0;
 
               if (
                 !productCode ||

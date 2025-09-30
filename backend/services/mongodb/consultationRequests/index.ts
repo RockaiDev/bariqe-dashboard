@@ -186,7 +186,7 @@ export default class ConsultationRequestsService extends MongooseFeatures {
         // تحضير بيانات الكاستمر
         const customerData = {
           customerName: requestData.requestName,
-          customerEmail: requestData.email,
+          customerEmail: requestData.email || "",
           customerPhone: requestData.phone,
           customerMessage: requestData.message,
           customerAddress: requestData.customerAddress || "",

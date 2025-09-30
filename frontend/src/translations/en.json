@@ -166,7 +166,9 @@
   "products.updating": "Updating...",
   "products.creating": "Creating...",
   "products.save_changes": "Save Changes",
-
+  "products.form.subcategory": "Subcategory",
+  "products.form.select_subcategory": "Select Subcategory",
+  "products.table.subcategory": "Subcategory",
   "common.save": "Save",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
@@ -271,9 +273,6 @@
   "dashboard.using_cached_data": "Using cached data.",
   "dashboard.refresh": "Refresh",
 
-  
-
-
   "optional": "Optional",
 
   "categories.all_categories": "All Categories",
@@ -284,11 +283,11 @@
   "categories.updated": "Updated",
   "categories.actions": "Actions",
   "categories.image": "Image",
-  
+
   "categories.active": "Active",
   "categories.inactive": "Inactive",
   "categories.search_placeholder": "Search categories (name, description, status:active/inactive)...",
-  
+
   "categories.new_category": "New Category",
   "categories.edit_category": "Edit Category",
   "categories.category_details": "Category Details",
@@ -299,7 +298,7 @@
   "categories.created_at": "Created At",
   "categories.last_updated": "Last Updated",
   "categories.not_available": "Not available",
-  
+
   "categories.toggle_status": "Toggle to activate/deactivate this category.",
   "categories.save_changes": "Save Changes",
   "categories.cancel": "Cancel",
@@ -307,13 +306,24 @@
   "categories.edit": "Edit",
   "categories.saving": "Saving...",
   "categories.create": "Create",
-  
+
   "categories.select_file": "Select Excel File",
   "categories.selected": "Selected",
   "categories.import_categories": "Import Categories",
   "categories.importing_categories": "Importing categories...",
+  "categories.subcategories": "Subcategories",
+  "categories.subcategories_count": "{count} subcategories",
+  "categories.add_subcategory": "Add Subcategory",
+  "categories.add_first_subcategory": "Add First Subcategory",
+  "categories.no_subcategories": "No subcategories found",
+  "categories.subcategory.name_ar": "Subcategory Name (Arabic)",
+  "categories.subcategory.name_en": "Subcategory Name (English)",
+  "categories.subcategory.description_ar": "Subcategory Description (Arabic)",
+  "categories.subcategory.description_en": "Subcategory Description (English)",
 
-  
+  "categories.delete": "Delete",
+  "categories.save": "Save",
+
   "categories.import.title": "Import Categories from Excel",
   "categories.import.description": "Import category data from an Excel file using our template format",
   "categories.import.download_template": "Download Import Template",
@@ -324,40 +334,40 @@
   "categories.import.instruction_4": "Status should be either 'Active' or 'Inactive'",
   "categories.import.instruction_5": "Save the file as .xlsx or .xls format",
   "categories.import.instruction_6": "Upload the file using the button below",
-  
+
   "categories.view.description": "View detailed information about the selected category",
   "categories.edit.description": "Update category information. All fields marked with * are required",
   "categories.create.description": "Add a new category to your database. All fields marked with * are required",
-  
+
   "categories.validation.required_fields": "Please fill in all required fields",
-  
+
   "categories.edit_success": "Category updated successfully!",
   "categories.edit_failed": "Failed to update category",
   "categories.create.success": "Category created successfully!",
   "categories.create.failed": "Failed to create category",
   "categories.delete.success": "Category deleted successfully!",
   "categories.delete.failed": "Failed to delete category",
-  
+
   "categories.exporting": "Exporting categories...",
   "categories.export_success": "Categories exported successfully!",
   "categories.export_failed": "Failed to export categories",
   "categories.downloading_template": "Downloading template...",
   "categories.template_downloaded": "Template downloaded successfully!",
   "categories.template_download_failed": "Failed to download template",
-  
+
   "categories.import_failed": "Failed to import categories",
   "categories.select_file_error": "Please select a file to import",
   "categories.import_success_count": "Successfully imported {count} categories",
   "categories.import_updated_count": "Updated {count} existing categories",
   "categories.import_failed_count": "Failed to import {count} categories",
   "categories.import_summary": "Summary: {total} total, {success} success, {updated} updated, {failed} failed",
-  
+
   "categories.form.name_ar": "Category Name (Arabic)",
   "categories.form.name_en": "Category Name (English)",
   "categories.form.description_ar": "Category Description (Arabic)",
   "categories.form.description_en": "Category Description (English)",
   "categories.form.image": "Category Image",
-  
+
   "categories.upload_image": "Upload Image",
   "categories.change_image": "Change Image",
   "categories.remove_image": "Remove Image",
@@ -366,14 +376,14 @@
   "categories.no_image": "No Image",
   "categories.select_image": "Select Image",
   "categories.image_upload_hint": "Choose an image to represent this category (optional)",
-  
+
   "categories.uploading_image": "Uploading image...",
   "categories.removing_image": "Removing image...",
   "categories.image_updated_success": "Image updated successfully",
   "categories.image_removed_success": "Image removed successfully",
   "categories.upload_image_failed": "Failed to upload image",
   "categories.remove_image_failed": "Failed to remove image",
-  
+
   "categories.image_too_large": "Image size is too large (maximum 5MB)",
   "categories.invalid_image_type": "Unsupported image type (only JPEG, PNG, WebP allowed)",
   "categories.selected_file": "Selected file",
@@ -419,6 +429,53 @@
   "material_requests.status_updated_success": "Status updated successfully!",
   "material_requests.failed_to_update_status": "Failed to update status",
 
+  "material_requests.created_at": "Created At",
+
+"material_requests.customer_selection": "Customer Selection",
+"material_requests.select_existing_customer": "Select Existing Customer",
+"material_requests.notes":"Material Notes ",
+"material_requests.customer_location": "Customer Location",
+"material_requests.material_location": "Material Location",
+
+  "material_requests.request_created_success": "Request created successfully",
+  "material_requests.request_creation_failed": "Failed to create request",
+
+  "material_requests.create_new_customer": "Create New Customer",
+  "material_requests.customer_name_required": "Customer Name (Required)",
+  "material_requests.enter_customer_name": "Enter customer name",
+  "material_requests.email_placeholder": "Enter email address",
+  "material_requests.phone_required": "Phone (Required)",
+  "material_requests.enter_phone": "Enter phone number",
+  "material_requests.address_required": "Address (Required)",
+  "material_requests.customer_address": "Enter customer address",
+  "material_requests.additional_notes": "Additional notes",
+  "material_requests.select_customer": "Select Customer",
+  "material_requests.choose_customer": "Choose a customer",
+  "material_requests.customer_name": "Customer Name",
+  "material_requests.customer_created_success": "Customer created successfully",
+  "material_requests.failed_customer_creation": "Failed to create customer",
+  "material_requests.create_customer_request": "Create Customer & Request",
+  "material_requests.fill_required_fields": "Please fill all required fields",
+
+  "material_requests.location": "Location",
+  "material_requests.country": "Country",
+  "material_requests.state": "State",
+  "material_requests.city": "City",
+  "material_requests.select_country": "Select Country",
+  "material_requests.select_state": "Select State",
+  "material_requests.select_city": "Select City",
+  "material_requests.get_current_location": "Get Current Location",
+  "material_requests.selected_location": "Selected Location",
+  "material_requests.location_code": "Location Code",
+  "material_requests.geolocation_not_supported": "Geolocation is not supported by this browser",
+  "material_requests.getting_location": "Getting your location...",
+  "material_requests.location_detected": "Location detected successfully",
+  "material_requests.failed_to_get_location": "Failed to get location",
+  "material_requests.location_access_denied": "Location access denied",
+  "material_requests.location_permission_denied": "Location permission denied",
+  "material_requests.location_unavailable": "Location unavailable",
+  "material_requests.location_timeout": "Location request timeout",
+  "material_requests.not_provided": "Not Provided",
   "orders.title": "Orders",
   "orders.subtitle": "View and manage customer orders",
   "orders.export_orders": "Export Orders",
@@ -576,7 +633,7 @@
   "consultation_requests.consultation_and_customer_created": "Consultation request and customer created successfully! Customer ID: {customerId}",
   "consultation_requests.consultation_created_success": "Consultation request created successfully!",
   "consultation_requests.consultation_creation_failed": "Failed to create consultation request",
-
+  "consultation_requests.location_display": "Location: {location}",
   "customers.export_customers": "Export Customers",
   "customers.new_customer": "New Customer",
   "customers.all_customers_leads": "All Customers & leads",
@@ -594,6 +651,30 @@
   "customers.view_detailed_information": "View detailed information about the selected customer.",
   "customers.customer_name": "Customer Name",
   "customers.not_provided": "Not provided",
+
+  "customers.location": "Location",
+  "customers.enter_location": "Enter location",
+  "customers.address_required": "Address (Required)",
+  "customers.country": "Country",
+  "customers.state": "State/Province",
+  "customers.city": "City",
+  "customers.select_country": "Select Country",
+  "customers.select_state": "Select State/Province",
+  "customers.select_city": "Select City",
+  "customers.get_current_location": "Get Current Location",
+  "customers.selected_location": "Selected Location",
+  "customers.location_code": "Location Code",
+  "customers.getting_location": "Getting location...",
+  "customers.location_detected": "Location detected successfully",
+  "customers.failed_to_get_location": "Failed to get location",
+  "customers.geolocation_not_supported": "Geolocation is not supported by this browser",
+  "customers.location_permission_denied": "Location access permission denied",
+  "customers.location_unavailable": "Location information is unavailable",
+  "customers.location_timeout": "Location request timed out",
+  "customers.location_access_denied": "Location access denied",
+  "orders.source_required": "Source (Required)",
+  "orders.select_source": "Select Source",
+  "orders.address_required": "Address (Required)",
 
   "customers.no_notes_available": "No notes available",
   "customers.created_at": "Created At",

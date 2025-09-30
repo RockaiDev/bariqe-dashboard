@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIntl } from 'react-intl';
+import { Country, State, City } from 'country-state-city'; // ✅ إضافة المكتبة
 import {
   Dialog,
   DialogClose,
@@ -29,6 +30,8 @@ import {
   Download,
   Calendar,
   SquareArrowUpRight,
+  MapPin,
+  Navigation, // ✅ إضافة أيقونة للموقع الحالي
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -57,10 +60,20 @@ export interface Customer {
   customerEmail: string;
   customerPhone: string;
   customerAddress?: string;
+  customerLocation?: string;
   customerNotes: string;
   customerSource: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ✅ إضافة interface للموقع
+interface LocationData {
+  country: string;
+  state: string;
+  city: string;
+  countryCode: string;
+  stateCode: string;
 }
 
 export default function CustomersPage() {
@@ -120,7 +133,7 @@ export default function CustomersPage() {
   const [viewOpen, setViewOpen] = useState(false);
   const [viewing, setViewing] = useState<Customer | null>(null);
 
-  // Edit state مع إضافة states للتأكيد
+  // Edit state
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [showEditConfirmDialog, setShowEditConfirmDialog] = useState(false);
@@ -129,6 +142,7 @@ export default function CustomersPage() {
     customerEmail: "",
     customerPhone: "",
     customerAddress: "",
+    customerLocation: "",
     customerNotes: "",
     customerSource: "",
   });
@@ -137,16 +151,26 @@ export default function CustomersPage() {
     customerEmail: "",
     customerPhone: "",
     customerAddress: "",
+    customerLocation: "",
     customerNotes: "",
     customerSource: "",
   });
 
-  // التحقق من وجود تغييرات في Edit Form
+  // ✅ إضافة state للموقع في Edit
+  const [editLocationData, setEditLocationData] = useState<LocationData>({
+    country: "",
+    state: "",
+    city: "",
+    countryCode: "",
+    stateCode: "",
+  });
+
   const isEditFormDirty =
     editForm.customerName !== originalEditForm.customerName ||
     editForm.customerEmail !== originalEditForm.customerEmail ||
     editForm.customerPhone !== originalEditForm.customerPhone ||
     editForm.customerAddress !== originalEditForm.customerAddress ||
+    editForm.customerLocation !== originalEditForm.customerLocation ||
     editForm.customerNotes !== originalEditForm.customerNotes ||
     editForm.customerSource !== originalEditForm.customerSource;
 
@@ -157,15 +181,29 @@ export default function CustomersPage() {
       customerEmail: c.customerEmail || "",
       customerPhone: c.customerPhone || "",
       customerAddress: c.customerAddress || "",
+      customerLocation: c.customerLocation || "",
       customerNotes: c.customerNotes || "",
       customerSource: c.customerSource || "",
     };
     setEditForm(formData);
     setOriginalEditForm(formData);
+    
+    // ✅ Parse existing location if available
+    if (c.customerLocation) {
+      parseLocationString(c.customerLocation, setEditLocationData);
+    } else {
+      setEditLocationData({
+        country: "",
+        state: "",
+        city: "",
+        countryCode: "",
+        stateCode: "",
+      });
+    }
+    
     setEditOpen(true);
   };
 
-  // دالة لمعالجة إغلاق Edit Dialog
   const handleEditOpenChange = (newOpen: boolean) => {
     if (!newOpen && isEditFormDirty) {
       setShowEditConfirmDialog(true);
@@ -177,13 +215,13 @@ export default function CustomersPage() {
     }
   };
 
-  // دالة لتأكيد إغلاق Edit Dialog
   const confirmEditClose = () => {
     setEditForm({
       customerName: "",
       customerEmail: "",
       customerPhone: "",
       customerAddress: "",
+      customerLocation: "",
       customerNotes: "",
       customerSource: "",
     });
@@ -192,15 +230,22 @@ export default function CustomersPage() {
       customerEmail: "",
       customerPhone: "",
       customerAddress: "",
+      customerLocation: "",
       customerNotes: "",
       customerSource: "",
+    });
+    setEditLocationData({
+      country: "",
+      state: "",
+      city: "",
+      countryCode: "",
+      stateCode: "",
     });
     setEditOpen(false);
     setEditing(null);
     setShowEditConfirmDialog(false);
   };
 
-  // دالة لإلغاء إغلاق Edit Dialog
   const cancelEditClose = () => {
     setShowEditConfirmDialog(false);
   };
@@ -226,6 +271,32 @@ export default function CustomersPage() {
     };
     return colors[source] || "bg-gray-100 text-gray-700";
   };
+
+  // ✅ دالة لتحليل النص الموجود إلى بيانات موقع
+  const parseLocationString = (locationString: string, setLocationData: (data: LocationData) => void) => {
+    try {
+      // إذا كان النص يحتوي على كودات (مثل: "Cairo, CA, EG")
+      const parts = locationString.split(', ');
+      if (parts.length >= 3) {
+        const [city, stateCode, countryCode] = parts;
+        const country = Country.getCountryByCode(countryCode);
+        const state = State.getStateByCodeAndCountry(stateCode, countryCode);
+        
+        if (country) {
+          setLocationData({
+            country: country.name,
+            state: state?.name || "",
+            city: city,
+            countryCode: countryCode,
+            stateCode: stateCode,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing location string:", error);
+    }
+  };
+
 
   // Export Customers Function
   const handleExportCustomers = async () => {
@@ -324,7 +395,6 @@ export default function CustomersPage() {
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          {/* button export */}
           <Button variant="outline" onClick={handleExportCustomers}>
             <Download className="w-4 h-4 ml-2" />
             {intl.formatMessage({ id: "customers.export_customers" })}
@@ -339,7 +409,7 @@ export default function CustomersPage() {
         icon={Users}
         loading={list.isLoading}
         isEmpty={!customers?.length}
-        columnCount={8}
+        columnCount={9}
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
@@ -390,6 +460,13 @@ export default function CustomersPage() {
               className="px-4 py-2"
             />
             <SortableTH
+              sortKey="customerLocation"
+              label={intl.formatMessage({ id: "customers.location" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2"
+            />
+            <SortableTH
               sortKey="customerSource"
               label={intl.formatMessage({ id: "customers.source" })}
               sort={sort}
@@ -430,6 +507,12 @@ export default function CustomersPage() {
                 </TableCell>
                 <TableCell className="text-center">{c.customerEmail}</TableCell>
                 <TableCell className="text-center">{c.customerPhone}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center gap-1 justify-center">
+                    <MapPin className="w-3 h-3 text-gray-500" />
+                    <span className="text-sm">{c.customerLocation || "-"}</span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-center text-xs font-medium mx-auto ${getSourceColor(
@@ -536,6 +619,18 @@ export default function CustomersPage() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    {intl.formatMessage({ id: "customers.location" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <p className="text-sm">
+                      {viewing.customerLocation || intl.formatMessage({ id: "customers.not_provided" })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <SquareArrowUpRight className="w-4 h-4" />
                     {intl.formatMessage({ id: "customers.source" })}
@@ -645,10 +740,10 @@ export default function CustomersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog مع التأكيد */}
+      {/* ✅ Edit Dialog مع Location Selector */}
       <Dialog open={editOpen} onOpenChange={handleEditOpenChange} modal={true}>
         <DialogContent
-          className="sm:max-w-[520px]"
+          className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto"
           aria-describedby="edit-dialog-description"
         >
           <DialogHeader>
@@ -670,9 +765,8 @@ export default function CustomersPage() {
 
               const canSubmit =
                 editForm.customerName.trim() &&
-                editForm.customerEmail.trim() &&
                 editForm.customerPhone.trim() &&
-                editForm.customerNotes.trim() &&
+                editForm.customerAddress.trim() &&
                 editForm.customerSource.trim();
 
               if (!canSubmit) {
@@ -695,6 +789,7 @@ export default function CustomersPage() {
                       customerEmail: "",
                       customerPhone: "",
                       customerAddress: "",
+                      customerLocation: "",
                       customerNotes: "",
                       customerSource: "",
                     });
@@ -720,13 +815,12 @@ export default function CustomersPage() {
             />
             <FormField
               id="edit_customerEmail"
-              label={intl.formatMessage({ id: "customers.email_required" })}
+              label={intl.formatMessage({ id: "customers.email" })}
               type="email"
               value={editForm.customerEmail}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, customerEmail: e.target.value }))
               }
-              required
             />
             <FormField
               id="edit_customerPhone"
@@ -763,8 +857,9 @@ export default function CustomersPage() {
             <div className="col-span-full">
               <FormField
                 id="edit_customerAddress"
-                label={intl.formatMessage({ id: "customers.address" })}
+                label={intl.formatMessage({ id: "customers.address_required" })}
                 value={editForm.customerAddress}
+                required
                 onChange={(e) =>
                   setEditForm((f) => ({
                     ...f,
@@ -774,8 +869,35 @@ export default function CustomersPage() {
               />
             </div>
 
+            {/* ✅ Location Selector for Edit */}
+            <div className="col-span-full space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.location" })}
+                </Label>
+                {/* <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => getCurrentLocation(setEditLocationData, setEditForm)}
+                  className="flex items-center gap-2"
+                >
+                  <Navigation className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.get_current_location" })}
+                </Button> */}
+              </div>
+
+              <LocationSelector
+                locationData={editLocationData}
+                setLocationData={setEditLocationData}
+                setForm={setEditForm}
+                intl={intl}
+              />
+            </div>
+
             <div className="col-span-full">
-              <Label htmlFor="edit_customerNotes">{intl.formatMessage({ id: "customers.notes_required" })}</Label>
+              <Label htmlFor="edit_customerNotes">{intl.formatMessage({ id: "customers.notes" })}</Label>
               <Textarea
                 id="edit_customerNotes"
                 value={editForm.customerNotes}
@@ -784,7 +906,7 @@ export default function CustomersPage() {
                 }
                 rows={3}
                 className="mt-1"
-                required
+                placeholder={intl.formatMessage({ id: "customers.notes_placeholder" })}
               />
             </div>
 
@@ -801,9 +923,8 @@ export default function CustomersPage() {
                 className="text-white"
                 disabled={
                   !editForm.customerName ||
-                  !editForm.customerEmail ||
                   !editForm.customerPhone ||
-                  !editForm.customerNotes ||
+                  !editForm.customerAddress ||
                   !editForm.customerSource ||
                   update.isPending
                 }
@@ -867,7 +988,7 @@ export default function CustomersPage() {
   );
 }
 
-// Add Customer Component مع التأكيد
+// ✅ Add Customer Component مع Location Selector
 function AddCustomer({
   create,
   isLoading,
@@ -884,8 +1005,18 @@ function AddCustomer({
     customerEmail: "",
     customerPhone: "",
     customerAddress: "",
+    customerLocation: "",
     customerNotes: "",
     customerSource: "",
+  });
+
+  // ✅ إضافة state للموقع
+  const [locationData, setLocationData] = useState<LocationData>({
+    country: "",
+    state: "",
+    city: "",
+    countryCode: "",
+    stateCode: "",
   });
 
   // Customer source options
@@ -896,16 +1027,15 @@ function AddCustomer({
     { value: "other", label: intl.formatMessage({ id: "customers.source_other" }) },
   ];
 
-  // تتبع ما إذا كان النموذج يحتوي على بيانات
   const isFormDirty =
     form.customerName.trim() ||
     form.customerEmail.trim() ||
     form.customerPhone.trim() ||
     form.customerAddress.trim() ||
+    form.customerLocation.trim() ||
     form.customerNotes.trim() ||
     form.customerSource.trim();
 
-  // إضافة دالة معالجة رقم الهاتف
   const handleAddPhoneChange = (value: string | undefined) => {
     setForm((prev) => ({
       ...prev,
@@ -913,7 +1043,93 @@ function AddCustomer({
     }));
   };
 
-  // دالة لمعالجة إغلاق الـ Dialog
+  // ✅ دالة للحصول على الموقع الحالي
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error(intl.formatMessage({ id: "customers.geolocation_not_supported" }));
+      return;
+    }
+
+    const loadingToast = toast.loading(intl.formatMessage({ id: "customers.getting_location" }));
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          
+          if (!response.ok) {
+            throw new Error('Failed to get location data');
+          }
+          
+          const locationResponse = await response.json();
+          
+          const country = Country.getAllCountries().find(
+            c => c.name.toLowerCase() === locationResponse.countryName?.toLowerCase() ||
+                 c.isoCode === locationResponse.countryCode
+          );
+          
+          if (country) {
+            const state = State.getStatesOfCountry(country.isoCode).find(
+              s => s.name.toLowerCase() === locationResponse.principalSubdivision?.toLowerCase()
+            );
+            
+            const newLocationData = {
+              country: country.name,
+              state: state?.name || locationResponse.principalSubdivision || "",
+              city: locationResponse.city || locationResponse.locality || "",
+              countryCode: country.isoCode,
+              stateCode: state?.isoCode || "",
+            };
+            
+            setLocationData(newLocationData);
+            
+            const locationString = `${newLocationData.city}, ${newLocationData.stateCode}, ${newLocationData.countryCode}`;
+            setForm((prev) => ({
+              ...prev,
+              customerLocation: locationString
+            }));
+            
+            toast.dismiss(loadingToast);
+            toast.success(intl.formatMessage({ id: "customers.location_detected" }));
+          } else {
+            throw new Error('Country not found');
+          }
+        } catch (error) {
+          console.error('Error getting location:', error);
+          toast.dismiss(loadingToast);
+          toast.error(intl.formatMessage({ id: "customers.failed_to_get_location" }));
+        }
+      },
+      (error) => {
+        toast.dismiss(loadingToast);
+        let errorMessage = intl.formatMessage({ id: "customers.location_access_denied" });
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = intl.formatMessage({ id: "customers.location_permission_denied" });
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = intl.formatMessage({ id: "customers.location_unavailable" });
+            break;
+          case error.TIMEOUT:
+            errorMessage = intl.formatMessage({ id: "customers.location_timeout" });
+            break;
+        }
+        
+        toast.error(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && isFormDirty) {
       setShowConfirmDialog(true);
@@ -922,30 +1138,35 @@ function AddCustomer({
     }
   };
 
-  // دالة لتأكيد الإغلاق
   const confirmClose = () => {
     setForm({
       customerName: "",
       customerEmail: "",
       customerPhone: "",
       customerAddress: "",
+      customerLocation: "",
       customerNotes: "",
       customerSource: "",
+    });
+    setLocationData({
+      country: "",
+      state: "",
+      city: "",
+      countryCode: "",
+      stateCode: "",
     });
     setOpen(false);
     setShowConfirmDialog(false);
   };
 
-  // دالة لإلغاء الإغلاق
   const cancelClose = () => {
     setShowConfirmDialog(false);
   };
 
   const canSubmit =
     form.customerName.trim() &&
-    form.customerEmail.trim() &&
     form.customerPhone.trim() &&
-    form.customerNotes.trim() &&
+    form.customerAddress.trim() &&
     form.customerSource.trim();
 
   return (
@@ -957,7 +1178,7 @@ function AddCustomer({
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="sm:max-w-[520px]"
+          className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto"
           aria-describedby="add-dialog-description"
         >
           <DialogHeader>
@@ -984,8 +1205,16 @@ function AddCustomer({
                     customerEmail: "",
                     customerPhone: "",
                     customerAddress: "",
+                    customerLocation: "",
                     customerNotes: "",
                     customerSource: "",
+                  });
+                  setLocationData({
+                    country: "",
+                    state: "",
+                    city: "",
+                    countryCode: "",
+                    stateCode: "",
                   });
                   setOpen(false);
                   toast.success(intl.formatMessage({ id: "customers.customer_created_success" }));
@@ -1009,13 +1238,12 @@ function AddCustomer({
             />
             <FormField
               id="customerEmail"
-              label={intl.formatMessage({ id: "customers.email_required" })}
+              label={intl.formatMessage({ id: "customers.email" })}
               type="email"
               value={form.customerEmail}
               onChange={(e) =>
                 setForm((f) => ({ ...f, customerEmail: e.target.value }))
               }
-              required
             />
 
             <FormField
@@ -1053,16 +1281,44 @@ function AddCustomer({
             <div className="col-span-full">
               <FormField
                 id="customerAddress"
-                label={intl.formatMessage({ id: "customers.address" })}
+                label={intl.formatMessage({ id: "customers.address_required" })}
                 value={form.customerAddress}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, customerAddress: e.target.value }))
                 }
+                required
+              />
+            </div>
+
+            {/* ✅ Location Selector */}
+            <div className="col-span-full space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.location" })}
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  className="flex items-center gap-2"
+                >
+                  <Navigation className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.get_current_location" })}
+                </Button>
+              </div>
+
+              <LocationSelector
+                locationData={locationData}
+                setLocationData={setLocationData}
+                setForm={setForm}
+                intl={intl}
               />
             </div>
 
             <div className="col-span-full">
-              <Label htmlFor="customerNotes">{intl.formatMessage({ id: "customers.notes_required" })}</Label>
+              <Label htmlFor="customerNotes">{intl.formatMessage({ id: "customers.notes" })}</Label>
               <Textarea
                 id="customerNotes"
                 value={form.customerNotes}
@@ -1072,7 +1328,6 @@ function AddCustomer({
                 rows={3}
                 className="mt-1"
                 placeholder={intl.formatMessage({ id: "customers.notes_placeholder" })}
-                required
               />
             </div>
 
@@ -1128,5 +1383,180 @@ function AddCustomer({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// ✅ Location Selector Component
+function LocationSelector({ 
+  locationData, 
+  setLocationData, 
+  setForm, 
+  intl 
+}: { 
+  locationData: LocationData; 
+  setLocationData: (data: LocationData) => void; 
+  setForm: any; 
+  intl: any; 
+}) {
+  const [countries] = useState(() => Country.getAllCountries());
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (locationData.countryCode) {
+      const countryStates = State.getStatesOfCountry(locationData.countryCode);
+      setStates(countryStates);
+      
+      // Reset state and city if country changed
+      if (locationData.stateCode && !countryStates.find(s => s.isoCode === locationData.stateCode)) {
+        setLocationData({
+          ...locationData,
+          state: "",
+          stateCode: "",
+          city: "",
+        });
+        setCities([]);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [locationData.countryCode]);
+
+  // Update cities when state changes
+  useEffect(() => {
+    if (locationData.countryCode && locationData.stateCode) {
+      const stateCities = City.getCitiesOfState(locationData.countryCode, locationData.stateCode);
+      setCities(stateCities);
+      
+      // Reset city if state changed
+      if (locationData.city && !stateCities.find(c => c.name === locationData.city)) {
+        setLocationData({
+          ...locationData,
+          city: "",
+        });
+      }
+    } else {
+      setCities([]);
+    }
+  }, [locationData.stateCode]);
+
+  // Update form when location data changes
+  useEffect(() => {
+    if (locationData.city || locationData.stateCode || locationData.countryCode) {
+      const locationString = `${locationData.city}, ${locationData.stateCode}, ${locationData.countryCode}`;
+      setForm((prev: any) => ({
+        ...prev,
+        customerLocation: locationString
+      }));
+    }
+  }, [locationData]);
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Country Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.country" })}</Label>
+        <Select
+        
+          value={locationData.countryCode}
+          onValueChange={(value) => {
+            const country = countries.find(c => c.isoCode === value);
+            if (country) {
+              setLocationData({
+                country: country.name,
+                state: "",
+                city: "",
+                countryCode: country.isoCode,
+                stateCode: "",
+              });
+            }
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_country" })} />
+          </SelectTrigger>
+          <SelectContent className="!overflow-y-auto max-h-60">
+            {countries.map((country) => (
+              <SelectItem key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* State Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.state" })}</Label>
+        <Select
+          value={locationData.stateCode}
+          onValueChange={(value) => {
+            const state = states.find(s => s.isoCode === value);
+            if (state) {
+              setLocationData({
+                ...locationData,
+                state: state.name,
+                stateCode: state.isoCode,
+                city: "",
+              });
+            }
+          }}
+          disabled={!locationData.countryCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_state" })} />
+          </SelectTrigger>
+          <SelectContent className="!overflow-y-auto max-h-60">
+            {states.map((state) => (
+              <SelectItem key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* City Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.city" })}</Label>
+        <Select
+          value={locationData.city}
+          onValueChange={(value) => {
+            setLocationData({
+              ...locationData,
+              city: value,
+            });
+          }}
+          disabled={!locationData.stateCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_city" })} />
+          </SelectTrigger>
+          <SelectContent className="!overflow-y-auto max-h-60">
+            {cities.map((city) => (
+              <SelectItem key={city.name} value={city.name}>
+                {city.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Display selected location */}
+      {locationData.city && (
+        <div className="col-span-full">
+          <div className="p-3 bg-gray-50 rounded-md border">
+            <p className="text-sm text-gray-600">
+              <strong>{intl.formatMessage({ id: "customers.selected_location" })}:</strong> {locationData.city}, {locationData.state}, {locationData.country}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              <strong>{intl.formatMessage({ id: "customers.location_code" })}:</strong> {locationData.city}, {locationData.stateCode}, {locationData.countryCode}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

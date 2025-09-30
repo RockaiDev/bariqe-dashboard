@@ -51,13 +51,19 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
+    // ✅ الحل الصحيح: حفظ معرف الفئة والفئة الفرعية معاً
     productCategory: {
       ref: "Category",
       type: Schema.Types.ObjectId,
       required: true,
     },
+    productSubCategory: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     productImage: {
       type: String,
+       default: "https://res.cloudinary.com/dh6z6gsjk/image/upload/v1759126342/d-koi-5nI9N2wNcBU-unsplash_dj9qql.jpg",
     },
     productImagePublicId: {
       type: String,
@@ -95,23 +101,49 @@ const productSchema = new Schema(
 
 // Virtual للحصول على الاسم حسب اللغة
 productSchema.virtual('productName').get(function() {
-  // يمكن تحديد اللغة الافتراضية هنا
   return this.productNameEn || this.productNameAr;
 });
 
 productSchema.virtual('productDescription').get(function() {
-  // يمكن تحديد اللغة الافتراضية هنا
   return this.productDescriptionEn || this.productDescriptionAr;
 });
 
-// Validation للتأكد من أن code في discountTiers يطابق productCode
-productSchema.pre('save', function(next) {
+// ✅ Validation للتأكد من أن الـ SubCategory موجودة في الـ Category المحددة
+productSchema.pre('save', async function(next) {
+  // التحقق من discount tiers
   if (this.discountTiers && this.discountTiers.length > 0) {
     const invalidTiers = this.discountTiers.filter((tier: any) => tier.code !== this.productCode);
     if (invalidTiers.length > 0) {
       return next(new Error('All discount tier codes must match the product code'));
     }
   }
+
+  // ✅ التحقق من أن الـ SubCategory موجودة في الـ Category
+  if (this.isModified('productCategory') || this.isModified('productSubCategory')) {
+    try {
+      const Category = mongoose.model('Category');
+      const category = await Category.findById(this.productCategory);
+      
+      if (!category) {
+        return next(new Error('Category not found'));
+      }
+
+      if (!category.subCategories || category.subCategories.length === 0) {
+        return next(new Error('No subcategories found in this category'));
+      }
+
+      const subCategoryExists = category.subCategories.some((sub: any) => 
+        sub._id.toString() === this.productSubCategory.toString()
+      );
+
+      if (!subCategoryExists) {
+        return next(new Error('SubCategory does not belong to the selected category'));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   next();
 });
 

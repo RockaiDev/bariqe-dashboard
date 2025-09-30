@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
-
 const customerSchema = new Schema(
   {
     customerName: {
@@ -9,8 +8,8 @@ const customerSchema = new Schema(
     },
     customerEmail: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true, // allows multiple null values
       match: [/.+@.+\..+/, "Please fill a valid email address"],
     },
     customerPhone: {
@@ -21,16 +20,19 @@ const customerSchema = new Schema(
     },
     customerAddress: {
       type: String,
+      required: true, // ✅ أصبح مطلوب
     },
-
     customerNotes: {
       type: String,
-      required: true,
     },
     customerSource: {
       type: String,
       required: true,
       enum: ["order", "consultation", "material_request", "other"],
+    },
+    customerLocation:{
+      type: String,
+      default:""
     },
     createdAt: {
       type: Date,

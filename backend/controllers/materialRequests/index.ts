@@ -1,6 +1,5 @@
 // src/controllers/materialRequest/index.ts
 import { Request, Response, NextFunction } from "express";
-
 import ExcelJS from "exceljs";
 import multer from "multer";
 import path from "path";
@@ -106,6 +105,29 @@ export default class MaterialRequestController extends BaseApi {
     }
   }
 
+  // Get statistics
+  public async getStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await materialRequestService.GetMaterialRequestStats();
+      super.send(res, stats);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Get requests by customer
+  public async getByCustomer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await materialRequestService.GetRequestsByCustomer(
+        req.params.customerId,
+        req.query
+      );
+      super.send(res, data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // 🟢 Export material requests to Excel
   public async exportMaterialRequests(req: Request, res: Response, next: NextFunction) {
     try {
@@ -127,15 +149,20 @@ export default class MaterialRequestController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // Define columns for requests sheet
+      // Define columns for requests sheet with customer support
       requestsSheet.columns = [
         { header: "Request ID", key: "requestId", width: 25 },
         { header: "Material Name", key: "materialName", width: 30 },
+        { header: "Customer Name", key: "customerName", width: 25 },
         { header: "Contact Email", key: "materialEmail", width: 30 },
         { header: "Contact Phone", key: "materialPhone", width: 20 },
+        { header: "Customer Location", key: "customerLocation", width: 30 },
+        { header: "Customer Address", key: "customerAddress", width: 40 },
         { header: "Quantity", key: "materialQuantity", width: 15 },
         { header: "Intended Use", key: "materialIntendedUse", width: 40 },
         { header: "Status/Actions", key: "materialActions", width: 20 },
+        { header: "Has Customer", key: "hasCustomer", width: 15 },
+        { header: "Customer ID", key: "customerId", width: 25 },
         { header: "Request Date", key: "requestDate", width: 20 },
         { header: "Last Updated", key: "lastUpdated", width: 20 },
       ];
@@ -163,18 +190,26 @@ export default class MaterialRequestController extends BaseApi {
         row.getCell("requestDate").numFmt = "dd/mm/yyyy hh:mm";
         row.getCell("lastUpdated").numFmt = "dd/mm/yyyy hh:mm";
 
+        // Add conditional formatting for customer status
+        const hasCustomerCell = row.getCell("hasCustomer");
+        if (request.hasCustomer === "Yes") {
+          hasCustomerCell.font = { color: { argb: "FF008000" } };
+        } else {
+          hasCustomerCell.font = { color: { argb: "FFFF8C00" } };
+        }
+
         // Add conditional formatting for status
         const statusCell = row.getCell("materialActions");
         switch (request.materialActions?.toLowerCase()) {
-          case "completed":
+          case "approve":
           case "approved":
             statusCell.font = { color: { argb: "FF008000" } };
             break;
           case "pending":
             statusCell.font = { color: { argb: "FFFF8C00" } };
             break;
+          case "denied":
           case "rejected":
-          case "cancelled":
             statusCell.font = { color: { argb: "FFFF0000" } };
             break;
           default:
@@ -226,11 +261,13 @@ export default class MaterialRequestController extends BaseApi {
         properties: { tabColor: { argb: "0000FF" } },
       });
 
-      // Define columns
+      // Define columns with customer support
       requestsSheet.columns = [
         { header: "Material Name", key: "materialName", width: 30 },
+        { header: "Customer Name", key: "customerName", width: 25 },
         { header: "Contact Email", key: "materialEmail", width: 30 },
         { header: "Contact Phone", key: "materialPhone", width: 20 },
+        { header: "Customer Location", key: "customerLocation", width: 30 },
         { header: "Quantity", key: "materialQuantity", width: 15 },
         { header: "Intended Use", key: "materialIntendedUse", width: 40 },
         { header: "Status/Actions", key: "materialActions", width: 20 },
@@ -254,18 +291,20 @@ export default class MaterialRequestController extends BaseApi {
       // Add sample data
       const sampleRow = requestsSheet.addRow({
         materialName: "Sodium Chloride",
+        customerName: "John Doe (optional if customer exists)",
         materialEmail: "customer@example.com",
         materialPhone: "+1234567890",
+        customerLocation: "Cairo, CA, EG",
         materialQuantity: "10 kg",
         materialIntendedUse: "Laboratory research and testing",
-        materialActions: "Pending",
+        materialActions: "pending",
       });
 
       // Add data validation for Status
-      requestsSheet.getCell("F2").dataValidation = {
+      requestsSheet.getCell("H2").dataValidation = {
         type: "list",
         allowBlank: false,
-        formulae: ['"Pending,Approved,Rejected,Completed,Cancelled"'],
+        formulae: ['"pending,approve,denied"'],
       };
 
       // Add instructions sheet
@@ -291,18 +330,22 @@ export default class MaterialRequestController extends BaseApi {
         "",
         "1. Material Requests Sheet:",
         "   - Material Name: Name of the requested material (required)",
-        "   - Contact Email: Customer's email address (required)",
-        "   - Contact Phone: Customer's phone number (required)",
+        "   - Customer Name: If customer exists in system (optional)",
+        "   - Contact Email: Customer's email address (required if no customer)",
+        "   - Contact Phone: Customer's phone number (required if no customer)",
+        "   - Customer Location: Location in format 'City, State, Country' (optional)",
         "   - Quantity: Amount/quantity requested (required)",
         "   - Intended Use: Purpose of the material request (required)",
-        "   - Status/Actions: Choose from: Pending, Approved, Rejected, Completed, Cancelled",
+        "   - Status/Actions: Choose from: pending, approve, denied",
         "",
         "2. Important Notes:",
         "   - Do not modify column headers",
-        "   - All fields except Status/Actions are required",
+        "   - Material Name, Quantity, and Intended Use are always required",
+        "   - If Customer Name matches existing customer, their data will be used",
+        "   - Otherwise, Contact Email and Phone are required",
         "   - Email addresses must be valid format",
         "   - Leave no empty rows between data",
-        "   - Status defaults to 'Pending' if not specified",
+        "   - Status defaults to 'pending' if not specified",
       ];
 
       instructions.forEach((text, index) => {
@@ -372,44 +415,55 @@ export default class MaterialRequestController extends BaseApi {
           if (rowNumber > 1) {
             try {
               const materialName = String(row.getCell(1).value || "").trim();
-              const materialEmail = String(row.getCell(2).value || "").trim();
-              const materialPhone = String(row.getCell(3).value || "").trim();
-              const materialQuantity = String(row.getCell(4).value || "").trim();
-              const materialIntendedUse = String(row.getCell(5).value || "").trim();
-              const materialActions = String(row.getCell(6).value || "").trim() || "Pending";
+              const customerName = String(row.getCell(2).value || "").trim();
+              const materialEmail = String(row.getCell(3).value || "").trim();
+              const materialPhone = String(row.getCell(4).value || "").trim();
+              const customerLocation = String(row.getCell(5).value || "").trim();
+              const materialQuantity = String(row.getCell(6).value || "").trim();
+              const materialIntendedUse = String(row.getCell(7).value || "").trim();
+              const materialActions = String(row.getCell(8).value || "").trim() || "pending";
 
               // Skip empty rows
               if (!materialName && !materialEmail) return;
 
               // Validation
-              if (!materialName || !materialEmail || !materialPhone || !materialQuantity || !materialIntendedUse) {
-                throw new Error("Missing required fields");
+              if (!materialName || !materialQuantity || !materialIntendedUse) {
+                throw new Error("Missing required fields: Material Name, Quantity, and Intended Use are required");
               }
 
-              // Email validation
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(materialEmail)) {
-                throw new Error("Invalid email format");
+              // If no customer name, then email and phone are required
+              if (!customerName && (!materialEmail || !materialPhone)) {
+                throw new Error("Either Customer Name or both Contact Email and Phone are required");
               }
 
-              const validStatuses = ["Pending", "Approved", "Rejected", "Completed", "Cancelled"];
-              if (!validStatuses.includes(materialActions)) {
-                throw new Error(`Invalid status '${materialActions}'`);
+              // Email validation if provided
+              if (materialEmail) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(materialEmail)) {
+                  throw new Error("Invalid email format");
+                }
+              }
+
+              const validStatuses = ["pending", "approve", "denied"];
+              if (!validStatuses.includes(materialActions.toLowerCase())) {
+                throw new Error(`Invalid status '${materialActions}'. Must be one of: pending, approve, denied`);
               }
 
               requestsData.push({
                 materialName,
+                customerName,
                 materialEmail,
                 materialPhone,
+                customerLocation,
                 materialQuantity,
                 materialIntendedUse,
-                materialActions,
+                materialActions: materialActions.toLowerCase(),
               });
             } catch (err: any) {
               requestErrors.push({
                 row: rowNumber,
                 materialName: String(row.getCell(1).value || "").trim() || null,
-                materialEmail: String(row.getCell(2).value || "").trim() || null,
+                materialEmail: String(row.getCell(3).value || "").trim() || null,
                 error: err.message,
               });
             }
@@ -418,7 +472,7 @@ export default class MaterialRequestController extends BaseApi {
 
         // If all rows failed validation
         if (requestsData.length === 0 && requestErrors.length > 0) {
-          fs.unlinkSync(req.file.path);
+          this.cleanupFile(req.file.path);
           return res.status(400).json({
             success: false,
             message: "All rows failed validation",
@@ -442,7 +496,7 @@ export default class MaterialRequestController extends BaseApi {
         };
 
         // Clean up file
-        fs.unlinkSync(req.file.path);
+        this.cleanupFile(req.file.path);
 
         // Final response
         super.send(res, {
@@ -454,7 +508,7 @@ export default class MaterialRequestController extends BaseApi {
         });
       } catch (error: any) {
         if (req.file && fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
+          this.cleanupFile(req.file.path);
         }
         console.error("Import error:", error);
         next(new Error(error.message || "Error processing import file"));

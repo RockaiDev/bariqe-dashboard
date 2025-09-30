@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIntl } from 'react-intl';
+import { Country, State, City } from 'country-state-city'; // ✅ إضافة المكتبة
 import {
   Dialog,
   DialogClose,
@@ -19,6 +20,8 @@ import {
   Check,
   X,
   Download,
+  MapPin, // ✅ إضافة أيقونة MapPin
+
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -70,6 +73,15 @@ interface Order {
   updatedAt?: string;
 }
 
+// ✅ إضافة interface للموقع
+interface LocationData {
+  country: string;
+  state: string;
+  city: string;
+  countryCode: string;
+  stateCode: string;
+}
+
 export default function OrdersPage() {
   const intl = useIntl();
 
@@ -101,8 +113,6 @@ console.log("productsList:", productsList);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [tableEditStatus, setTableEditStatus] = useState<string>("");
 
-
-
   // Form State
   const [orderForm, setOrderForm] = useState({
     customer: "",
@@ -113,6 +123,7 @@ console.log("productsList:", productsList);
     orderStatus: "pending" as const,
   });
 
+  // ✅ تحديث customerForm لإضافة customerLocation
   const [customerForm, setCustomerForm] = useState({
     customerName: "",
     customerEmail: "",
@@ -120,6 +131,16 @@ console.log("productsList:", productsList);
     customerNotes: "",
     customerSource: "order",
     customerAddress: "",
+    customerLocation: "", // ✅ إضافة customerLocation
+  });
+
+  // ✅ إضافة state للموقع
+  const [locationData, setLocationData] = useState<LocationData>({
+    country: "",
+    state: "",
+    city: "",
+    countryCode: "",
+    stateCode: "",
   });
 
   const ChangeFilter = (
@@ -150,7 +171,6 @@ console.log("productsList:", productsList);
     prevPage: null,
   };
   console.log("paginationData:", paginationData);
-
 
   const pagination = {
     currentPage: paginationData.currentPage,
@@ -204,6 +224,8 @@ console.log("productsList:", productsList);
       customerPhone: value || "",
     }));
   };
+
+
 
   // Handle Status Edit in View Dialog
   const handleEditStatus = () => {
@@ -337,7 +359,7 @@ console.log("productsList:", productsList);
     setTableEditStatus("");
   };
 
-  // Check if form has changes
+  // ✅ تحديث Check if form has changes لإضافة customerLocation
   const hasAddFormChanges = () => {
     return (
       orderForm.customer !== "" ||
@@ -350,7 +372,8 @@ console.log("productsList:", productsList);
         customerForm.customerEmail !== "" ||
         customerForm.customerPhone !== "" ||
         customerForm.customerNotes !== "" ||
-        customerForm.customerAddress !== ""
+        customerForm.customerAddress !== "" ||
+        customerForm.customerLocation !== "" // ✅ إضافة customerLocation
       ))
     );
   };
@@ -358,8 +381,6 @@ console.log("productsList:", productsList);
   const hasEditFormChanges = () => {
     return editedStatus !== "" && viewing && editedStatus !== viewing.orderStatus;
   };
-
-
 
   // Add Order Functions
   const handleAddOrder = async () => {
@@ -371,8 +392,9 @@ console.log("productsList:", productsList);
       if (createNewCustomer) {
         if (
           !customerForm?.customerName ||
-          !customerForm.customerEmail ||
-          !customerForm.customerPhone
+          !customerForm.customerPhone ||
+          !customerForm.customerAddress ||
+          !customerForm.customerSource
         ) {
           toast.error(intl.formatMessage({ id: "orders.fill_required_fields" }));
           return;
@@ -433,6 +455,7 @@ console.log("productsList:", productsList);
     }
   };
 
+  // ✅ تحديث resetForms لإضافة customerLocation و locationData
   const resetForms = () => {
     setOrderForm({
       customer: "",
@@ -449,6 +472,14 @@ console.log("productsList:", productsList);
       customerNotes: "",
       customerSource: "order",
       customerAddress: "",
+      customerLocation: "", // ✅ إضافة customerLocation
+    });
+    setLocationData({ // ✅ إضافة reset للموقع
+      country: "",
+      state: "",
+      city: "",
+      countryCode: "",
+      stateCode: "",
     });
     setCreateNewCustomer(false);
   };
@@ -760,7 +791,7 @@ console.log("productsList:", productsList);
         )}
       />
 
-      {/* Add Order Dialog */}
+      {/* ✅ Add Order Dialog مع Location Selector */}
       <Dialog open={addOpen} onOpenChange={handleAddDialogClose}>
         <DialogContent
           className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
@@ -809,7 +840,7 @@ console.log("productsList:", productsList);
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "orders.email_required" })}</Label>
+                    <Label>{intl.formatMessage({ id: "orders.email" })}</Label>
                     <Input
                       type="email"
                       value={customerForm.customerEmail}
@@ -835,7 +866,29 @@ console.log("productsList:", productsList);
                     required
                   />
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "orders.address" })}</Label>
+                    <Label>{intl.formatMessage({ id: "orders.source_required" })}</Label>
+                    <Select
+                      value={customerForm.customerSource}
+                      onValueChange={(value) =>
+                        setCustomerForm((prev) => ({
+                          ...prev,
+                          customerSource: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={intl.formatMessage({ id: "orders.select_source" })} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="order">{intl.formatMessage({ id: "customers.source_order" })}</SelectItem>
+                        <SelectItem value="consultation">{intl.formatMessage({ id: "customers.source_consultation" })}</SelectItem>
+                        <SelectItem value="material_request">{intl.formatMessage({ id: "customers.source_material_request" })}</SelectItem>
+                        <SelectItem value="other">{intl.formatMessage({ id: "customers.source_other" })}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>{intl.formatMessage({ id: "orders.address_required" })}</Label>
                     <Input
                       value={customerForm.customerAddress}
                       onChange={(e) =>
@@ -845,8 +898,37 @@ console.log("productsList:", productsList);
                         }))
                       }
                       placeholder={intl.formatMessage({ id: "orders.customer_address" })}
+                      required
                     />
                   </div>
+
+                  {/* ✅ Location Selector */}
+                  <div className="col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {intl.formatMessage({ id: "customers.location" })}
+                      </Label>
+                      {/* <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={getCurrentLocation}
+                        className="flex items-center gap-2"
+                      >
+                        <Navigation className="w-4 h-4" />
+                        {intl.formatMessage({ id: "customers.get_current_location" })}
+                      </Button> */}
+                    </div>
+
+                    <LocationSelector
+                      locationData={locationData}
+                      setLocationData={setLocationData}
+                      setForm={setCustomerForm}
+                      intl={intl}
+                    />
+                  </div>
+
                   <div className="col-span-2 space-y-2">
                     <Label>{intl.formatMessage({ id: "orders.notes" })}</Label>
                     <Input
@@ -1303,6 +1385,180 @@ console.log("productsList:", productsList);
         onCancel={editConfirmDialog.handleCancel}
         isDestructive={true}
       />
+    </div>
+  );
+}
+
+// ✅ Location Selector Component
+function LocationSelector({ 
+  locationData, 
+  setLocationData, 
+  setForm, 
+  intl 
+}: { 
+  locationData: LocationData; 
+  setLocationData: (data: LocationData) => void; 
+  setForm: any; 
+  intl: any; 
+}) {
+  const [countries] = useState(() => Country.getAllCountries());
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (locationData.countryCode) {
+      const countryStates = State.getStatesOfCountry(locationData.countryCode);
+      setStates(countryStates);
+      
+      // Reset state and city if country changed
+      if (locationData.stateCode && !countryStates.find(s => s.isoCode === locationData.stateCode)) {
+        setLocationData({
+          ...locationData,
+          state: "",
+          stateCode: "",
+          city: "",
+        });
+        setCities([]);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [locationData.countryCode]);
+
+  // Update cities when state changes
+  useEffect(() => {
+    if (locationData.countryCode && locationData.stateCode) {
+      const stateCities = City.getCitiesOfState(locationData.countryCode, locationData.stateCode);
+      setCities(stateCities);
+      
+      // Reset city if state changed
+      if (locationData.city && !stateCities.find(c => c.name === locationData.city)) {
+        setLocationData({
+          ...locationData,
+          city: "",
+        });
+      }
+    } else {
+      setCities([]);
+    }
+  }, [locationData.stateCode]);
+
+  // Update form when location data changes
+  useEffect(() => {
+    if (locationData.city || locationData.stateCode || locationData.countryCode) {
+      const locationString = `${locationData.city}, ${locationData.stateCode}, ${locationData.countryCode}`;
+      setForm((prev: any) => ({
+        ...prev,
+        customerLocation: locationString
+      }));
+    }
+  }, [locationData]);
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Country Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.country" })}</Label>
+        <Select
+          value={locationData.countryCode}
+          onValueChange={(value) => {
+            const country = countries.find(c => c.isoCode === value);
+            if (country) {
+              setLocationData({
+                country: country.name,
+                state: "",
+                city: "",
+                countryCode: country.isoCode,
+                stateCode: "",
+              });
+            }
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_country" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {countries.map((country) => (
+              <SelectItem key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* State Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.state" })}</Label>
+        <Select
+          value={locationData.stateCode}
+          onValueChange={(value) => {
+            const state = states.find(s => s.isoCode === value);
+            if (state) {
+              setLocationData({
+                ...locationData,
+                state: state.name,
+                stateCode: state.isoCode,
+                city: "",
+              });
+            }
+          }}
+          disabled={!locationData.countryCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_state" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {states.map((state) => (
+              <SelectItem key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* City Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.city" })}</Label>
+        <Select
+          value={locationData.city}
+          onValueChange={(value) => {
+            setLocationData({
+              ...locationData,
+              city: value,
+            });
+          }}
+          disabled={!locationData.stateCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_city" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {cities.map((city) => (
+              <SelectItem key={city.name} value={city.name}>
+                {city.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Display selected location */}
+      {locationData.city && (
+        <div className="col-span-full">
+          <div className="p-3 bg-gray-50 rounded-md border">
+            <p className="text-sm text-gray-600">
+              <strong>{intl.formatMessage({ id: "customers.selected_location" })}:</strong> {locationData.city}, {locationData.state}, {locationData.country}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              <strong>{intl.formatMessage({ id: "customers.location_code" })}:</strong> {locationData.city}, {locationData.stateCode}, {locationData.countryCode}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
