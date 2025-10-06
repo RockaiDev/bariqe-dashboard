@@ -23,7 +23,7 @@ const port = parseInt(PORT as string, 10) || 8080;
 // Configure CORS for production and development
 const corsOptions = {
   origin: NODE_ENV === "production" 
-    ? [DEV_ORIGIN, "https://*.vercel.app","http://localhost:3000"] 
+    ? [DEV_ORIGIN, "https://*.vercel.app","http://localhost:3000", 'https://www.alexchemy.com', 'https://alexchemy.com'] 
     : [DEV_ORIGIN, "http://localhost:3000"],
   credentials: true,
   optionsSuccessStatus: 200 
