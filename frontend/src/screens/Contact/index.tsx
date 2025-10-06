@@ -14,7 +14,7 @@ import {
 
 import {
   Eye,
-  FileText,
+
   Plus,
   Mail,
   Phone,
@@ -22,8 +22,8 @@ import {
   Edit2,
   X,
   MapPin,
-
   User,
+  Contact,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -34,35 +34,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // ✅ إضافة RadioGroup
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 import DataTable, { SortableTH } from "@/components/shared/tabel/tabel";
 import Title from "@/components/shared/Title";
 import { FormField } from "@/components/shared/FormField";
-
 import { Label } from "@/components/ui/label";
 import { useCrud } from "@/hooks/useCrud";
 import { handleCustomDateRange } from "@/components/shared/dateFilters";
 import {
-  createMaterialRequestFilterGroups,
-  createMaterialRequestSearchHandler,
-  handleMaterialRequestFilters,
+  createContactFilterGroups,
+  createContactSearchHandler,
+  handleContactFilters,
 } from "@/components/shared/filters";
 import toast from "react-hot-toast";
 import axiosInstance from "@/helper/axiosInstance";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { useSearchParams } from "react-router-dom";
 
-interface MaterialRequest {
+interface Contact {
   _id: string;
-  materialName: string;
-  materialEmail: string;
-  materialPhone: string;
-  materialQuantity: number;
-  materialIntendedUse: string;
-  materialLocation?: string;
-  materialActions?: "approve" | "denied" | "pending";
+  contactName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  services: string[];
+  message: string;
+  status: boolean;
   customer?: {
     _id: string;
     customerName: string;
@@ -82,15 +84,20 @@ interface LocationData {
   stateCode: string;
 }
 
-const ACTION_OPTIONS = [
-  { label: "material_requests.pending", value: "pending" },
-  { label: "material_requests.approved", value: "approve" },
-  { label: "material_requests.denied", value: "denied" },
+const SERVICES_OPTIONS = [
+  { label: "contacts.service_technical_training", value: "Technical Training & Consultation" },
+  { label: "contacts.service_equipment_sales", value: "Equipment Sales & Solutions" },
+  { label: "contacts.service_quality_assurance", value: "Quality Assurance & Validation" },
+  { label: "contacts.service_custom_chemical", value: "Custom Chemical Solutions" },
+  { label: "contacts.service_laboratory_setup", value: "Laboratory Setup & Support" },
+  { label: "contacts.service_regulatory", value: "Regulatory Compliance & Documentation" },
+  { label: "contacts.service_maintenance", value: "Maintenance & After-Sales Support" },
+  { label: "contacts.service_research", value: "Research & Development Solutions" },
 ];
 
-export default function MaterialRequestPage() {
+export default function ContactPage() {
   const intl = useIntl();
-  
+   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     page: 1,
     perPage: 10,
@@ -99,12 +106,12 @@ export default function MaterialRequestPage() {
     search: "",
   });
 
-  const { list, create, update } = useCrud("materialRequests", filters);
+  const { list, create, update } = useCrud("contacts", filters);
   const { list: customersList, create: createCustomer } = useCrud("customers");
 
   // Table Edit Status State
-  const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
-  const [tableEditStatus, setTableEditStatus] = useState<string>("");
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [tableEditStatus, setTableEditStatus] = useState<boolean>(false);
 
   const ChangeFilter = (
     newQueries: any[],
@@ -117,9 +124,9 @@ export default function MaterialRequestPage() {
     }));
   };
 
-  const materialRequests: MaterialRequest[] = list.data?.data || [];
+  const contacts: Contact[] = list.data?.data || [];
   const allCustomers: any = customersList.data?.data || [];
-  const customers = allCustomers.filter((customer: any) => customer.customerSource === "material_request");
+  const customers = allCustomers.filter((customer: any) => customer.customerSource === "contact");
 
   const paginationData = list.data?.pagination ?? {
     currentPage: 1,
@@ -138,34 +145,50 @@ export default function MaterialRequestPage() {
 
   // View state
   const [viewOpen, setViewOpen] = useState(false);
-  const [viewing, setViewing] = useState<MaterialRequest | null>(null);
+  const [viewing, setViewing] = useState<Contact | null>(null);
 
-  const handleView = (req: MaterialRequest) => {
-    setViewing(req);
-    setViewOpen(true);
-  };
+const handleView = async (contact: Contact) => {
+  setViewing(contact);
+  setViewOpen(true);
 
-  // Helper function to get status badge
-  const getStatusBadge = (action?: string) => {
-    if (!action || action === "pending") {
-      return (
-        <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 border border-yellow-300 rounded-lg">
-          {intl.formatMessage({ id: "material_requests.pending" })}
-        </span>
-      );
+  // ✅ Mark as read if not already
+  if (!contact.status) {
+    try {
+      await update.mutateAsync({
+        id: contact._id,
+        payload: { status: true },
+      });
+      list.refetch();
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
     }
-
-    if (action === "approve") {
+  }
+};
+useEffect(() => {
+    const viewId = searchParams.get("view");
+    if (viewId && contacts.length > 0) {
+      const contact = contacts.find((c) => c._id === viewId);
+      if (contact) {
+        handleView(contact);
+        // Remove view param from URL
+        searchParams.delete("view");
+        setSearchParams(searchParams);
+      }
+    }
+  }, [searchParams, contacts])
+  // Helper function to get status badge
+  const getStatusBadge = (status: boolean) => {
+    if (status) {
       return (
         <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 border border-green-300 rounded-lg">
-          {intl.formatMessage({ id: "material_requests.approved" })}
+          {intl.formatMessage({ id: "contacts.active" })}
         </span>
       );
     }
 
     return (
-      <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 border border-red-300 rounded-lg">
-        {intl.formatMessage({ id: "material_requests.denied" })}
+      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg">
+        {intl.formatMessage({ id: "contacts.inactive" })}
       </span>
     );
   };
@@ -173,46 +196,43 @@ export default function MaterialRequestPage() {
   // Handle Status Edit in Table
   const handleTableStatusClick = (
     e: React.MouseEvent,
-    requestId: string,
-    currentStatus: string
+    contactId: string,
+    currentStatus: boolean
   ) => {
     e.stopPropagation();
-    setEditingRequestId(requestId);
-    setTableEditStatus(currentStatus || "pending");
+    setEditingContactId(contactId);
+    setTableEditStatus(currentStatus);
   };
 
   const handleTableStatusChange = async (
-    requestId: string,
-    newStatus: string
+    contactId: string,
+    newStatus: boolean
   ) => {
     try {
       await update.mutateAsync({
-        id: requestId,
-        payload: { materialActions: newStatus },
+        id: contactId,
+        payload: { status: newStatus },
       });
 
       list.refetch();
-      setEditingRequestId(null);
-      setTableEditStatus("");
-      toast.success(intl.formatMessage({ id: "material_requests.status_updated_success" }));
+      setEditingContactId(null);
+      toast.success(intl.formatMessage({ id: "contacts.status_updated_success" }));
     } catch (error: any) {
-      toast.error(intl.formatMessage({ id: "material_requests.failed_to_update_status" }));
-      setEditingRequestId(null);
-      setTableEditStatus("");
+      toast.error(intl.formatMessage({ id: "contacts.failed_to_update_status" }));
+      setEditingContactId(null);
     }
   };
 
   const handleCancelTableEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditingRequestId(null);
-    setTableEditStatus("");
+    setEditingContactId(null);
   };
 
-  const handleExportMaterialRequests = async () => {
-    const loadingToast = toast.loading(intl.formatMessage({ id: "material_requests.exporting_requests" }));
+  const handleExportContacts = async () => {
+    const loadingToast = toast.loading(intl.formatMessage({ id: "contacts.exporting_contacts" }));
 
     try {
-      const response = await axiosInstance.get("/materialRequests/export", {
+      const response = await axiosInstance.get("/contacts/export", {
         responseType: "blob",
       });
 
@@ -231,7 +251,7 @@ export default function MaterialRequestPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `material_requests_export_${
+      a.download = `contacts_export_${
         new Date().toISOString().split("T")[0]
       }.xlsx`;
       document.body.appendChild(a);
@@ -243,10 +263,10 @@ export default function MaterialRequestPage() {
       }, 100);
 
       toast.dismiss(loadingToast);
-      toast.success(intl.formatMessage({ id: "material_requests.requests_exported_success" }));
+      toast.success(intl.formatMessage({ id: "contacts.contacts_exported_success" }));
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      toast.error(error.message || intl.formatMessage({ id: "material_requests.export_failed" }));
+      toast.error(error.message || intl.formatMessage({ id: "contacts.export_failed" }));
       console.error("Export error:", error);
     }
   };
@@ -267,25 +287,26 @@ export default function MaterialRequestPage() {
     }
   };
 
+
   return (
     <div className="p-6 space-y-4 !font-tajawal" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
       <div className="flex justify-between items-center mb-3 md:flex-row flex-col gap-3">
         <Title
-          title={intl.formatMessage({ id: "material_requests.title" })}
-          subtitle={intl.formatMessage({ id: "material_requests.subtitle" })}
+          title={intl.formatMessage({ id: "contacts.title" })}
+          subtitle={intl.formatMessage({ id: "contacts.subtitle" })}
         />
 
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={handleExportMaterialRequests}
+            onClick={handleExportContacts}
             className="flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            {intl.formatMessage({ id: "material_requests.export_requests" })}
+            {intl.formatMessage({ id: "contacts.export_contacts" })}
           </Button>
 
-          <AddMaterialRequest
+          <AddContact
             create={create.mutate}
             createCustomer={createCustomer}
             isLoading={create.isPending}
@@ -294,13 +315,12 @@ export default function MaterialRequestPage() {
         </div>
       </div>
 
-      {/* باقي الكود نفسه... */}
       <DataTable
-        title={intl.formatMessage({ id: "material_requests.requested_materials" })}
-        icon={FileText}
+        title={intl.formatMessage({ id: "contacts.contact_requests" })}
+        icon={Contact}
         loading={list.isLoading}
-        isEmpty={!materialRequests?.length}
-        columnCount={8}
+        isEmpty={!contacts?.length}
+        columnCount={7}
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
@@ -311,10 +331,10 @@ export default function MaterialRequestPage() {
           handleCustomDateRange(dateFilter, ChangeFilter);
         }}
         searchProps={{
-          placeholder: intl.formatMessage({ id: "material_requests.search_placeholder" }),
-          onKeyDown: createMaterialRequestSearchHandler(ChangeFilter),
+          placeholder: intl.formatMessage({ id: "contacts.search_placeholder" }),
+          onKeyDown: createContactSearchHandler(ChangeFilter),
         }}
-        filterGroups={createMaterialRequestFilterGroups((key: string) => intl.formatMessage({ id: key }))}
+        filterGroups={createContactFilterGroups( (key: string) => intl.formatMessage({ id: key }))}
         onFiltersApply={(filters, dateFilter) => {
           if (dateFilter) {
             handleCustomDateRange(dateFilter, ChangeFilter);
@@ -323,57 +343,44 @@ export default function MaterialRequestPage() {
           }
 
           Object.entries(filters).forEach(([filterKey, filterValue]) => {
-            handleMaterialRequestFilters(filterKey, filterValue, ChangeFilter);
+            handleContactFilters(filterKey, filterValue, ChangeFilter);
           });
         }}
         RenderHead={({ sort, onSortChange }) => (
           <>
             <TableHead className="text-right">#</TableHead>
             <SortableTH
-              sortKey="materialName"
-              label={intl.formatMessage({ id: "material_requests.material_name" })}
+              sortKey="contactName"
+              label={intl.formatMessage({ id: "contacts.contact_name" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-4 py-2"
             />
-            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "material_requests.contact_info" })}</TableHead>
+            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "contacts.contact_info" })}</TableHead>
+            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "contacts.services" })}</TableHead>
+            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "contacts.message" })}</TableHead>
             <SortableTH
-              sortKey="materialQuantity"
-              label={intl.formatMessage({ id: "material_requests.quantity" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <SortableTH
-              sortKey="materialLocation"
-              label={intl.formatMessage({ id: "material_requests.location" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
-            <TableHead className="px-4 py-2">{intl.formatMessage({ id: "material_requests.intended_use" })}</TableHead>
-            <SortableTH
-              sortKey="materialActions"
-              label={intl.formatMessage({ id: "material_requests.status" })}
+              sortKey="status"
+              label={intl.formatMessage({ id: "contacts.status" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-4 py-2"
             />
             <SortableTH
               sortKey="createdAt"
-              label={intl.formatMessage({ id: "material_requests.created" })}
+              label={intl.formatMessage({ id: "contacts.created" })}
               sort={sort}
               onSortChange={onSortChange}
               className="px-4 py-2"
             />
-            <TableHead className="px-4 py-2 text-right">{intl.formatMessage({ id: "material_requests.actions" })}</TableHead>
+            <TableHead className="px-4 py-2 text-right">{intl.formatMessage({ id: "contacts.actions" })}</TableHead>
           </>
         )}
         RenderBody={({ getRowColor }) => (
           <>
-            {materialRequests.map((req, i) => (
+            {contacts.map((contact, i) => (
               <TableRow
-                key={req._id}
+                key={contact._id}
                 className={`
                   ${getRowColor(i)} 
                   cursor-pointer 
@@ -384,67 +391,75 @@ export default function MaterialRequestPage() {
                   border-gray-200
                   sub-title-cgrey
                 `}
-                onClick={() => handleView(req)}
+                onClick={() => handleView(contact)}
               >
                 <TableCell className="text-right">{(pagination.currentPage - 1) * pagination.perPage + i + 1}</TableCell>
                 <TableCell className="font-medium text-black">
-                  {req.materialName}
+                  <div className="space-y-1">
+                    <div>{contact.contactName}</div>
+                    {contact.customer && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <User className="w-3 h-3" />
+                        <span>{contact.customer.customerName}</span>
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1 text-sm">
                       <Mail className="w-3 h-3" />
                       <span className="truncate max-w-[150px]">
-                        {req.customer?.customerEmail || req.materialEmail}
+                        {contact.email}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-sm">
                       <Phone className="w-3 h-3" />
-                      <span>{req.customer?.customerPhone || req.materialPhone}</span>
+                      <span>{contact.phoneNumber}</span>
                     </div>
-                    {req.customer && (
-                      <div className="flex items-center gap-1 text-sm">
-                        <User className="w-3 h-3" />
-                        <span className="truncate max-w-[150px] font-medium">
-                          {req.customer.customerName}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-1 text-sm">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate max-w-[150px]">
+                        {contact.address}
+                      </span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1 text-white max-w-[200px]">
+                    {contact.services?.slice(0, 2).map((service, idx) => (
+                      <Badge key={idx}  className="text-xs text-white">
+                        {service.split(' ')[0]}
+                      </Badge>
+                    ))}
+                    {contact.services?.length > 2 && (
+                      <Badge variant="outline" className="text-xs text-white">
+                        +{contact.services.length - 2}
+                      </Badge>
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="font-semibold">
-                  {req.materialQuantity.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center gap-1 justify-center">
-                    <MapPin className="w-3 h-3 text-gray-500" />
-                    <span className="text-sm">
-                      {req.materialLocation || req.customer?.customerLocation || "-"}
-                    </span>
-                  </div>
-                </TableCell>
                 <TableCell className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
-                  {req.materialIntendedUse}
+                  {contact.message}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                  {editingRequestId === req._id ? (
+                  {editingContactId === contact._id ? (
                     <div
                       className="flex items-center gap-1"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Select
-                        value={tableEditStatus}
+                        value={tableEditStatus ? "active" : "inactive"}
                         onValueChange={(value) =>
-                          handleTableStatusChange(req._id, value)
+                          handleTableStatusChange(contact._id, value === "active")
                         }
                       >
                         <SelectTrigger className="w-[120px] h-8">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">{intl.formatMessage({ id: "material_requests.pending" })}</SelectItem>
-                          <SelectItem value="approve">{intl.formatMessage({ id: "material_requests.approved" })}</SelectItem>
-                          <SelectItem value="denied">{intl.formatMessage({ id: "material_requests.denied" })}</SelectItem>
+                          <SelectItem value="active">{intl.formatMessage({ id: "contacts.active" })}</SelectItem>
+                          <SelectItem value="inactive">{intl.formatMessage({ id: "contacts.inactive" })}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -462,21 +477,21 @@ export default function MaterialRequestPage() {
                       onClick={(e) =>
                         handleTableStatusClick(
                           e,
-                          req._id,
-                          req.materialActions || "pending"
+                          contact._id,
+                          contact.status
                         )
                       }
                     >
                       <span className="cursor-pointer">
-                        {getStatusBadge(req.materialActions)}
+                        {getStatusBadge(contact.status)}
                       </span>
                       <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
                     </div>
                   )}
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
-                  {req.createdAt
-                    ? new Date(req.createdAt).toLocaleDateString("en-US", {
+                  {contact.createdAt
+                    ? new Date(contact.createdAt).toLocaleDateString("en-US", {
                         year: "2-digit",
                         month: "short",
                         day: "numeric",
@@ -493,7 +508,7 @@ export default function MaterialRequestPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleView(req);
+                        handleView(contact);
                       }}
                     >
                       <Eye className="w-4 h-4" />
@@ -510,15 +525,15 @@ export default function MaterialRequestPage() {
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent
           className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto"
-          aria-describedby="view-request-dialog-description"
+          aria-describedby="view-contact-dialog-description"
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
-              {intl.formatMessage({ id: "material_requests.material_request_details" })}
+              {intl.formatMessage({ id: "contacts.contact_details" })}
             </DialogTitle>
-            <DialogDescription id="view-request-dialog-description">
-              {intl.formatMessage({ id: "material_requests.view_request_description" })}
+            <DialogDescription id="view-contact-dialog-description">
+              {intl.formatMessage({ id: "contacts.view_contact_description" })}
             </DialogDescription>
           </DialogHeader>
 
@@ -528,43 +543,37 @@ export default function MaterialRequestPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.material_name" })}
+                    {intl.formatMessage({ id: "contacts.contact_name" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">{viewing.materialName}</p>
+                    <p className="font-medium">{viewing.contactName}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.material_quantity" })}
+                    {intl.formatMessage({ id: "contacts.email" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-bold text-lg text-blue-600">
-                      {viewing.materialQuantity.toLocaleString()}
-                    </p>
+                    <p className="font-medium">{viewing.email}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.email" })}
+                    {intl.formatMessage({ id: "contacts.phone" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">
-                      {viewing.customer?.customerEmail || viewing.materialEmail}
-                    </p>
+                    <p className="font-medium">{viewing.phoneNumber}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.phone" })}
+                    {intl.formatMessage({ id: "contacts.status" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">
-                      {viewing.customer?.customerPhone || viewing.materialPhone}
-                    </p>
+                    {getStatusBadge(viewing.status)}
                   </div>
                 </div>
 
@@ -572,23 +581,24 @@ export default function MaterialRequestPage() {
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      {intl.formatMessage({ id: "material_requests.customer_name" })}
+                      {intl.formatMessage({ id: "contacts.customer_info" })}
                     </Label>
-                    <div className="p-3 bg-gray-50 rounded-md border">
+                    <div className="p-3 bg-gray-50 rounded-md border space-y-2">
                       <p className="font-medium">{viewing.customer.customerName}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ✅ عرض منفصل لـ Customer Location و Material Location */}
-                {viewing.customer?.customerLocation && (
-                  <div className="space-y-2 md:col-span-2">
-                    <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      {intl.formatMessage({ id: "material_requests.customer_location" })}
-                    </Label>
-                    <div className="p-3 bg-gray-50 rounded-md border">
-                      <p className="text-sm">{viewing.customer.customerLocation}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Mail className="w-3 h-3" />
+                        <span>{viewing.customer.customerEmail}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Phone className="w-3 h-3" />
+                        <span>{viewing.customer.customerPhone}</span>
+                      </div>
+                      {viewing.customer.customerLocation && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-3 h-3" />
+                          <span>{viewing.customer.customerLocation}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -596,33 +606,40 @@ export default function MaterialRequestPage() {
                 <div className="space-y-2 md:col-span-2">
                   <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
-                    {intl.formatMessage({ id: "material_requests.material_location" })}
+                    {intl.formatMessage({ id: "contacts.address" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="text-sm">
-                      {viewing.materialLocation || intl.formatMessage({ id: "material_requests.not_provided" })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.status" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    {getStatusBadge(viewing.materialActions)}
+                    <p className="text-sm">{viewing.address}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Intended Use */}
+              {/* Services */}
+              {viewing.services && viewing.services.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-600">
+                    {intl.formatMessage({ id: "contacts.selected_services" })}
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <div className="flex flex-wrap gap-2">
+                      {viewing.services.map((service, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-white">
+                          {service}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Message */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-600">
-                  {intl.formatMessage({ id: "material_requests.intended_use" })}
+                  {intl.formatMessage({ id: "contacts.message" })}
                 </Label>
                 <div className="p-3 bg-gray-50 rounded-md border min-h-[80px]">
                   <p className="text-gray-800 leading-relaxed">
-                    {viewing.materialIntendedUse}
+                    {viewing.message}
                   </p>
                 </div>
               </div>
@@ -631,35 +648,35 @@ export default function MaterialRequestPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.created_at" })}
+                    {intl.formatMessage({ id: "contacts.created_at" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.createdAt
                         ? new Date(viewing.createdAt).toLocaleString()
-                        : intl.formatMessage({ id: "material_requests.not_available" })}
+                        : intl.formatMessage({ id: "contacts.not_available" })}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "material_requests.last_updated" })}
+                    {intl.formatMessage({ id: "contacts.last_updated" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.updatedAt
                         ? new Date(viewing.updatedAt).toLocaleString()
-                        : intl.formatMessage({ id: "material_requests.not_available" })}
+                        : intl.formatMessage({ id: "contacts.not_available" })}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Request ID */}
+              {/* Contact ID */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-600">
-                  {intl.formatMessage({ id: "material_requests.request_id" })}
+                  {intl.formatMessage({ id: "contacts.contact_id" })}
                 </Label>
                 <div className="p-3 bg-gray-50 rounded-md border">
                   <p className="text-sm font-mono text-gray-600">
@@ -673,7 +690,7 @@ export default function MaterialRequestPage() {
           <DialogFooter className="mt-6">
             <DialogClose asChild>
               <Button variant="outline" className="w-full">
-                {intl.formatMessage({ id: "material_requests.close" })}
+                {intl.formatMessage({ id: "contacts.close" })}
               </Button>
             </DialogClose>
           </DialogFooter>
@@ -683,11 +700,10 @@ export default function MaterialRequestPage() {
   );
 }
 
-// ✅ تحديث Add Material Request Dialog Component مع RadioGroup
-function AddMaterialRequest({
+// ✅ Add Contact Dialog Component
+function AddContact({
   create,
   createCustomer,
-  // isLoading,
   customers,
 }: {
   create: (payload: any) => void;
@@ -699,42 +715,30 @@ function AddMaterialRequest({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // ✅ تغيير لاستخدام RadioGroup بدلاً من Checkbox
   const [customerMode, setCustomerMode] = useState<"new" | "existing">("existing");
 
   const [form, setForm] = useState({
-    materialName: "",
-    materialEmail: "",
-    materialPhone: "",
-    materialQuantity: 0,
-    materialIntendedUse: "",
-    materialLocation: "", // ✅ موقع الطلب منفصل
-    materialActions: "pending" as "pending" | "approve" | "denied",
+    contactName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    services: [] as string[],
+    message: "",
+    status: false,
     customer: "",
   });
 
-  // ✅ نموذج إنشاء العميل الجديد
   const [customerForm, setCustomerForm] = useState({
     customerName: "",
     customerEmail: "",
     customerPhone: "",
     customerNotes: "",
-    customerSource: "material_request",
+    customerSource: "contact",
     customerAddress: "",
     customerLocation: "",
   });
 
-  // ✅ موقع الطلب منفصل عن موقع العميل
-  const [materialLocationData, setMaterialLocationData] = useState<LocationData>({
-    country: "",
-    state: "",
-    city: "",
-    countryCode: "",
-    stateCode: "",
-  });
-
-  // ✅ موقع العميل (للعميل الجديد فقط)
-  const [customerLocationData, setCustomerLocationData] = useState<LocationData>({
+  const [locationData, setLocationData] = useState<LocationData>({
     country: "",
     state: "",
     city: "",
@@ -753,25 +757,27 @@ function AddMaterialRequest({
   });
 
   const canSubmit =
-    form.materialName.trim() &&
-    form.materialIntendedUse.trim() &&
-    form.materialQuantity > 0 &&
+    form.contactName.trim() &&
+    form.email.trim() &&
+    form.phoneNumber.trim() &&
+    form.address.trim() &&
+    form.message.trim() &&
     (customerMode === "new" ? 
       (customerForm.customerName.trim() && 
        customerForm.customerPhone.trim() && 
        customerForm.customerAddress.trim()) :
-      (form.customer.trim() || (form.materialEmail.trim() && form.materialPhone.trim()))
+      true
     );
 
   const hasFormChanges = () => {
     return (
-      form.materialName !== "" ||
-      form.materialQuantity !== 0 ||
-      form.materialIntendedUse !== "" ||
-      form.materialLocation !== "" ||
-      form.materialActions !== "pending" ||
+      form.contactName !== "" ||
+      form.email !== "" ||
+      form.phoneNumber !== "" ||
+      form.address !== "" ||
+      form.message !== "" ||
+      form.services.length > 0 ||
       form.customer !== "" ||
-      (customerMode === "existing" && (form.materialEmail !== "" || form.materialPhone !== "")) ||
       (customerMode === "new" && (
         customerForm.customerName !== "" ||
         customerForm.customerEmail !== "" ||
@@ -794,13 +800,13 @@ function AddMaterialRequest({
 
   const resetForm = () => {
     setForm({
-      materialName: "",
-      materialEmail: "",
-      materialPhone: "",
-      materialQuantity: 0,
-      materialIntendedUse: "",
-      materialLocation: "",
-      materialActions: "pending",
+      contactName: "",
+      email: "",
+      phoneNumber: "",
+      address: "",
+      services: [],
+      message: "",
+      status: false,
       customer: "",
     });
     setCustomerForm({
@@ -808,18 +814,11 @@ function AddMaterialRequest({
       customerEmail: "",
       customerPhone: "",
       customerNotes: "",
-      customerSource: "material_request",
+      customerSource: "contact",
       customerAddress: "",
       customerLocation: "",
     });
-    setMaterialLocationData({
-      country: "",
-      state: "",
-      city: "",
-      countryCode: "",
-      stateCode: "",
-    });
-    setCustomerLocationData({
+    setLocationData({
       country: "",
       state: "",
       city: "",
@@ -829,7 +828,6 @@ function AddMaterialRequest({
     setCustomerMode("existing");
   };
 
-  // ✅ Handle phone change (فقط للعميل الجديد)
   const handlePhoneChange = (value: string | undefined) => {
     if (customerMode === "new") {
       setCustomerForm((prev) => ({
@@ -839,14 +837,19 @@ function AddMaterialRequest({
     } else {
       setForm((prev) => ({
         ...prev,
-        materialPhone: value || "",
+        phoneNumber: value || "",
       }));
     }
   };
 
-
-
-
+  const handleServiceToggle = (service: string) => {
+    setForm((prev) => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter((s) => s !== service)
+        : [...prev.services, service],
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -857,14 +860,13 @@ function AddMaterialRequest({
 
       let customerId = form.customer;
 
-      // إنشاء customer جديد إذا كان مطلوب
       if (customerMode === "new") {
         if (
           !customerForm.customerName ||
           !customerForm.customerPhone ||
           !customerForm.customerAddress
         ) {
-          toast.error(intl.formatMessage({ id: "material_requests.fill_required_fields" }));
+          toast.error(intl.formatMessage({ id: "contacts.fill_required_fields" }));
           return;
         }
 
@@ -873,39 +875,37 @@ function AddMaterialRequest({
           customerId = customerResponse?.result?._id || customerResponse?._id;
 
           if (!customerId) {
-            toast.error(intl.formatMessage({ id: "material_requests.failed_customer_creation" }));
+            toast.error(intl.formatMessage({ id: "contacts.failed_customer_creation" }));
             return;
           }
 
-          toast.success(intl.formatMessage({ id: "material_requests.customer_created_success" }));
+          toast.success(intl.formatMessage({ id: "contacts.customer_created_success" }));
         } catch (customerError: any) {
           console.error("Customer creation error:", customerError);
           const errorMessage = customerError?.response?.data?.message || 
                               customerError?.message || 
-                              intl.formatMessage({ id: "material_requests.failed_customer_creation" });
+                              intl.formatMessage({ id: "contacts.failed_customer_creation" });
           toast.error(errorMessage);
           return;
         }
       }
 
-      // ✅ إنشاء material request مع materialLocation منفصل
-      const requestData = {
-        materialName: form.materialName,
-        materialQuantity: form.materialQuantity,
-        materialIntendedUse: form.materialIntendedUse,
-        materialLocation: form.materialLocation, // ✅ موقع الطلب منفصل
-        materialActions: form.materialActions === "pending" ? undefined : form.materialActions,
+      const contactData = {
+        contactName: form.contactName,
+        email: form.email,
+        phoneNumber: form.phoneNumber,
+        address: form.address,
+        services: form.services,
+        message: form.message,
+        status: form.status,
         customer: customerId || undefined,
-        // ✅ إذا لم يكن هناك customer، استخدم materialEmail و materialPhone
-        materialEmail: !customerId ? form.materialEmail : undefined,
-        materialPhone: !customerId ? form.materialPhone : undefined,
       };
 
-      // إزالة الحقول الفارغة
       const cleanForm = Object.fromEntries(
-        Object.entries(requestData)
+        Object.entries(contactData)
           .filter(([, value]) => {
             if (typeof value === "string") return value.trim() !== "";
+            if (Array.isArray(value)) return value.length > 0;
             return value !== null && value !== undefined;
           })
       );
@@ -913,11 +913,11 @@ function AddMaterialRequest({
       await create(cleanForm);
       resetForm();
       setOpen(false);
-      toast.success(intl.formatMessage({ id: "material_requests.request_created_success" }));
+      toast.success(intl.formatMessage({ id: "contacts.contact_created_success" }));
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
-                          intl.formatMessage({ id: "material_requests.request_creation_failed" });
+                          intl.formatMessage({ id: "contacts.contact_creation_failed" });
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -929,36 +929,35 @@ function AddMaterialRequest({
       <Dialog open={open} onOpenChange={handleDialogClose}>
         <DialogTrigger asChild>
           <Button className="text-white cursor-pointer">
-            <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "material_requests.new_request" })}
+            <Plus className="w-4 h-4 mr-2" /> {intl.formatMessage({ id: "contacts.new_contact" })}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: "material_requests.new_material_request" })}</DialogTitle>
+            <DialogTitle>{intl.formatMessage({ id: "contacts.new_contact_request" })}</DialogTitle>
             <DialogDescription>
-              {intl.formatMessage({ id: "material_requests.create_request_description" })}
+              {intl.formatMessage({ id: "contacts.create_contact_description" })}
             </DialogDescription>
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* ✅ Customer Mode Selection با RadioGroup */}
+            {/* Customer Mode Selection */}
             <div className="space-y-4">
               <Label className="text-base font-medium">
-                {intl.formatMessage({ id: "material_requests.customer_selection" })}
+                {intl.formatMessage({ id: "contacts.customer_selection" })}
               </Label>
               
               <RadioGroup
                 value={customerMode}
                 onValueChange={(value: "new" | "existing") => {
                   setCustomerMode(value);
-                  // ✅ إعادة تعيين الحقول عند التغيير
-                  setForm(prev => ({ ...prev, customer: "", materialEmail: "", materialPhone: "" }));
+                  setForm(prev => ({ ...prev, customer: "" }));
                   setCustomerForm({
                     customerName: "",
                     customerEmail: "",
                     customerPhone: "",
                     customerNotes: "",
-                    customerSource: "material_request",
+                    customerSource: "contact",
                     customerAddress: "",
                     customerLocation: "",
                   });
@@ -968,78 +967,45 @@ function AddMaterialRequest({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="existing" id="existing" />
                   <Label htmlFor="existing" className="cursor-pointer">
-                    {intl.formatMessage({ id: "material_requests.select_existing_customer" })}
+                    {intl.formatMessage({ id: "contacts.select_existing_customer" })}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="new" id="new" />
                   <Label htmlFor="new" className="cursor-pointer">
-                    {intl.formatMessage({ id: "material_requests.create_new_customer" })}
+                    {intl.formatMessage({ id: "contacts.create_new_customer" })}
                   </Label>
                 </div>
               </RadioGroup>
 
-              {/* ✅ Customer Selection - إما اختيار موجود أو إنشاء جديد */}
               {customerMode === "existing" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "material_requests.select_customer" })}</Label>
-                    <Select
-                      value={form.customer}
-                      onValueChange={(value) => {
-                        setForm((prev) => ({ 
-                          ...prev, 
-                          customer: value,
-                          // ✅ مسح email و phone عند اختيار customer
-                          materialEmail: "",
-                          materialPhone: ""
-                        }));
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={intl.formatMessage({ id: "material_requests.choose_customer" })} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {customers.map((customer: any) => (
-                          <SelectItem key={customer._id} value={customer._id}>
-                            {customer.customerName} - {customer.customerEmail}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* ✅ Fallback fields - فقط إذا لم يتم اختيار customer */}
-                  {!form.customer && (
-                    <>
-                      {/* <FormField
-                        id="materialEmail"
-                        label={intl.formatMessage({ id: "material_requests.email" })}
-                        type="email"
-                        value={form.materialEmail}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, materialEmail: e.target.value }))
-                        }
-                        required={!form.customer}
-                      />
-                      <FormField
-                        id="materialPhone"
-                        label={intl.formatMessage({ id: "material_requests.phone_number" })}
-                        variant="phone"
-                        onChange={(e) => {e;}}
-                        value={form.materialPhone}
-                        onPhoneChange={handlePhoneChange}
-                        placeholder="Enter phone number"
-                        required={!form.customer}
-                      /> */}
-                    </>
-                  )}
+                <div className="space-y-2">
+                  <Label>{intl.formatMessage({ id: "contacts.select_customer" })}</Label>
+                  <Select
+                    value={form.customer}
+                    onValueChange={(value) => {
+                      setForm((prev) => ({ 
+                        ...prev, 
+                        customer: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={intl.formatMessage({ id: "contacts.choose_customer_optional" })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer: any) => (
+                        <SelectItem key={customer._id} value={customer._id}>
+                          {customer.customerName} - {customer.customerEmail}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               ) : (
-                // ✅ New Customer Form
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-gray-50">
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "material_requests.customer_name_required" })}</Label>
+                    <Label>{intl.formatMessage({ id: "contacts.customer_name_required" })}</Label>
                     <Input
                       value={customerForm.customerName}
                       onChange={(e) =>
@@ -1048,12 +1014,12 @@ function AddMaterialRequest({
                           customerName: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "material_requests.enter_customer_name" })}
+                      placeholder={intl.formatMessage({ id: "contacts.enter_customer_name" })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{intl.formatMessage({ id: "material_requests.email" })}</Label>
+                    <Label>{intl.formatMessage({ id: "contacts.email" })}</Label>
                     <Input
                       type="email"
                       value={customerForm.customerEmail}
@@ -1063,21 +1029,21 @@ function AddMaterialRequest({
                           customerEmail: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "material_requests.email_placeholder" })}
+                      placeholder={intl.formatMessage({ id: "contacts.email_placeholder" })}
                     />
                   </div>
                   <FormField
                     id="customerPhone"
-                    label={intl.formatMessage({ id: "material_requests.phone_required" })}
+                    label={intl.formatMessage({ id: "contacts.phone_required" })}
                     value={customerForm.customerPhone}
                     onChange={(e) => {e;}}
                     onPhoneChange={handlePhoneChange}
                     variant="phone"
-                    placeholder={intl.formatMessage({ id: "material_requests.enter_phone" })}
+                    placeholder={intl.formatMessage({ id: "contacts.enter_phone" })}
                     required
                   />
                   <div className="col-span-2 space-y-2">
-                    <Label>{intl.formatMessage({ id: "material_requests.address_required" })}</Label>
+                    <Label>{intl.formatMessage({ id: "contacts.address_required" })}</Label>
                     <Input
                       value={customerForm.customerAddress}
                       onChange={(e) =>
@@ -1086,24 +1052,22 @@ function AddMaterialRequest({
                           customerAddress: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "material_requests.customer_address" })}
+                      placeholder={intl.formatMessage({ id: "contacts.customer_address" })}
                       required
                     />
                   </div>
 
-                  {/* ✅ Customer Location Selector (للعميل الجديد فقط) */}
                   <div className="col-span-2 space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        {intl.formatMessage({ id: "material_requests.customer_location" })}
+                        {intl.formatMessage({ id: "contacts.customer_location" })}
                       </Label>
-            
                     </div>
 
                     <LocationSelector
-                      locationData={customerLocationData}
-                      setLocationData={setCustomerLocationData}
+                      locationData={locationData}
+                      setLocationData={setLocationData}
                       setForm={setCustomerForm}
                       intl={intl}
                       fieldPrefix="customer"
@@ -1111,7 +1075,7 @@ function AddMaterialRequest({
                   </div>
 
                   <div className="col-span-2 space-y-2">
-                    <Label>{intl.formatMessage({ id: "material_requests.notes" })}</Label>
+                    <Label>{intl.formatMessage({ id: "contacts.notes" })}</Label>
                     <Input
                       value={customerForm.customerNotes}
                       onChange={(e) =>
@@ -1120,100 +1084,114 @@ function AddMaterialRequest({
                           customerNotes: e.target.value,
                         }))
                       }
-                      placeholder={intl.formatMessage({ id: "material_requests.additional_notes" })}
+                      placeholder={intl.formatMessage({ id: "contacts.additional_notes" })}
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* ✅ Material Location Selector (منفصل للطلب نفسه) */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {intl.formatMessage({ id: "material_requests.material_location" })}
-                </Label>
-             
-              </div>
-
-              <LocationSelector
-                locationData={materialLocationData}
-                setLocationData={setMaterialLocationData}
-                setForm={setForm}
-                intl={intl}
-                fieldPrefix="material"
-              />
-            </div>
-
-            {/* Material Request Details */}
+            {/* Contact Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
-                id="materialName"
-                label={intl.formatMessage({ id: "material_requests.material_name" })}
-                value={form.materialName}
+                id="contactName"
+                label={intl.formatMessage({ id: "contacts.contact_name" })}
+                value={form.contactName}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, materialName: e.target.value }))
+                  setForm((f) => ({ ...f, contactName: e.target.value }))
                 }
                 required
               />
 
               <FormField
-                id="materialQuantity"
-                label={intl.formatMessage({ id: "material_requests.quantity" })}
-                type="number"
-                min="1"
-                value={form.materialQuantity}
+                id="email"
+                label={intl.formatMessage({ id: "contacts.email" })}
+                type="email"
+                value={form.email}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    materialQuantity: parseInt(e.target.value) || 0,
-                  }))
+                  setForm((f) => ({ ...f, email: e.target.value }))
                 }
                 required
               />
 
-              {/* Action Status Selector */}
-              <div className="space-y-2 col-span-full">
-                <Label htmlFor="materialActions">{intl.formatMessage({ id: "material_requests.initial_status" })}</Label>
-                <Select
-                  value={form.materialActions}
-                  onValueChange={(value) =>
-                    setForm((f) => ({ ...f, materialActions: value as any }))
+              <FormField
+                id="phoneNumber"
+                label={intl.formatMessage({ id: "contacts.phone_number" })}
+                variant="phone"
+                onChange={(e) => {e;}}
+                value={form.phoneNumber}
+                onPhoneChange={(value) => setForm((f) => ({ ...f, phoneNumber: value || "" }))}
+                placeholder={intl.formatMessage({ id: "contacts.enter_phone" })}
+                required
+              />
+
+              <div className="col-span-full">
+                <FormField
+                  id="address"
+                  label={intl.formatMessage({ id: "contacts.address" })}
+                  value={form.address}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, address: e.target.value }))
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_status" })} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTION_OPTIONS.map((action) => (
-                      <SelectItem key={action.value} value={action.value}>
-                        {intl.formatMessage({ id: action.label })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  required
+                />
+              </div>
+
+              {/* Services Selection */}
+              <div className="col-span-full space-y-3">
+                <Label>{intl.formatMessage({ id: "contacts.select_services" })}</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border rounded-lg bg-gray-50">
+                  {SERVICES_OPTIONS.map((service) => (
+                    <div key={service.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={service.value}
+                        checked={form.services.includes(service.value)}
+                        onCheckedChange={() => handleServiceToggle(service.value)}
+                      />
+                      <Label
+                        htmlFor={service.value}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {intl.formatMessage({ id: service.label })}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="col-span-full">
                 <FormField
-                  id="materialIntendedUse"
-                  label={intl.formatMessage({ id: "material_requests.intended_use_description" })}
+                  id="message"
+                  label={intl.formatMessage({ id: "contacts.message" })}
                   variant="textarea"
                   rows={4}
-                  value={form.materialIntendedUse}
+                  value={form.message}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, materialIntendedUse: e.target.value }))
+                    setForm((f) => ({ ...f, message: e.target.value }))
                   }
                   required
                 />
+              </div>
+
+              {/* Status */}
+              <div className="col-span-full flex items-center space-x-2">
+                <Checkbox
+                  id="status"
+                  checked={form.status}
+                  onCheckedChange={(checked) =>
+                    setForm((f) => ({ ...f, status: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="status" className="cursor-pointer">
+                  {intl.formatMessage({ id: "contacts.mark_as_active" })}
+                </Label>
               </div>
             </div>
 
             <DialogFooter className="mt-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline" disabled={loading}>
-                  {intl.formatMessage({ id: "material_requests.cancel" })}
+                  {intl.formatMessage({ id: "contacts.cancel" })}
                 </Button>
               </DialogClose>
               <Button 
@@ -1222,10 +1200,10 @@ function AddMaterialRequest({
                 disabled={!canSubmit || loading}
               >
                 {loading 
-                  ? intl.formatMessage({ id: "material_requests.creating" }) 
+                  ? intl.formatMessage({ id: "contacts.creating" }) 
                   : customerMode === "new"
-                  ? intl.formatMessage({ id: "material_requests.create_customer_request" })
-                  : intl.formatMessage({ id: "material_requests.create_request" })
+                  ? intl.formatMessage({ id: "contacts.create_customer_contact" })
+                  : intl.formatMessage({ id: "contacts.create_contact" })
                 }
               </Button>
             </DialogFooter>
@@ -1245,7 +1223,7 @@ function AddMaterialRequest({
   );
 }
 
-// Location Selector Component (نفس الكود السابق)
+// Location Selector Component
 function LocationSelector({ 
   locationData, 
   setLocationData, 
@@ -1312,7 +1290,7 @@ function LocationSelector({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div className="space-y-2">
-        <Label>{intl.formatMessage({ id: "material_requests.country" })}</Label>
+        <Label>{intl.formatMessage({ id: "contacts.country" })}</Label>
         <Select
           value={locationData.countryCode}
           onValueChange={(value) => {
@@ -1329,7 +1307,7 @@ function LocationSelector({
           }}
         >
           <SelectTrigger>
-            <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_country" })} />
+            <SelectValue placeholder={intl.formatMessage({ id: "contacts.select_country" })} />
           </SelectTrigger>
           <SelectContent className="!overflow-y-auto max-h-60">
             {countries.map((country) => (
@@ -1342,7 +1320,7 @@ function LocationSelector({
       </div>
 
       <div className="space-y-2">
-        <Label>{intl.formatMessage({ id: "material_requests.state" })}</Label>
+        <Label>{intl.formatMessage({ id: "contacts.state" })}</Label>
         <Select
           value={locationData.stateCode}
           onValueChange={(value) => {
@@ -1359,7 +1337,7 @@ function LocationSelector({
           disabled={!locationData.countryCode}
         >
           <SelectTrigger>
-            <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_state" })} />
+            <SelectValue placeholder={intl.formatMessage({ id: "contacts.select_state" })} />
           </SelectTrigger>
           <SelectContent className="!overflow-y-auto max-h-60">
             {states.map((state) => (
@@ -1372,7 +1350,7 @@ function LocationSelector({
       </div>
 
       <div className="space-y-2">
-        <Label>{intl.formatMessage({ id: "material_requests.city" })}</Label>
+        <Label>{intl.formatMessage({ id: "contacts.city" })}</Label>
         <Select
           value={locationData.city}
           onValueChange={(value) => {
@@ -1384,7 +1362,7 @@ function LocationSelector({
           disabled={!locationData.stateCode}
         >
           <SelectTrigger>
-            <SelectValue placeholder={intl.formatMessage({ id: "material_requests.select_city" })} />
+            <SelectValue placeholder={intl.formatMessage({ id: "contacts.select_city" })} />
           </SelectTrigger>
           <SelectContent className="!overflow-y-auto max-h-60">
             {cities.map((city) => (
@@ -1400,10 +1378,10 @@ function LocationSelector({
         <div className="col-span-full">
           <div className="p-3 bg-gray-50 rounded-md border">
             <p className="text-sm text-gray-600">
-              <strong>{intl.formatMessage({ id: "material_requests.selected_location" })}:</strong> {locationData.city}, {locationData.state}, {locationData.country}
+              <strong>{intl.formatMessage({ id: "contacts.selected_location" })}:</strong> {locationData.city}, {locationData.state}, {locationData.country}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              <strong>{intl.formatMessage({ id: "material_requests.location_code" })}:</strong> {locationData.city}, {locationData.stateCode}, {locationData.countryCode}
+              <strong>{intl.formatMessage({ id: "contacts.location_code" })}:</strong> {locationData.city}, {locationData.stateCode}, {locationData.countryCode}
             </p>
           </div>
         </div>

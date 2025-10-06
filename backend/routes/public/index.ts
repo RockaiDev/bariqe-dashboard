@@ -6,6 +6,7 @@ import ConsultationRequestsController from "../../controllers/consultationReques
 import MaterialRequestController from "../../controllers/materialRequests";
 import EventController from "../../controllers/events";
 import CustomerController from "../../controllers/customer";
+import ContactController from '../../controllers/contact/index';
 
 // Initialize public routes
 const publicRouter = Router();
@@ -18,28 +19,50 @@ const consultationRequestsController = new ConsultationRequestsController();
 const materialRequestController = new MaterialRequestController();
 const eventController = new EventController();
 const customerController = new CustomerController();
-
-
-
+const contactController = new ContactController();
 /* ==============================
    PUBLIC PRODUCT ROUTES
 ================================ */
+
+// ✅ Export route (MUST come FIRST - before /:id)
+publicRouter.get(
+  "/products/export",
+  productController.exportProducts.bind(productController)
+);
+
 // Get all products (for website display)
 publicRouter.get(
   "/products",
   productController.getProducts.bind(productController)
 );
 
-// Get single product by ID
+// ✅ Get single product by ID (MUST come LAST)
 publicRouter.get(
   "/products/:id",
   productController.getOneProduct.bind(productController)
 );
 
-
 /* ==============================
    PUBLIC CATEGORY ROUTES
 ================================ */
+// 🟢 Get active categories only (for website navigation)
+publicRouter.get(
+  "/categories/active",
+  categoryController.getActiveCategories.bind(categoryController)
+);
+
+// 🟢 Get category statistics (for website display)
+publicRouter.get(
+  "/categories/stats",
+  categoryController.getCategoryStats.bind(categoryController)
+);
+
+// 🟢 Get subcategories for a specific category (for website navigation)
+publicRouter.get(
+  "/categories/:categoryId/subcategories",
+  categoryController.getSubCategories.bind(categoryController)
+);
+
 // Get all categories (for website navigation)
 publicRouter.get(
   "/categories",
@@ -67,21 +90,19 @@ publicRouter.get(
   orderController.getOne.bind(orderController)
 );
 
-
-
 /* ==============================
    PUBLIC CONSULTATION ROUTES
 ================================ */
 // Create consultation request
 publicRouter.post(
   "/consultation-requests",
-  consultationRequestsController.add.bind(orderController)
+  consultationRequestsController.add.bind(consultationRequestsController) // تصحيح الـ binding
 );
 
 // Get consultation by ID
 publicRouter.get(
   "/consultation-requests/:id",
-  consultationRequestsController.getOne.bind(orderController)
+  consultationRequestsController.getOne.bind(consultationRequestsController) // تصحيح الـ binding
 );
 
 /* ==============================
@@ -90,18 +111,17 @@ publicRouter.get(
 // Create material request
 publicRouter.post(
   "/material-requests",
-  materialRequestController.add.bind(orderController)
+  materialRequestController.add.bind(materialRequestController) // تصحيح الـ binding
 );
 
 // Get material request by ID
 publicRouter.get(
   "/material-requests/:id",
-  materialRequestController.getOne.bind(orderController)
+  materialRequestController.getOne.bind(materialRequestController) // تصحيح الـ binding
 );
 
-
 /* ==============================
-   PUBLIC EVENT
+   PUBLIC EVENT ROUTES
 ================================ */
 publicRouter.get(
   "/events",
@@ -113,9 +133,8 @@ publicRouter.get(
   eventController.getOne.bind(eventController)
 );
 
-
 /* ==============================
-   PUBLIC CUSTOMER
+   PUBLIC CUSTOMER ROUTES
 ================================ */
 publicRouter.get(
   "/customers",
@@ -137,4 +156,18 @@ publicRouter.patch(
   customerController.editCustomer.bind(customerController)
 );
 
+/* ==============================
+   PUBLIC CONTACT ROUTES (✅ جديد)
+================================ */
+// Create contact request (anyone can submit contact form)
+publicRouter.post(
+  "/contacts",
+  contactController.addContact.bind(contactController)
+);
+
+// Get contact by ID (to check submission status)
+publicRouter.get(
+  "/contacts/:id",
+  contactController.getOneContact.bind(contactController)
+);
 export default publicRouter;

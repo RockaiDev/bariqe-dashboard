@@ -388,7 +388,7 @@ export default class OrderController extends BaseApi {
               const orderStatus = String(row.getCell(6).value || "").trim() || "Pending";
 
               // Skip empty rows
-              if (!customerEmail && !productCode) return;
+              if ( !productCode) return;
 
               // Validation
               if (!customerEmail || !productCode) {

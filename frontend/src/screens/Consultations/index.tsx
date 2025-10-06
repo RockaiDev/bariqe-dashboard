@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIntl } from 'react-intl';
+import { Country, State, City } from 'country-state-city'; // ✅ إضافة المكتبة
 import {
   Dialog,
   DialogClose,
@@ -21,7 +22,8 @@ import {
   User,
   UserPlus,
   Download,
-  // Upload,
+  MapPin, // ✅ إضافة أيقونة MapPin
+
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -48,9 +50,10 @@ import {
   handleConsultationRequestFilters,
 } from "@/components/shared/filters";
 import axiosInstance from "@/helper/axiosInstance";
-// إضافة هذه imports
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+
+// ✅ تحديث Interface لإضافة customerLocation
 interface ConsultationRequest {
   _id: string;
   ConsultationRequestsName: string;
@@ -65,9 +68,19 @@ interface ConsultationRequest {
     customerEmail: string;
     customerPhone: string;
     customerAddress?: string;
+    customerLocation?: string; // ✅ إضافة customerLocation
   };
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ✅ إضافة interface للموقع
+interface LocationData {
+  country: string;
+  state: string;
+  city: string;
+  countryCode: string;
+  stateCode: string;
 }
 
 export default function ConsultationRequestsPage() {
@@ -84,40 +97,6 @@ export default function ConsultationRequestsPage() {
 
   const { list, create, update } = useCrud("consultation-requests", filters);
 
-  // Confirmation Dialogs
-const addConfirmDialog = useConfirmationDialog({
-  onConfirm: () => {
-    setAddOpen(false);
-    resetForm();
-  },
-  onCancel: () => {
-    // Handle cancel - stay in dialog
-  }
-});
-
-// Check if form has changes
-const hasAddFormChanges = () => {
-  return (
-    consultationForm.ConsultationRequestsName !== "" ||
-    consultationForm.ConsultationRequestsEmail !== "" ||
-    consultationForm.ConsultationRequestsPhone !== "" ||
-    consultationForm.ConsultationRequestsMessage !== "" ||
-    consultationForm.consultationRequestsArea !== "" ||
-    consultationForm.ConsultationRequestsStatus !== "new" ||
-    consultationForm.customerAddress !== ""
-  );
-};
-
-// Handle add dialog close with confirmation
-const handleAddDialogClose = (open: boolean) => {
-  if (!open && hasAddFormChanges()) {
-    addConfirmDialog.showDialog();
-  } else {
-    setAddOpen(false);
-    if (!open) resetForm();
-  }
-};
-
   // Add Consultation Dialog State
   const [addOpen, setAddOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -131,10 +110,7 @@ const handleAddDialogClose = (open: boolean) => {
   const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
   const [tableEditStatus, setTableEditStatus] = useState<string>("");
 
-  // Import State
-  // const [importLoading, setImportLoading] = useState(false);
-
-  // Form State
+  // ✅ تحديث Form State لإضافة customerLocation
   const [consultationForm, setConsultationForm] = useState({
     ConsultationRequestsName: "",
     ConsultationRequestsEmail: "",
@@ -143,7 +119,52 @@ const handleAddDialogClose = (open: boolean) => {
     consultationRequestsArea: "",
     ConsultationRequestsStatus: "new" as const,
     customerAddress: "",
+    customerLocation: "", // ✅ إضافة customerLocation
   });
+
+  // ✅ إضافة state للموقع
+  const [locationData, setLocationData] = useState<LocationData>({
+    country: "",
+    state: "",
+    city: "",
+    countryCode: "",
+    stateCode: "",
+  });
+
+  // Confirmation Dialogs
+  const addConfirmDialog = useConfirmationDialog({
+    onConfirm: () => {
+      setAddOpen(false);
+      resetForm();
+    },
+    onCancel: () => {
+      // Handle cancel - stay in dialog
+    }
+  });
+
+  // ✅ تحديث Check if form has changes لإضافة customerLocation
+  const hasAddFormChanges = () => {
+    return (
+      consultationForm.ConsultationRequestsName !== "" ||
+      consultationForm.ConsultationRequestsEmail !== "" ||
+      consultationForm.ConsultationRequestsPhone !== "" ||
+      consultationForm.ConsultationRequestsMessage !== "" ||
+      consultationForm.consultationRequestsArea !== "" ||
+      consultationForm.ConsultationRequestsStatus !== "new" ||
+      consultationForm.customerAddress !== "" ||
+      consultationForm.customerLocation !== "" // ✅ إضافة customerLocation
+    );
+  };
+
+  // Handle add dialog close with confirmation
+  const handleAddDialogClose = (open: boolean) => {
+    if (!open && hasAddFormChanges()) {
+      addConfirmDialog.showDialog();
+    } else {
+      setAddOpen(false);
+      if (!open) resetForm();
+    }
+  };
 
   const ChangeFilter = (
     newQueries: any[],
@@ -233,6 +254,8 @@ const handleAddDialogClose = (open: boolean) => {
       ConsultationRequestsPhone: value || "",
     }));
   };
+
+
 
   // Handle Status Edit in View Dialog
   const handleEditStatus = () => {
@@ -358,6 +381,7 @@ const handleAddDialogClose = (open: boolean) => {
     }
   };
 
+  // ✅ تحديث resetForm لإضافة customerLocation و locationData
   const resetForm = () => {
     setConsultationForm({
       ConsultationRequestsName: "",
@@ -367,6 +391,14 @@ const handleAddDialogClose = (open: boolean) => {
       consultationRequestsArea: "",
       ConsultationRequestsStatus: "new",
       customerAddress: "",
+      customerLocation: "", // ✅ إضافة customerLocation
+    });
+    setLocationData({ // ✅ إضافة reset للموقع
+      country: "",
+      state: "",
+      city: "",
+      countryCode: "",
+      stateCode: "",
     });
   };
 
@@ -416,95 +448,6 @@ const handleAddDialogClose = (open: boolean) => {
       console.error("Export error:", error);
     }
   };
-
-  // Download template function
-  // const handleDownloadTemplate = async () => {
-  //   const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.downloading_template" }));
-
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       "/consultation-requests/download-template",
-  //       {
-  //         responseType: "blob",
-  //       }
-  //     );
-
-  //     const blob = new Blob([response.data], {
-  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  //     });
-
-  //     const url = window.URL.createObjectURL(blob);
-  //     const a = document.createElement("a");
-  //     a.href = url;
-  //     a.download = "consultation_requests_import_template.xlsx";
-  //     document.body.appendChild(a);
-  //     a.click();
-
-  //     setTimeout(() => {
-  //       window.URL.revokeObjectURL(url);
-  //       document.body.removeChild(a);
-  //     }, 100);
-
-  //     toast.dismiss(loadingToast);
-  //     toast.success(intl.formatMessage({ id: "consultation_requests.template_downloaded_success" }));
-  //   } catch (error: any) {
-  //     toast.dismiss(loadingToast);
-  //     toast.error(error.message || intl.formatMessage({ id: "consultation_requests.template_download_failed" }));
-  //   }
-  // };
-
-  // // Import function
-  // const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (!file) return;
-
-  //   const loadingToast = toast.loading(intl.formatMessage({ id: "consultation_requests.importing_requests" }));
-  //   setImportLoading(true);
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-
-  //     const response = await axiosInstance.post(
-  //       "/consultation-requests/import",
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-
-  //     const results = response.data.result?.results || response.data.results;
-
-  //     if (results) {
-  //       const { summary } = results;
-  //       let message = intl.formatMessage({ id: "consultation_requests.import_completed" }) + " ";
-  //       message += intl.formatMessage({ id: "consultation_requests.import_success" }, { count: summary.success || 0 }) + ", ";
-  //       message += intl.formatMessage({ id: "consultation_requests.import_updated" }, { count: summary.updated || 0 }) + ", ";
-  //       message += intl.formatMessage({ id: "consultation_requests.import_customers_created" }, { count: summary.customersCreated || 0 }) + ", ";
-  //       message += intl.formatMessage({ id: "consultation_requests.import_failed" }, { count: summary.failed || 0 });
-
-  //       if (summary.failed > 0) {
-  //         toast.error(message);
-  //       } else {
-  //         toast.success(message);
-  //       }
-
-  //       list.refetch();
-  //     } else {
-  //       toast.success(intl.formatMessage({ id: "consultation_requests.import_completed_success" }));
-  //       list.refetch();
-  //     }
-  //   } catch (error: any) {
-  //     const errorMessage = error.response?.data?.message || error.message || intl.formatMessage({ id: "consultation_requests.import_failed" });
-  //     toast.error(errorMessage);
-  //   } finally {
-  //     toast.dismiss(loadingToast);
-  //     setImportLoading(false);
-  //     event.target.value = "";
-  //   }
-  // };
 
   return (
     <div className="p-6 space-y-4 !font-tajawal" dir={intl.locale === "ar" ? "rtl" : "ltr"}>
@@ -768,8 +711,8 @@ const handleAddDialogClose = (open: boolean) => {
         )}
       />
 
-{/* Add Consultation Dialog */}
-<Dialog open={addOpen} onOpenChange={handleAddDialogClose}>
+      {/* ✅ Add Consultation Dialog مع Location Selector */}
+      <Dialog open={addOpen} onOpenChange={handleAddDialogClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -863,7 +806,7 @@ const handleAddDialogClose = (open: boolean) => {
             </div>
 
             <div className="space-y-2">
-              <Label>{intl.formatMessage({ id: "consultation_requests.customer_address_optional" })}</Label>
+              <Label>{intl.formatMessage({ id: "customers.address_required" })}</Label>
               <Input
                 value={consultationForm.customerAddress}
                 onChange={(e) =>
@@ -872,7 +815,36 @@ const handleAddDialogClose = (open: boolean) => {
                     customerAddress: e.target.value,
                   }))
                 }
+                required
                 placeholder={intl.formatMessage({ id: "consultation_requests.enter_customer_address" })}
+              />
+              
+            </div>
+
+            {/* ✅ Location Selector */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.location" })}
+                </Label>
+                {/* <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  className="flex items-center gap-2"
+                >
+                  <Navigation className="w-4 h-4" />
+                  {intl.formatMessage({ id: "customers.get_current_location" })}
+                </Button> */}
+              </div>
+
+              <LocationSelector
+                locationData={locationData}
+                setLocationData={setLocationData}
+                setForm={setConsultationForm}
+                intl={intl}
               />
             </div>
 
@@ -917,7 +889,7 @@ const handleAddDialogClose = (open: boolean) => {
         </DialogContent>
       </Dialog>
 
-      {/* View Details Dialog */}
+      {/* ✅ View Details Dialog مع customerLocation */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -1050,6 +1022,13 @@ const handleAddDialogClose = (open: boolean) => {
                             {intl.formatMessage({ id: "consultation_requests.address_display" }, { address: viewing.customers.customerAddress })}
                           </p>
                         )}
+                        {/* ✅ إضافة عرض customerLocation */}
+                        {viewing.customers.customerLocation && (
+                          <p className="text-gray-600 text-xs mt-1 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {intl.formatMessage({ id: "consultation_requests.location_display" }, { location: viewing.customers.customerLocation })}
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <p className="text-red-600 text-sm">{intl.formatMessage({ id: "consultation_requests.no_customer_found" })}</p>
@@ -1158,15 +1137,190 @@ const handleAddDialogClose = (open: boolean) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Add Consultation Confirmation Dialog */}
-<ConfirmationDialog
-  open={addConfirmDialog.isOpen}
-  onOpenChange={addConfirmDialog.setIsOpen}
-  variant="add"
-  onConfirm={addConfirmDialog.handleConfirm}
-  onCancel={addConfirmDialog.handleCancel}
-  isDestructive={true}
-/>
+      <ConfirmationDialog
+        open={addConfirmDialog.isOpen}
+        onOpenChange={addConfirmDialog.setIsOpen}
+        variant="add"
+        onConfirm={addConfirmDialog.handleConfirm}
+        onCancel={addConfirmDialog.handleCancel}
+        isDestructive={true}
+      />
+    </div>
+  );
+}
+
+// ✅ Location Selector Component
+function LocationSelector({ 
+  locationData, 
+  setLocationData, 
+  setForm, 
+  intl 
+}: { 
+  locationData: LocationData; 
+  setLocationData: (data: LocationData) => void; 
+  setForm: any; 
+  intl: any; 
+}) {
+  const [countries] = useState(() => Country.getAllCountries());
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (locationData.countryCode) {
+      const countryStates = State.getStatesOfCountry(locationData.countryCode);
+      setStates(countryStates);
+      
+      // Reset state and city if country changed
+      if (locationData.stateCode && !countryStates.find(s => s.isoCode === locationData.stateCode)) {
+        setLocationData({
+          ...locationData,
+          state: "",
+          stateCode: "",
+          city: "",
+        });
+        setCities([]);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [locationData.countryCode]);
+
+  // Update cities when state changes
+  useEffect(() => {
+    if (locationData.countryCode && locationData.stateCode) {
+      const stateCities = City.getCitiesOfState(locationData.countryCode, locationData.stateCode);
+      setCities(stateCities);
+      
+      // Reset city if state changed
+      if (locationData.city && !stateCities.find(c => c.name === locationData.city)) {
+        setLocationData({
+          ...locationData,
+          city: "",
+        });
+      }
+    } else {
+      setCities([]);
+    }
+  }, [locationData.stateCode]);
+
+  // Update form when location data changes
+  useEffect(() => {
+    if (locationData.city || locationData.stateCode || locationData.countryCode) {
+      const locationString = `${locationData.city}, ${locationData.stateCode}, ${locationData.countryCode}`;
+      setForm((prev: any) => ({
+        ...prev,
+        customerLocation: locationString
+      }));
+    }
+  }, [locationData]);
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Country Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.country" })}</Label>
+        <Select
+          value={locationData.countryCode}
+          onValueChange={(value) => {
+            const country = countries.find(c => c.isoCode === value);
+            if (country) {
+              setLocationData({
+                country: country.name,
+                state: "",
+                city: "",
+                countryCode: country.isoCode,
+                stateCode: "",
+              });
+            }
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_country" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {countries.map((country) => (
+              <SelectItem key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* State Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.state" })}</Label>
+        <Select
+          value={locationData.stateCode}
+          onValueChange={(value) => {
+            const state = states.find(s => s.isoCode === value);
+            if (state) {
+              setLocationData({
+                ...locationData,
+                state: state.name,
+                stateCode: state.isoCode,
+                city: "",
+              });
+            }
+          }}
+          disabled={!locationData.countryCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_state" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {states.map((state) => (
+              <SelectItem key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* City Selection */}
+      <div className="space-y-2">
+        <Label>{intl.formatMessage({ id: "customers.city" })}</Label>
+        <Select
+          value={locationData.city}
+          onValueChange={(value) => {
+            setLocationData({
+              ...locationData,
+              city: value,
+            });
+          }}
+          disabled={!locationData.stateCode}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={intl.formatMessage({ id: "customers.select_city" })} />
+          </SelectTrigger>
+          <SelectContent>
+            {cities.map((city) => (
+              <SelectItem key={city.name} value={city.name}>
+                {city.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Display selected location */}
+      {locationData.city && (
+        <div className="col-span-full">
+          <div className="p-3 bg-gray-50 rounded-md border">
+            <p className="text-sm text-gray-600">
+              <strong>{intl.formatMessage({ id: "customers.selected_location" })}:</strong> {locationData.city}, {locationData.state}, {locationData.country}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              <strong>{intl.formatMessage({ id: "customers.location_code" })}:</strong> {locationData.city}, {locationData.stateCode}, {locationData.countryCode}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

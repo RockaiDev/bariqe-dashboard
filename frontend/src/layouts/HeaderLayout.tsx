@@ -18,10 +18,20 @@ import useAuth from "@/hooks/useAuth";
 import { useLogout } from "@/hooks/useLogout";
 import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+
 import { ConfirmLogoutDialog } from "@/components/shared/ConfirmLogoutDialog";
 import { useScrollToTop } from "@/hooks/ScrollToTop";
-
+import { useCrud } from "@/hooks/useCrud";
+import { useState, useEffect } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { MessageSquare, Eye, Mail, Phone } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ar, enUS } from "date-fns/locale";
 type HeaderLayoutProps = { children: ReactNode };
 
 export default function HeaderLayout({
@@ -75,20 +85,175 @@ export default function HeaderLayout({
 }
 
 function NotificationButton() {
+  const navigate = useNavigate();
+  const intl = useIntl();
+  const [open, setOpen] = useState(false);
+
+  // ✅ Fetch unread contacts (status = false)
+  const { list } = useCrud("contacts", {
+    page: 1,
+    perPage: 10,
+    sorts: [{ field: "createdAt", direction: "desc" as const }],
+    queries: [["status", "==", false]],
+  });
+
+  const unreadContacts = list.data?.data || [];
+  const unreadCount = list.data?.count || 0;
+
+  // ✅ Refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      list.refetch();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleViewContact = (contactId: string) => {
+    setOpen(false);
+    navigate(`/contact?view=${contactId}`);
+  };
+
+  const handleViewAll = () => {
+    setOpen(false);
+    navigate("/contact");
+  };
+
+  const getRelativeTime = (date: string) => {
+    const locale = intl.locale === "ar" ? ar : enUS;
+    return formatDistanceToNow(new Date(date), {
+      addSuffix: true,
+      locale,
+    });
+  };
+
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="relative w-8 h-8 rounded-full bg-white hover:bg-gray-100 transition-colors"
-    >
-      <Bell className="h-4 w-4 text-[#021031]" />
-      <Badge
-        variant="destructive"
-        className="absolute -top-1 -right-1 h-2 w-2 p-0 border-2 border-white"
-      >
-        <span className="sr-only">New notifications</span>
-      </Badge>
-    </Button>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative w-8 h-8 rounded-full bg-white hover:bg-gray-100 transition-colors"
+        >
+          <Bell className="h-4 w-4 text-[#021031]" />
+          {unreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 border-2 border-white flex items-center justify-center text-[10px] font-bold"
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-[380px] p-0" align="end" sideOffset={8}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="font-semibold text-base flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-primary" />
+            {intl.formatMessage({ id: "notifications.new_contacts" })}
+          </h3>
+          {unreadCount > 0 && (
+            <Badge variant="secondary" className="font-medium text-white">
+              {unreadCount}
+            </Badge>
+          )}
+        </div>
+
+        <ScrollArea className="h-[400px]">
+          {unreadContacts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <Bell className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-sm">
+                {intl.formatMessage({ id: "notifications.no_new_contacts" })}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {unreadContacts.map((contact: any) => (
+                <div
+                  key={contact._id}
+                  onClick={() => handleViewContact(contact._id)}
+                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-blue-600" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="font-semibold text-sm truncate">
+                          {contact.contactName}
+                        </p>
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                          {contact.createdAt &&
+                            getRelativeTime(contact.createdAt)}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 mb-2">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <Mail className="w-3 h-3" />
+                          <span className="truncate">{contact.email}</span>
+                        </div>
+                        {contact.phoneNumber && (
+                          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                            <Phone className="w-3 h-3" />
+                            <span>{contact.phoneNumber}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                        {contact.message}
+                      </p>
+
+                      {contact.services && contact.services.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {contact.services
+                            .slice(0, 2)
+                            .map((service: string, idx: number) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0"
+                              >
+                                {service.split(" ")[0]}
+                              </Badge>
+                            ))}
+                          {contact.services.length > 2 && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              +{contact.services.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        {unreadCount > 0 && (
+          <div className="p-3 border-t bg-gray-50">
+            <Button
+              variant="ghost"
+              className="w-full justify-center text-sm font-medium"
+              onClick={handleViewAll}
+            >
+              {intl.formatMessage({ id: "notifications.view_all_contacts" })}
+              <Eye className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
 

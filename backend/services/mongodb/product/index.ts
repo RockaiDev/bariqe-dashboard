@@ -19,6 +19,7 @@ export default class ProductService extends MongooseFeatures {
       "productDescriptionEn",
       "productPrice",
       "productCategory",
+      "productSubCategory", // ✅ إضافة SubCategory
       "productImage",
       "productStatus",
       "productForm",
@@ -26,6 +27,43 @@ export default class ProductService extends MongooseFeatures {
       "productCode",
       "discountTiers"
     ];
+  }
+
+  // ✅ Helper function للحصول على معلومات SubCategory
+  private async getSubCategoryInfo(categoryId: string, subCategoryId: string) {
+    try {
+      const category = await CategoryModel.findById(categoryId);
+      if (!category || !category.subCategories) {
+        return null;
+      }
+      
+      const subCategory = category.subCategories.id(subCategoryId);
+      return subCategory;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ✅ Helper function للتحقق من صحة SubCategory
+  private async validateSubCategory(categoryId: string, subCategoryId: string) {
+    const category = await CategoryModel.findById(categoryId);
+    if (!category) {
+      throw new ApiError("BAD_REQUEST", "Invalid category ID");
+    }
+
+    if (!category.subCategories || category.subCategories.length === 0) {
+      throw new ApiError("BAD_REQUEST", "No subcategories found in this category");
+    }
+
+    const subCategoryExists = category.subCategories.some((sub: any) => 
+      sub._id.toString() === subCategoryId.toString()
+    );
+
+    if (!subCategoryExists) {
+      throw new ApiError("BAD_REQUEST", "SubCategory does not belong to the selected category");
+    }
+
+    return category.subCategories.id(subCategoryId);
   }
 
   // 🟢 Get all products with pagination & sorting
@@ -47,9 +85,12 @@ export default class ProductService extends MongooseFeatures {
       queries
     );
 
-    // Then populate the category field for each product
+    // ✅ Populate category مع SubCategories
     if (result.data && result.data.length > 0) {
-      await ProductModel.populate(result.data, { path: 'productCategory' });
+      await ProductModel.populate(result.data, { 
+        path: 'productCategory',
+        select: 'categoryNameAr categoryNameEn categoryStatus subCategories'
+      });
     }
 
     return { result, keys };
@@ -58,7 +99,11 @@ export default class ProductService extends MongooseFeatures {
   // 🟢 Get one product by ID
   public async GetOneProduct(id: string) {
     try {
-      const product = await ProductModel.findById(id).populate('productCategory');
+      const product = await ProductModel.findById(id).populate({
+        path: 'productCategory',
+        select: 'categoryNameAr categoryNameEn categoryStatus subCategories'
+      });
+      
       if (!product) throw new ApiError("NOT_FOUND", "Product not found");
 
       return product;
@@ -72,10 +117,10 @@ export default class ProductService extends MongooseFeatures {
     try {
       if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
           !body.productDescriptionEn || !body.productPrice || !body.productCategory || 
-         !body.productCode) {
+          !body.productSubCategory || !body.productCode) { // ✅ إضافة التحقق من SubCategory
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productForm' are required"
+          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productSubCategory' are required"
         );
       }
       
@@ -85,17 +130,18 @@ export default class ProductService extends MongooseFeatures {
         throw new ApiError("CONFLICT", "Product with the same code already exists");
       }
       
-      // Validate category exists
-      const categoryExists = await CategoryModel.findById(body.productCategory);
-      if (!categoryExists) {
-        throw new ApiError("BAD_REQUEST", "Invalid category ID");
-      }
+      // ✅ التحقق من صحة Category و SubCategory
+      await this.validateSubCategory(body.productCategory, body.productSubCategory);
 
       const newProduct = pick(body, this.keys);
       const product = await super.addDocument(ProductModel, newProduct);
       
-      // Populate category before returning
-      await product.populate('productCategory');
+      // ✅ Populate category مع SubCategories قبل الإرجاع
+      await product.populate({
+        path: 'productCategory',
+        select: 'categoryNameAr categoryNameEn categoryStatus subCategories'
+      });
+      
       return product;
     } catch (error) {
       throw error;
@@ -105,12 +151,20 @@ export default class ProductService extends MongooseFeatures {
   // 🟢 Edit product
   public async EditOneProduct(id: string, body: any) {
     try {
-      // Validate category if provided
-      if (body.productCategory) {
-        const categoryExists = await CategoryModel.findById(body.productCategory);
-        if (!categoryExists) {
-          throw new ApiError("BAD_REQUEST", "Invalid category ID");
+      // ✅ التحقق من Category و SubCategory إذا تم تقديمهما
+      if (body.productCategory && body.productSubCategory) {
+        await this.validateSubCategory(body.productCategory, body.productSubCategory);
+      } else if (body.productCategory || body.productSubCategory) {
+        // إذا تم تحديث أحدهما فقط، نحتاج للتحقق من المنتج الحالي
+        const currentProduct = await ProductModel.findById(id);
+        if (!currentProduct) {
+          throw new ApiError("NOT_FOUND", `Product with id ${id} not found`);
         }
+
+        const categoryId = body.productCategory || currentProduct.productCategory;
+        const subCategoryId = body.productSubCategory || currentProduct.productSubCategory;
+        
+        await this.validateSubCategory(categoryId, subCategoryId);
       }
 
       const updateData = pick(body, this.keys);
@@ -118,7 +172,10 @@ export default class ProductService extends MongooseFeatures {
         id,
         updateData,
         { new: true }
-      ).populate('productCategory');
+      ).populate({
+        path: 'productCategory',
+        select: 'categoryNameAr categoryNameEn categoryStatus subCategories'
+      });
 
       if (!updatedProduct) {
         throw new ApiError("NOT_FOUND", `Product with id ${id} not found`);
@@ -142,15 +199,29 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // ✅ Export Products (دالة واحدة فقط - مُصححة)
+  // ✅ Get SubCategories by Category ID
+  public async GetSubCategoriesByCategory(categoryId: string) {
+    try {
+      const category = await CategoryModel.findById(categoryId);
+      if (!category) {
+        throw new ApiError("NOT_FOUND", "Category not found");
+      }
+      console.log(category.subCategories);
+      
+      return category.subCategories || [];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ✅ Export Products - محدث لدعم SubCategory
   public async ExportProducts(query?: any) {
     try {
       console.log('Export query received:', query);
       
-      // استخدام نفس منطق GetProducts بالضبط
       const keys = this.keys.sort();
       const {
-        perPage = 999999, // رقم كبير عشان نجيب كل البيانات
+        perPage = 999999,
         page = 1,
         sorts = [],
         queries = [],
@@ -158,7 +229,6 @@ export default class ProductService extends MongooseFeatures {
 
       console.log('Export filters:', { sorts, queries });
 
-      // استخدام PaginateHandler زي GetProducts بالضبط
       const result = await super.PaginateHandler(
         ProductModel,
         Number(perPage),
@@ -169,26 +239,45 @@ export default class ProductService extends MongooseFeatures {
 
       console.log(`Found ${result.data.length} products for export out of ${result.count} total`);
 
-      // Populate category data
+      // ✅ Populate category مع SubCategories
       if (result.data && result.data.length > 0) {
-        await ProductModel.populate(result.data, { path: 'productCategory' });
+        await ProductModel.populate(result.data, { 
+          path: 'productCategory',
+          select: 'categoryNameAr categoryNameEn categoryStatus subCategories'
+        });
       }
 
-      // تحويل البيانات لصيغة الإكسبورت
+      // ✅ تحويل البيانات لصيغة الإكسبورت مع SubCategory
       const exportData = result.data.map((product: any) => {
         let categoryNameEn = '';
         let categoryNameAr = '';
         let categoryId = '';
         let categoryStatus = false;
+        let subCategoryNameEn = '';
+        let subCategoryNameAr = '';
+        let subCategoryId = '';
         
         if (product.productCategory && typeof product.productCategory === 'object') {
           categoryNameEn = product.productCategory.categoryNameEn || '';
           categoryNameAr = product.productCategory.categoryNameAr || '';
           categoryId = product.productCategory._id || '';
           categoryStatus = product.productCategory.categoryStatus || false;
+          
+          // ✅ العثور على معلومات SubCategory
+          if (product.productSubCategory && product.productCategory.subCategories) {
+            const subCategory = product.productCategory.subCategories.find((sub: any) => 
+              sub._id.toString() === product.productSubCategory.toString()
+            );
+            
+            if (subCategory) {
+              subCategoryNameEn = subCategory.subCategoryNameEn || '';
+              subCategoryNameAr = subCategory.subCategoryNameAr || '';
+              subCategoryId = subCategory._id || '';
+            }
+          }
         }
 
-        // تحويل discount tiers لـ string format للعرض في الـ main sheet
+        // تحويل discount tiers لـ string format
         let discountTiersText = '';
         if (product.discountTiers && product.discountTiers.length > 0) {
           discountTiersText = product.discountTiers.map((tier: any) => 
@@ -207,6 +296,9 @@ export default class ProductService extends MongooseFeatures {
           categoryNameEn: categoryNameEn,
           categoryNameAr: categoryNameAr,
           categoryStatus: categoryStatus,
+          subCategoryId: subCategoryId, // ✅ إضافة SubCategory
+          subCategoryNameEn: subCategoryNameEn, // ✅ إضافة SubCategory
+          subCategoryNameAr: subCategoryNameAr, // ✅ إضافة SubCategory
           productForm: product.productForm || 'Solid',
           productStatus: product.productStatus || false,
           productDiscount: product.productDiscount || 0,
@@ -224,7 +316,7 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // ✅ Export discount tiers separately
+  // ✅ Export discount tiers - محدث لدعم SubCategory
   public async ExportDiscountTiers(query?: any) {
     try {
       console.log('Export discount tiers query received:', query);
@@ -237,7 +329,6 @@ export default class ProductService extends MongooseFeatures {
         queries = [],
       } = pick(query, ["perPage", "page", "sorts", "queries"]);
 
-      // استخدام نفس الفلتر
       const result = await super.PaginateHandler(
         ProductModel,
         Number(perPage),
@@ -246,16 +337,33 @@ export default class ProductService extends MongooseFeatures {
         queries
       );
 
-      // Populate category data
+      // ✅ Populate category مع SubCategories
       if (result.data && result.data.length > 0) {
-        await ProductModel.populate(result.data, { path: 'productCategory' });
+        await ProductModel.populate(result.data, { 
+          path: 'productCategory',
+          select: 'categoryNameAr categoryNameEn subCategories'
+        });
       }
 
-      // تحويل البيانات لصيغة discount tiers
       const discountTiersData: any[] = [];
       
       result.data.forEach((product: any) => {
         if (product.discountTiers && product.discountTiers.length > 0) {
+          // ✅ الحصول على معلومات SubCategory
+          let subCategoryNameEn = '';
+          let subCategoryNameAr = '';
+          
+          if (product.productSubCategory && product.productCategory?.subCategories) {
+            const subCategory = product.productCategory.subCategories.find((sub: any) => 
+              sub._id.toString() === product.productSubCategory.toString()
+            );
+            
+            if (subCategory) {
+              subCategoryNameEn = subCategory.subCategoryNameEn || '';
+              subCategoryNameAr = subCategory.subCategoryNameAr || '';
+            }
+          }
+
           product.discountTiers.forEach((tier: any) => {
             discountTiersData.push({
               productCode: product.productCode || "",
@@ -263,6 +371,8 @@ export default class ProductService extends MongooseFeatures {
               productNameEn: product.productNameEn || "",
               categoryNameEn: product.productCategory?.categoryNameEn || "",
               categoryNameAr: product.productCategory?.categoryNameAr || "",
+              subCategoryNameEn: subCategoryNameEn, // ✅ إضافة SubCategory
+              subCategoryNameAr: subCategoryNameAr, // ✅ إضافة SubCategory
               quantity: tier.quantity || 0,
               discount: tier.discount || 0,
               tierCode: tier.code || product.productCode || ""
@@ -279,12 +389,11 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // ✅ Export Categories - دالة جديدة
+  // ✅ Export Categories - مع SubCategories
   public async ExportCategories(queryParams?: any) {
     try {
       console.log('Export categories query received:', queryParams);
 
-      // جلب جميع الفئات مع عدد المنتجات لكل فئة
       const categories = await Category.aggregate([
         {
           $lookup: {
@@ -296,7 +405,8 @@ export default class ProductService extends MongooseFeatures {
         },
         {
           $addFields: {
-            productsCount: { $size: "$products" }
+            productsCount: { $size: "$products" },
+            subCategoriesCount: { $size: { $ifNull: ["$subCategories", []] } }
           }
         },
         {
@@ -307,7 +417,9 @@ export default class ProductService extends MongooseFeatures {
             categoryDescriptionAr: 1,
             categoryDescriptionEn: 1,
             categoryStatus: 1,
+            subCategories: 1,
             productsCount: 1,
+            subCategoriesCount: 1,
             createdAt: 1,
             updatedAt: 1
           }
@@ -323,7 +435,7 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Import products from Excel - UPDATED FOR NEW CATEGORY STRUCTURE
+  // ✅ Import products - محدث لدعم SubCategory
   public async ImportProducts(productsData: any[]) {
     try {
       const results = {
@@ -339,10 +451,10 @@ export default class ProductService extends MongooseFeatures {
             productCode: productData.productCode 
           });
 
-          // Get category by name - UPDATED to handle new structure
+          // ✅ Get category and subcategory
           let categoryId = null;
+          let subCategoryId = null;
           
-          // Try to find category by English name first, then Arabic name
           if (productData.categoryNameEn || productData.categoryNameAr) {
             let category = null;
             
@@ -359,41 +471,65 @@ export default class ProductService extends MongooseFeatures {
                 categoryNameAr: productData.categoryNameAr 
               });
             }
-            
-            // Fallback: search by old categoryName field if still exists
-            if (!category && productData.categoryName) {
-              category = await CategoryModel.findOne({
-                $or: [
-                  { categoryNameEn: productData.categoryNameEn},
-                  { categoryNameAr: productData.categoryNameAr  }
-                ]
-              });
-            }
 
             if (category) {
               categoryId = category._id;
+              
+              // ✅ البحث عن SubCategory
+              if (productData.subCategoryNameEn || productData.subCategoryNameAr) {
+                const subCategory = category.subCategories?.find((sub: any) => 
+                  sub.subCategoryNameEn === productData.subCategoryNameEn ||
+                  sub.subCategoryNameAr === productData.subCategoryNameAr
+                );
+                
+                if (subCategory) {
+                  subCategoryId = subCategory._id;
+                } else {
+                  const subCategoryName = productData.subCategoryNameEn || productData.subCategoryNameAr;
+                  results.failed.push({
+                    productCode: productData.productCode,
+                    error: `SubCategory '${subCategoryName}' not found in category '${category.categoryNameEn}'`
+                  });
+                  continue;
+                }
+              } else {
+                // إذا لم يتم تحديد subcategory ولكن مطلوب
+                results.failed.push({
+                  productCode: productData.productCode,
+                  error: "SubCategory is required"
+                });
+                continue;
+              }
             } else {
-              const categoryName = productData.categoryNameEn || productData.categoryNameAr || productData.categoryName;
+              const categoryName = productData.categoryNameEn || productData.categoryNameAr;
               results.failed.push({
                 productCode: productData.productCode,
                 error: `Category '${categoryName}' not found`
               });
               continue;
             }
+          } else {
+            results.failed.push({
+              productCode: productData.productCode,
+              error: "Category is required"
+            });
+            continue;
           }
 
-          // Prepare product data
+          // ✅ Prepare product data
           const productToSave = {
             ...productData,
             productCategory: categoryId,
+            productSubCategory: subCategoryId, // ✅ إضافة SubCategory
             productStatus: productData.productStatus === 'Active',
             discountTiers: productData.discountTiers || []
           };
 
-          // Remove category name fields as they're not in product schema
+          // Remove category and subcategory name fields
           delete productToSave.categoryNameEn;
           delete productToSave.categoryNameAr;
-          delete productToSave.categoryName; // Remove old field too
+          delete productToSave.subCategoryNameEn;
+          delete productToSave.subCategoryNameAr;
 
           if (existingProduct) {
             // Update existing product

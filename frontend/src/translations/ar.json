@@ -17,7 +17,7 @@
   "nav_reports": "التقارير",
   "nav_settings": "الإعدادات",
   "nav_help": "المساعدة",
-
+  "nav_contact": "تواصل معنا",
   "sidebar_admin": "المدير",
   "sidebar_search_placeholder": "بحث...",
   "sidebar_logout": "تسجيل الخروج",
@@ -161,8 +161,10 @@
   "products.validation.discount_tiers_code": "يجب أن تتطابق جميع أكواد مستويات الخصم مع كود المنتج",
   "products.validation.code_exists": "كود المنتج موجود بالفعل. يرجى اختيار كود مختلف",
   "products.validation.code_check_failed": "فشل في التحقق من كود المنتج. يرجى المحاولة مرة أخرى",
-
+  "products.table.subcategory": "الفئة الفرعية",
+  "products.form.subcategory": "الفئة الفرعية",
   "products.checking_code": "جاري التحقق من الكود...",
+  "products.form.select_subcategory": "اختر الفئة الفرعية",
   "products.updating": "جاري التحديث...",
   "products.creating": "جاري الإنشاء...",
   "products.save_changes": "حفظ التغييرات",
@@ -271,7 +273,6 @@
   "dashboard.using_cached_data": "استخدام بيانات مخزنة.",
   "dashboard.refresh": "تحديث",
 
- 
   "optional": "اختياري",
 
   "categories.all_categories": "جميع الفئات",
@@ -282,11 +283,10 @@
   "categories.updated": "تم التحديث",
   "categories.actions": "الإجراءات",
 
-  
   "categories.active": "نشط",
   "categories.inactive": "غير نشط",
   "categories.search_placeholder": "البحث في الفئات (الاسم، الوصف، الحالة: نشط/غير نشط)...",
-  
+
   "categories.new_category": "فئة جديدة",
   "categories.edit_category": "تعديل الفئة",
   "categories.category_details": "تفاصيل الفئة",
@@ -297,7 +297,7 @@
   "categories.created_at": "تاريخ الإنشاء",
   "categories.last_updated": "آخر تحديث",
   "categories.not_available": "غير متوفر",
-  
+
   "categories.toggle_status": "انقر لتفعيل/إلغاء تفعيل هذه الفئة.",
   "categories.save_changes": "حفظ التغييرات",
   "categories.cancel": "إلغاء",
@@ -305,13 +305,12 @@
   "categories.edit": "تعديل",
   "categories.saving": "جاري الحفظ...",
   "categories.create": "إنشاء",
-  
+
   "categories.select_file": "اختر ملف إكسل",
   "categories.selected": "محدد",
   "categories.import_categories": "استيراد الفئات",
   "categories.importing_categories": "جاري استيراد الفئات...",
 
-  
   "categories.import.title": "استيراد الفئات من إكسل",
   "categories.import.description": "استيراد بيانات الفئات من ملف إكسل باستخدام تنسيق النموذج الخاص بنا",
   "categories.import.download_template": "تحميل نموذج الاستيراد",
@@ -322,33 +321,33 @@
   "categories.import.instruction_4": "يجب أن تكون الحالة إما 'نشط' أو 'غير نشط'",
   "categories.import.instruction_5": "احفظ الملف بتنسيق .xlsx أو .xls",
   "categories.import.instruction_6": "ارفع الملف باستخدام الزر أدناه",
-  
+
   "categories.view.description": "عرض المعلومات التفصيلية حول الفئة المحددة",
   "categories.edit.description": "تحديث معلومات الفئة. جميع الحقول المميزة بـ * مطلوبة",
   "categories.create.description": "إضافة فئة جديدة إلى قاعدة البيانات. جميع الحقول المميزة بـ * مطلوبة",
-  
+
   "categories.validation.required_fields": "يرجى ملء جميع الحقول المطلوبة",
-  
+
   "categories.edit_success": "تم تحديث الفئة بنجاح!",
   "categories.edit_failed": "فشل في تحديث الفئة",
 
   "categories.delete.success": "تم حذف الفئة بنجاح!",
   "categories.delete.failed": "فشل في حذف الفئة",
-  
+
   "categories.exporting": "جاري تصدير الفئات...",
   "categories.export_success": "تم تصدير الفئات بنجاح!",
   "categories.export_failed": "فشل في تصدير الفئات",
   "categories.downloading_template": "جاري تحميل النموذج...",
   "categories.template_downloaded": "تم تحميل النموذج بنجاح!",
   "categories.template_download_failed": "فشل في تحميل النموذج",
-  
+
   "categories.import_failed": "فشل في استيراد الفئات",
   "categories.select_file_error": "يرجى اختيار ملف للاستيراد",
   "categories.import_success_count": "تم استيراد {count} فئة بنجاح",
   "categories.import_updated_count": "تم تحديث {count} فئة موجودة",
   "categories.import_failed_count": "فشل في استيراد {count} فئة",
   "categories.import_summary": "الملخص: {total} إجمالي، {success} نجح، {updated} محدث، {failed} فشل",
-  
+
   "categories.form.name_ar": "اسم الفئة (عربي)",
   "categories.form.name_en": "اسم الفئة (إنجليزي)",
   "categories.form.description_ar": "وصف الفئة (عربي)",
@@ -358,9 +357,18 @@
   "categories.no_image": "لا توجد صورة",
   "categories.select_image": "اختر صورة",
   "categories.image_upload_hint": "اختر صورة لتمثيل هذه الفئة (اختياري)",
-  
+  "categories.subcategories": "الفئات الفرعية",
+  "categories.subcategories_count": "{count} فئة فرعية",
+  "categories.add_subcategory": "إضافة فئة فرعية",
+  "categories.add_first_subcategory": "إضافة أول فئة فرعية",
+  "categories.no_subcategories": "لا توجد فئات فرعية",
+  "categories.subcategory.name_ar": "اسم الفئة الفرعية (عربي)",
+  "categories.subcategory.name_en": "اسم الفئة الفرعية (إنجليزي)",
+  "categories.subcategory.description_ar": "وصف الفئة الفرعية (عربي)",
+  "categories.subcategory.description_en": "وصف الفئة الفرعية (إنجليزي)",
+  "categories.delete": "حذف",
+  "categories.save": "حفظ",
 
-  
   "categories.image_too_large": "حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)",
   "categories.invalid_image_type": "نوع الصورة غير مدعوم (JPEG, PNG, WebP فقط)",
   "categories.selected_file": "الملف المحدد",
@@ -411,8 +419,54 @@
   "material_requests.select_action": "اختر إجراء",
   "material_requests.exporting": "جارٍ التصدير...",
   "material_requests.export": "تصدير",
-
+"material_requests.create_new_customer": "إنشاء عميل جديد",
+  "material_requests.customer_name_required": "اسم العميل (مطلوب)",
+  "material_requests.enter_customer_name": "أدخل اسم العميل",
+  "material_requests.email_placeholder": "أدخل عنوان البريد الإلكتروني",
+  "material_requests.phone_required": "رقم الهاتف (مطلوب)",
+  "material_requests.enter_phone": "أدخل رقم الهاتف",
+  "material_requests.address_required": "العنوان (مطلوب)",
+  "material_requests.customer_address": "أدخل عنوان العميل",
+  "material_requests.additional_notes": "ملاحظات إضافية",
+  "material_requests.select_customer": "اختر العميل",
+  "material_requests.choose_customer": "اختر عميل",
+  "material_requests.customer_name": "اسم العميل",
+  "material_requests.customer_created_success": "تم إنشاء العميل بنجاح",
+  "material_requests.failed_customer_creation": "فشل في إنشاء العميل",
+  "material_requests.create_customer_request": "إنشاء عميل وطلب",
+  "material_requests.fill_required_fields": "يرجى ملء جميع الحقول المطلوبة",
+  "material_requests.country": "الدولة",
+  "material_requests.state": "المحافظة",
+  "material_requests.city": "المدينة",
+  "material_requests.select_country": "اختر الدولة",
+  "material_requests.select_state": "اختر المحافظة",
+  "material_requests.select_city": "اختر المدينة",
+  "material_requests.location": "الموقع",
+  "material_requests.get_current_location": "الحصول على الموقع الحالي",
+  "material_requests.selected_location": "الموقع المحدد",
+  "material_requests.location_code": "رمز الموقع",
+  "material_requests.geolocation_not_supported": "تحديد الموقع الجغرافي غير مدعوم في هذا المتصفح",
+  "material_requests.getting_location": "جاري الحصول على موقعك...",
+  "material_requests.location_detected": "تم تحديد الموقع بنجاح",
+  "material_requests.failed_to_get_location": "فشل في الحصول على الموقع",
+  "material_requests.location_access_denied": "تم رفض الوصول للموقع",
+  "material_requests.location_permission_denied": "تم رفض إذن الموقع",
+  "material_requests.location_unavailable": "الموقع غير متاح",
+  "material_requests.location_timeout": "انتهت مهلة طلب الموقع",
+  "material_requests.not_provided": "غير محدد",
   "material_requests.downloading": "جارٍ التنزيل...",
+
+
+  "material_requests.request_created_success": "تم إنشاء الطلب بنجاح",
+  "material_requests.request_creation_failed": "فشل في إنشاء الطلب",
+
+  "material_requests.customer_selection": "اختيار العميل",
+  "material_requests.select_existing_customer": "اختيار عميل موجود",
+
+  "material_requests.customer_location": "موقع العميل",
+  "material_requests.material_location": "موقع الطلب",
+
+"material_requests.notes":" الملاحظات",
 
   "orders.title": "الطلبات",
   "orders.subtitle": "عرض وإدارة طلبات العملاء",
@@ -571,7 +625,7 @@
   "consultation_requests.consultation_and_customer_created": "تم إنشاء طلب الاستشارة والعميل بنجاح! معرف العميل: {customerId}",
   "consultation_requests.consultation_created_success": "تم إنشاء طلب الاستشارة بنجاح!",
   "consultation_requests.consultation_creation_failed": "فشل في إنشاء طلب الاستشارة",
-
+  "consultation_requests.location_display": "الموقع: {location}",
   "customers.export_customers": "تصدير العملاء",
   "customers.new_customer": "عميل جديد",
   "customers.all_customers_leads": "جميع العملاء والعملاء المحتملين",
@@ -589,6 +643,29 @@
   "customers.view_detailed_information": "عرض المعلومات التفصيلية للعميل المحدد.",
   "customers.customer_name": "اسم العميل",
   "customers.not_provided": "غير مقدم",
+  "customers.location": "الموقع",
+  "customers.enter_location": "أدخل الموقع",
+  "customers.address_required": "العنوان (مطلوب)",
+  "customers.country": "الدولة",
+  "customers.state": "الولاية/المحافظة",
+  "customers.city": "المدينة",
+  "customers.select_country": "اختر الدولة",
+  "customers.select_state": "اختر الولاية/المحافظة",
+  "customers.select_city": "اختر المدينة",
+  "customers.get_current_location": "الحصول على الموقع الحالي",
+  "customers.selected_location": "الموقع المحدد",
+  "customers.location_code": "كود الموقع",
+  "customers.getting_location": "جاري تحديد الموقع...",
+  "customers.location_detected": "تم تحديد الموقع بنجاح",
+  "customers.failed_to_get_location": "فشل في تحديد الموقع",
+  "customers.geolocation_not_supported": "المتصفح لا يدعم تحديد الموقع",
+  "customers.location_permission_denied": "تم رفض الإذن للوصول إلى الموقع",
+  "customers.location_unavailable": "الموقع غير متاح",
+  "customers.location_timeout": "انتهت مهلة تحديد الموقع",
+  "customers.location_access_denied": "تم رفض الوصول إلى الموقع",
+  "orders.source_required": "المصدر (مطلوب)",
+  "orders.select_source": "اختر المصدر",
+  "orders.address_required": "العنوان (مطلوب)",
 
   "customers.no_notes_available": "لا توجد ملاحظات متاحة",
   "customers.created_at": "تاريخ الإنشاء",
@@ -630,7 +707,7 @@
   "customers.customer_created_success": "تم إنشاء العميل بنجاح!",
   "customers.failed_to_create_customer": "فشل في إنشاء العميل",
   "categories.importing": "جارٍ استيراد الفئات...",
-
+"customers.source_contact":"تواصل",
   "system_settings.title": "إعدادات النظام",
   "system_settings.general": "عام",
   "system_settings.events_logs": "الأحداث والسجلات",
@@ -677,9 +754,8 @@
   "general.confirm_reset_database": "هل أنت متأكد من أنك تريد إعادة تعيين قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.",
   "general.reset_database_not_implemented": "وظيفة إعادة تعيين قاعدة البيانات غير مطبقة حتى الآن",
 
- 
   "events.import_export_events": "استيراد/تصدير الأحداث",
-  "events.import_events": "استيراد الأحداث", 
+  "events.import_events": "استيراد الأحداث",
   "events.select_excel_file": "اختر ملف إكسل للاستيراد",
   "events.choose_file": "اختر ملف",
   "events.importing": "جاري الاستيراد...",
@@ -842,6 +918,7 @@
   "general.selected_file": "الملف المحدد",
   "general.accepted_formats": "التنسيقات المقبولة",
   "general.confirm_restore": "تأكيد الاستعادة",
+  "filters.contact":"تواصلات",
   "filters.category": "الفئة",
   "filters.status": "الحالة",
   "filters.grade": "الدرجة",
@@ -976,5 +1053,102 @@
   "avatar.admin_alt": "صورة المشرف",
   "avatar.change_avatar": "تغيير الصورة الشخصية",
   "avatar.upload_avatar": "رفع صورة شخصية",
-  "avatar.remove_avatar": "إزالة الصورة الشخصية"
-}
+  "avatar.remove_avatar": "إزالة الصورة الشخصية",
+
+    "contacts.title": "طلبات التواصل",
+    "contacts.subtitle": "إدارة طلبات التواصل والاستفسارات من العملاء",
+    "contacts.export_contacts": "تصدير طلبات التواصل",
+    "contacts.new_contact": "طلب تواصل جديد",
+    "contacts.contact_requests": "طلبات التواصل",
+    "contacts.search_placeholder": "البحث بالاسم، البريد، الهاتف، العنوان، أو الرسالة...",
+    
+    "contacts.contact_name": "اسم جهة الاتصال",
+    "contacts.contact_info": "معلومات الاتصال",
+    "contacts.email": "البريد الإلكتروني",
+    "contacts.phone": "رقم الهاتف",
+    "contacts.phone_number": "رقم الهاتف",
+    "contacts.address": "العنوان",
+    "contacts.services": "الخدمات",
+    "contacts.message": "الرسالة",
+    "contacts.status": "الحالة",
+    "contacts.created": "تاريخ الإنشاء",
+    "contacts.actions": "الإجراءات",
+    
+    "contacts.active": "نشط",
+    "contacts.inactive": "غير نشط",
+    "contacts.with_customer": "مع عميل",
+    "contacts.without_customer": "بدون عميل",
+    "contacts.customer_status": "حالة العميل",
+    
+    "contacts.contact_details": "تفاصيل طلب التواصل",
+    "contacts.view_contact_description": "عرض المعلومات التفصيلية لطلب التواصل",
+    "contacts.customer_info": "معلومات العميل",
+    "contacts.selected_services": "الخدمات المختارة",
+    "contacts.created_at": "تاريخ الإنشاء",
+    "contacts.last_updated": "آخر تحديث",
+    "contacts.contact_id": "معرّف الطلب",
+    "contacts.not_available": "غير متوفر",
+    "contacts.close": "إغلاق",
+    
+    "contacts.new_contact_request": "طلب تواصل جديد",
+    "contacts.create_contact_description": "املأ معلومات التواصل أدناه",
+    "contacts.customer_selection": "اختيار العميل",
+    "contacts.select_existing_customer": "اختيار عميل موجود",
+    "contacts.create_new_customer": "إنشاء عميل جديد",
+    "contacts.select_customer": "اختر العميل",
+    "contacts.choose_customer_optional": "اختر عميلاً (اختياري)",
+    "contacts.customer_name_required": "اسم العميل *",
+    "contacts.enter_customer_name": "أدخل اسم العميل",
+    "contacts.email_placeholder": "customer@example.com",
+    "contacts.phone_required": "رقم الهاتف *",
+    "contacts.enter_phone": "أدخل رقم الهاتف",
+    "contacts.address_required": "العنوان *",
+    "contacts.customer_address": "عنوان العميل",
+    "contacts.customer_location": "موقع العميل",
+    "contacts.notes": "ملاحظات",
+    "contacts.additional_notes": "ملاحظات إضافية",
+    
+    "contacts.enter_contact_name": "أدخل اسم جهة الاتصال",
+    "contacts.select_services": "اختر الخدمات (اختياري)",
+    "contacts.mark_as_active": "وضع علامة كنشط/تم الحل",
+    
+    "contacts.service_technical_training": "التدريب والاستشارات الفنية",
+    "contacts.service_equipment_sales": "مبيعات وحلول المعدات",
+    "contacts.service_quality_assurance": "ضمان الجودة والتحقق",
+    "contacts.service_custom_chemical": "حلول كيميائية مخصصة",
+    "contacts.service_laboratory_setup": "إعداد ودعم المختبرات",
+    "contacts.service_regulatory": "الامتثال التنظيمي والتوثيق",
+    "contacts.service_maintenance": "الصيانة ودعم ما بعد البيع",
+    "contacts.service_research": "حلول البحث والتطوير",
+    
+    "contacts.country": "البلد",
+    "contacts.state": "المحافظة",
+    "contacts.city": "المدينة",
+    "contacts.select_country": "اختر البلد",
+    "contacts.select_state": "اختر المحافظة",
+    "contacts.select_city": "اختر المدينة",
+    "contacts.selected_location": "الموقع المحدد",
+    "contacts.location_code": "رمز الموقع",
+    
+    "contacts.cancel": "إلغاء",
+    "contacts.creating": "جارٍ الإنشاء...",
+    "contacts.create_customer_contact": "إنشاء عميل وطلب تواصل",
+    "contacts.create_contact": "إنشاء طلب تواصل",
+    
+    "contacts.fill_required_fields": "يرجى ملء جميع الحقول المطلوبة",
+    "contacts.failed_customer_creation": "فشل إنشاء العميل",
+    "contacts.customer_created_success": "تم إنشاء العميل بنجاح",
+    "contacts.contact_created_success": "تم إنشاء طلب التواصل بنجاح",
+    "contacts.contact_creation_failed": "فشل إنشاء طلب التواصل",
+    
+    "contacts.status_updated_success": "تم تحديث الحالة بنجاح",
+    "contacts.failed_to_update_status": "فشل تحديث الحالة",
+    
+    "contacts.exporting_contacts": "جارٍ تصدير طلبات التواصل...",
+    "contacts.contacts_exported_success": "تم تصدير طلبات التواصل بنجاح",
+    "contacts.export_failed": "فشل التصدير",
+     "notifications.new_contacts": "طلبات تواصل جديدة",
+    "notifications.no_new_contacts": "لا توجد طلبات تواصل جديدة",
+    "notifications.view_all_contacts": "عرض جميع طلبات التواصل"
+  }
+

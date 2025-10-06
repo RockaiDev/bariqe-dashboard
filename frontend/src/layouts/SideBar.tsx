@@ -26,6 +26,7 @@ import {
   Copy,
   Layers,
   Truck,
+  Contact,
 } from "lucide-react";
 
 import Logo from "../assets/logoMain.svg";
@@ -88,12 +89,17 @@ export default function AppSidebar() {
       icon: BarChart2,
       label: intl.formatMessage({ id: "nav_reports" }),
       href: "/reports",
-    },
+    },{
+        icon: Contact,
+        label: intl.formatMessage({ id: "nav_contact" }),
+        href: "/contact",
+      },
     {
       icon: Settings,
       label: intl.formatMessage({ id: "nav_settings" }),
       href: "/settings",
     },
+      
   ];
 
   // دالة للتنقل مع التمرير إلى الأعلى

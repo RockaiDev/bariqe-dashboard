@@ -16,6 +16,7 @@ export default class CustomerService extends MongooseFeatures {
       "customerNotes",
       "customerSource",
       "customerAddress",
+      "customerLocation", // ✅ إضافة customerLocation
     ];
   }
 
@@ -51,27 +52,47 @@ export default class CustomerService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Add new customer
+  // ✅ Add new customer
   public async AddCustomer(body: any) {
     try {
-      if (!body.customerName || !body.customerEmail || !body.customerPhone) {
+      // التحقق من الحقول المطلوبة الجديدة
+      if (!body.customerName || !body.customerPhone || !body.customerSource || !body.customerAddress) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'customerName', 'customerEmail', 'customerPhone' are required"
+          "Fields 'customerName', 'customerPhone', 'customerSource' and 'customerAddress' are required"
         );
       }
+
+ 
+      const duplicateConditions : any= [
+        { customerName: body.customerName },
+        { customerPhone: body.customerPhone }
+      ];
+
+      if (body.customerEmail) {
+        duplicateConditions.push({ customerEmail: body.customerEmail });
+      }
+
       const existingCustomer = await CustomerModel.findOne({
-        $or: [
-          { customerEmail: body.customerEmail },
-          { customerPhone: body.customerPhone },
-        ],
+        $or: duplicateConditions,
       });
+
       if (existingCustomer) {
+        let duplicateField = "";
+        if (existingCustomer.customerName === body.customerName) {
+          duplicateField = "name";
+        } else if (existingCustomer.customerPhone === body.customerPhone) {
+          duplicateField = "phone number";
+        } else if (existingCustomer.customerEmail === body.customerEmail) {
+          duplicateField = "email";
+        }
+        
         throw new ApiError(
           "BAD_REQUEST",
-          "A customer with the same email or phone number already exists"
+          `A customer with the same ${duplicateField} already exists`
         );
       }
+      
       const newCustomer = pick(body, this.keys);
       const customer = await super.addDocument(CustomerModel, newCustomer);
       return customer;
@@ -80,24 +101,43 @@ export default class CustomerService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Edit customer
+  // ✅ Edit customer
   public async EditOneCustomer(id: string, body: any) {
     try {
       const updateData = pick(body, this.keys);
       
-      // Check for duplicate email/phone before updating
-      if (body.customerEmail || body.customerPhone) {
+      // التحقق من عدم تكرار الاسم أو الرقم أو الإيميل
+      if (body.customerName || body.customerPhone || body.customerEmail) {
+        const duplicateConditions = [];
+        
+        if (body.customerName) {
+          duplicateConditions.push({ customerName: body.customerName });
+        }
+        if (body.customerPhone) {
+          duplicateConditions.push({ customerPhone: body.customerPhone });
+        }
+        if (body.customerEmail) {
+          duplicateConditions.push({ customerEmail: body.customerEmail });
+        }
+        
         const existingCustomer = await CustomerModel.findOne({
           _id: { $ne: id },
-          $or: [
-            ...(body.customerEmail ? [{ customerEmail: body.customerEmail }] : []),
-            ...(body.customerPhone ? [{ customerPhone: body.customerPhone }] : []),
-          ],
+          $or: duplicateConditions,
         });
+        
         if (existingCustomer) {
+          let duplicateField = "";
+          if (existingCustomer.customerName === body.customerName) {
+            duplicateField = "name";
+          } else if (existingCustomer.customerPhone === body.customerPhone) {
+            duplicateField = "phone number";
+          } else if (existingCustomer.customerEmail === body.customerEmail) {
+            duplicateField = "email";
+          }
+          
           throw new ApiError(
             "BAD_REQUEST",
-            "A customer with the same email or phone number already exists"
+            `A customer with the same ${duplicateField} already exists`
           );
         }
       }
@@ -125,7 +165,7 @@ export default class CustomerService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Export customers to Excel format
+  // ✅ Export customers to Excel format
   public async ExportCustomers(filters?: any) {
     try {
       const query = filters?.queries || [];
@@ -135,10 +175,11 @@ export default class CustomerService extends MongooseFeatures {
 
       const exportData = customers.map((customer: any) => ({
         customerName: customer.customerName,
-        customerEmail: customer.customerEmail,
+        customerEmail: customer.customerEmail || '',
         customerPhone: customer.customerPhone,
         customerAddress: customer.customerAddress || '',
         customerSource: customer.customerSource || '',
+        customerLocation: customer.customerLocation || '', // ✅ إضافة customerLocation
         customerNotes: customer.customerNotes || '',
         createdAt: customer.createdAt,
         updatedAt: customer.updatedAt
@@ -150,7 +191,7 @@ export default class CustomerService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Import customers from Excel
+  // ✅ Import customers from Excel
   public async ImportCustomers(customersData: any[]) {
     try {
       const results = {
@@ -162,65 +203,33 @@ export default class CustomerService extends MongooseFeatures {
 
       for (const customerData of customersData) {
         try {
-          // Validate required fields
-          if (!customerData.customerName || !customerData.customerEmail || !customerData.customerPhone) {
+          // التحقق من الحقول المطلوبة الجديدة
+          if (!customerData.customerName || !customerData.customerPhone || 
+              !customerData.customerSource || !customerData.customerAddress) {
             results.failed.push({
-              customerEmail: customerData.customerEmail || 'N/A',
-              error: "Missing required fields: customerName, customerEmail, or customerPhone"
+              customerPhone: customerData.customerPhone || 'N/A',
+              customerName: customerData.customerName || 'N/A',
+              error: "Missing required fields: customerName, customerPhone, customerSource, or customerAddress"
             });
             continue;
           }
 
-          // Check if customer exists by email or phone
-          const existingCustomerByEmail = await CustomerModel.findOne({
-            customerEmail: customerData.customerEmail
+    
+          const duplicateConditions :any = [
+            { customerName: customerData.customerName },
+            { customerPhone: customerData.customerPhone }
+          ];
+
+          if (customerData.customerEmail) {
+            duplicateConditions.push({ customerEmail: customerData.customerEmail });
+          }
+
+          const existingCustomer = await CustomerModel.findOne({
+            $or: duplicateConditions,
           });
 
-          const existingCustomerByPhone = await CustomerModel.findOne({
-            customerPhone: customerData.customerPhone
-          });
-
-          // Handle duplicate cases
-          if (existingCustomerByEmail && existingCustomerByPhone) {
-            if (existingCustomerByEmail._id.toString() !== existingCustomerByPhone._id.toString()) {
-              // Email and phone exist but belong to different customers
-              results.failed.push({
-                customerEmail: customerData.customerEmail,
-                customerPhone: customerData.customerPhone,
-                error: "Email and phone number are associated with different existing customers"
-              });
-              continue;
-            }
-          } else if (existingCustomerByEmail || existingCustomerByPhone) {
-            // Update existing customer
-            const existingCustomer = existingCustomerByEmail || existingCustomerByPhone;
-            
-            // Check if the non-matching field is already taken by another customer
-            if (existingCustomerByEmail && customerData.customerPhone !== existingCustomerByEmail.customerPhone) {
-              const phoneExists = await CustomerModel.findOne({ customerPhone: customerData.customerPhone });
-              if (phoneExists) {
-                results.failed.push({
-                  customerEmail: customerData.customerEmail,
-                  customerPhone: customerData.customerPhone,
-                  error: "Phone number is already associated with a different customer"
-                });
-                continue;
-              }
-            }
-
-            if (existingCustomerByPhone && customerData.customerEmail !== existingCustomerByPhone.customerEmail) {
-              const emailExists = await CustomerModel.findOne({ customerEmail: customerData.customerEmail });
-              if (emailExists) {
-                results.failed.push({
-                  customerEmail: customerData.customerEmail,
-                  customerPhone: customerData.customerPhone,
-                  error: "Email is already associated with a different customer"
-                });
-                continue;
-              }
-            }
-
-            // Prepare customer data
+          if (existingCustomer) {
+            // تحديث العميل الموجود
             const customerToSave = pick(customerData, this.keys);
             
             try {
@@ -229,28 +238,28 @@ export default class CustomerService extends MongooseFeatures {
                 customerToSave,
                 { new: true, runValidators: true }
               );
-              results.updated.push(customerData.customerEmail);
+              results.updated.push(customerData.customerPhone);
             } catch (updateError: any) {
               results.failed.push({
-                customerEmail: customerData.customerEmail,
+                customerPhone: customerData.customerPhone,
                 error: `Update failed: ${updateError.message}`
               });
             }
           } else {
-            // Create new customer
+            // إنشاء عميل جديد
             try {
               await CustomerModel.create(pick(customerData, this.keys));
-              results.success.push(customerData.customerEmail);
+              results.success.push(customerData.customerPhone);
             } catch (createError: any) {
               results.failed.push({
-                customerEmail: customerData.customerEmail,
+                customerPhone: customerData.customerPhone,
                 error: `Creation failed: ${createError.message}`
               });
             }
           }
         } catch (error: any) {
           results.failed.push({
-            customerEmail: customerData.customerEmail || 'N/A',
+            customerPhone: customerData.customerPhone || 'N/A',
             error: error.message
           });
         }
@@ -262,7 +271,7 @@ export default class CustomerService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Bulk update customers
+  // ✅ Bulk update customers
   public async BulkUpdateCustomers(customersData: any[]) {
     try {
       const results = {
@@ -272,51 +281,70 @@ export default class CustomerService extends MongooseFeatures {
 
       for (const customerData of customersData) {
         try {
-          const { customerEmail, ...updateData } = customerData;
+          const { customerPhone, ...updateData } = customerData;
           
-          if (!customerEmail) {
+          if (!customerPhone) {
             results.failed.push({
-              customerEmail: 'N/A',
-              error: "Email is required for bulk update"
+              customerPhone: 'N/A',
+              error: "Phone number is required for bulk update"
             });
             continue;
           }
 
-          // Check if updating email/phone would create duplicate
-          if (updateData.customerEmail || updateData.customerPhone) {
+          // التحقق من عدم تكرار البيانات عند التحديث
+          if (updateData.customerName || updateData.customerPhone || updateData.customerEmail) {
+            const duplicateConditions = [];
+            
+            if (updateData.customerName) {
+              duplicateConditions.push({ customerName: updateData.customerName });
+            }
+            if (updateData.customerPhone) {
+              duplicateConditions.push({ customerPhone: updateData.customerPhone });
+            }
+            if (updateData.customerEmail) {
+              duplicateConditions.push({ customerEmail: updateData.customerEmail });
+            }
+            
             const existingCustomer = await CustomerModel.findOne({
-              customerEmail: { $ne: customerEmail },
-              $or: [
-                ...(updateData.customerEmail ? [{ customerEmail: updateData.customerEmail }] : []),
-                ...(updateData.customerPhone ? [{ customerPhone: updateData.customerPhone }] : []),
-              ],
+              customerPhone: { $ne: customerPhone },
+              $or: duplicateConditions,
             });
+            
             if (existingCustomer) {
+              let duplicateField = "";
+              if (existingCustomer.customerName === updateData.customerName) {
+                duplicateField = "name";
+              } else if (existingCustomer.customerPhone === updateData.customerPhone) {
+                duplicateField = "phone number";
+              } else if (existingCustomer.customerEmail === updateData.customerEmail) {
+                duplicateField = "email";
+              }
+              
               results.failed.push({
-                customerEmail,
-                error: "A customer with the same email or phone number already exists"
+                customerPhone,
+                error: `A customer with the same ${duplicateField} already exists`
               });
               continue;
             }
           }
 
           const updatedCustomer = await CustomerModel.findOneAndUpdate(
-            { customerEmail },
+            { customerPhone },
             { $set: pick(updateData, this.keys) },
             { new: true }
           );
 
           if (updatedCustomer) {
-            results.success.push(customerEmail);
+            results.success.push(customerPhone);
           } else {
             results.failed.push({
-              customerEmail,
+              customerPhone,
               error: "Customer not found"
             });
           }
         } catch (error: any) {
           results.failed.push({
-            customerEmail: customerData.customerEmail || 'N/A',
+            customerPhone: customerData.customerPhone || 'N/A',
             error: error.message
           });
         }

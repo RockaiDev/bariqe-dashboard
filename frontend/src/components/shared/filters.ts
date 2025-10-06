@@ -15,25 +15,28 @@ interface Category {
 
 // utils/dateFilters.ts
 export const handleDateFilters = (
-  filterValue: string, 
+  filterValue: string,
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   const today = new Date();
-  
+
   switch (filterValue) {
     case "today": {
       const startOfDay = new Date(today);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(today);
       endOfDay.setHours(23, 59, 59, 999);
-      
-      changeFilterFn([
-        ["createdAt", ">=", startOfDay.toISOString()],
-        ["createdAt", "<=", endOfDay.toISOString()],
-      ], "queries");
+
+      changeFilterFn(
+        [
+          ["createdAt", ">=", startOfDay.toISOString()],
+          ["createdAt", "<=", endOfDay.toISOString()],
+        ],
+        "queries"
+      );
       break;
     }
-    
+
     case "thisweek": {
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay());
@@ -41,81 +44,100 @@ export const handleDateFilters = (
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
-      
-      changeFilterFn([
-        ["createdAt", ">=", startOfWeek.toISOString()],
-        ["createdAt", "<=", endOfWeek.toISOString()],
-      ], "queries");
+
+      changeFilterFn(
+        [
+          ["createdAt", ">=", startOfWeek.toISOString()],
+          ["createdAt", "<=", endOfWeek.toISOString()],
+        ],
+        "queries"
+      );
       break;
     }
-    
+
     case "thismonth": {
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
-      
-      changeFilterFn([
-        ["createdAt", ">=", startOfMonth.toISOString()],
-        ["createdAt", "<=", endOfMonth.toISOString()],
-      ], "queries");
+
+      changeFilterFn(
+        [
+          ["createdAt", ">=", startOfMonth.toISOString()],
+          ["createdAt", "<=", endOfMonth.toISOString()],
+        ],
+        "queries"
+      );
       break;
     }
-    
+
     case "last30days": {
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(today.getDate() - 30);
       thirtyDaysAgo.setHours(0, 0, 0, 0);
       const endDate = new Date(today);
       endDate.setHours(23, 59, 59, 999);
-      
-      changeFilterFn([
-        ["createdAt", ">=", thirtyDaysAgo.toISOString()],
-        ["createdAt", "<=", endDate.toISOString()],
-      ], "queries");
+
+      changeFilterFn(
+        [
+          ["createdAt", ">=", thirtyDaysAgo.toISOString()],
+          ["createdAt", "<=", endDate.toISOString()],
+        ],
+        "queries"
+      );
       break;
     }
-    
+
     case "last3months": {
       const threeMonthsAgo = new Date(today);
       threeMonthsAgo.setMonth(today.getMonth() - 3);
       threeMonthsAgo.setHours(0, 0, 0, 0);
       const endDate = new Date(today);
       endDate.setHours(23, 59, 59, 999);
-      
-      changeFilterFn([
-        ["createdAt", ">=", threeMonthsAgo.toISOString()],
-        ["createdAt", "<=", endDate.toISOString()],
-      ], "queries");
+
+      changeFilterFn(
+        [
+          ["createdAt", ">=", threeMonthsAgo.toISOString()],
+          ["createdAt", "<=", endDate.toISOString()],
+        ],
+        "queries"
+      );
       break;
     }
-    
+
     default:
       changeFilterFn([], "queries");
   }
 };
 
 export const handleCustomDateRange = (
-  dateFilter: DateFilter, 
+  dateFilter: DateFilter,
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void
 ) => {
   if (dateFilter?.from && dateFilter?.to) {
     const startDate = new Date(dateFilter.from);
     startDate.setHours(0, 0, 0, 0);
-    
+
     const endDate = new Date(dateFilter.to);
     endDate.setHours(23, 59, 59, 999);
-    
-    changeFilterFn([
-      ["createdAt", ">=", startDate.toISOString()],
-      ["createdAt", "<=", endDate.toISOString()],
-    ], "queries");
+
+    changeFilterFn(
+      [
+        ["createdAt", ">=", startDate.toISOString()],
+        ["createdAt", "<=", endDate.toISOString()],
+      ],
+      "queries"
+    );
   } else {
     changeFilterFn([], "queries");
   }
 };
 
 // filters/productFilters.ts
-export const handleProductFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleProductFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "status":
       if (filterValue === "active") {
@@ -126,39 +148,45 @@ export const handleProductFilters: FilterHandler = (filterKey, filterValue, chan
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "grade":
       const gradeMap: Record<string, string> = {
-        "technical": "Technical",
-        "analytical": "Analytical",
-        "usp": "USP",
-        "fcc": "FCC",
-        "cosmetic": "Cosmetic Grade"
+        technical: "Technical",
+        analytical: "Analytical",
+        usp: "USP",
+        fcc: "FCC",
+        cosmetic: "Cosmetic Grade",
       };
-      
+
       if (filterValue !== "all" && gradeMap[filterValue]) {
-        changeFilterFn([["productGrade", "==", gradeMap[filterValue]]], "queries");
+        changeFilterFn(
+          [["productGrade", "==", gradeMap[filterValue]]],
+          "queries"
+        );
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "form":
       const formMap: Record<string, string> = {
-        "solid": "Solid",
-        "liquid": "Liquid",
-        "gas": "Gas",
-        "powder": "Powder",
-        "granular": "Granular"
+        solid: "Solid",
+        liquid: "Liquid",
+        gas: "Gas",
+        powder: "Powder",
+        granular: "Granular",
       };
-      
+
       if (filterValue !== "all" && formMap[filterValue]) {
-        changeFilterFn([["productForm", "==", formMap[filterValue]]], "queries");
+        changeFilterFn(
+          [["productForm", "==", formMap[filterValue]]],
+          "queries"
+        );
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "category":
       if (filterValue !== "all") {
         changeFilterFn([["productCategory", "==", filterValue]], "queries");
@@ -166,21 +194,21 @@ export const handleProductFilters: FilterHandler = (filterKey, filterValue, chan
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
 };
 
-
-export const createProductFilterGroups = (categories: Category[], t: (key: string) => string, isRTL: boolean = false) => [
-
-
-
+export const createProductFilterGroups = (
+  categories: Category[],
+  t: (key: string) => string,
+  isRTL: boolean = false
+) => [
   {
     label: t("filters.status"),
     key: "status",
@@ -190,7 +218,7 @@ export const createProductFilterGroups = (categories: Category[], t: (key: strin
       { label: t("filters.inactive"), value: "inactive" },
     ],
   },
-  
+
   {
     label: t("filters.form"),
     key: "form",
@@ -220,66 +248,81 @@ export const createProductFilterGroups = (categories: Category[], t: (key: strin
     key: "category",
     options: [
       { label: t("filters.all"), value: "all" },
-      ...categories.map((cat :any)=> ({ 
-        label: isRTL ? (cat.categoryNameAr || cat.categoryName) : (cat.categoryNameEn || cat.categoryName), 
-        value: cat._id 
+      ...categories.map((cat: any) => ({
+        label: isRTL
+          ? cat.categoryNameAr || cat.categoryName
+          : cat.categoryNameEn || cat.categoryName,
+        value: cat._id,
       })),
     ],
   },
 ];
 
 // filters/orderFilters.ts
-export const handleOrderFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleOrderFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "status":
       const statusMap: Record<string, string> = {
-        "pending": "pending",
-        "shipped": "shipped", 
-        "delivered": "delivered",
-        "cancelled": "cancelled"
+        pending: "pending",
+        shipped: "shipped",
+        delivered: "delivered",
+        cancelled: "cancelled",
       };
-      
+
       if (filterValue !== "all" && statusMap[filterValue]) {
-        changeFilterFn([["orderStatus", "==", statusMap[filterValue]]], "queries"); // Fixed typo: orderStatus -> orderStatus
+        changeFilterFn(
+          [["orderStatus", "==", statusMap[filterValue]]],
+          "queries"
+        ); // Fixed typo: orderStatus -> orderStatus
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "quantity":
       if (filterValue === "low") {
         changeFilterFn([["quantity", "<=", 5]], "queries");
       } else if (filterValue === "medium") {
-        changeFilterFn([
-          ["quantity", ">", 5],
-          ["quantity", "<=", 20]
-        ], "queries");
+        changeFilterFn(
+          [
+            ["quantity", ">", 5],
+            ["quantity", "<=", 20],
+          ],
+          "queries"
+        );
       } else if (filterValue === "high") {
         changeFilterFn([["quantity", ">", 20]], "queries");
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "price":
       if (filterValue === "low") {
         changeFilterFn([["product.productPrice", "<=", 100]], "queries");
       } else if (filterValue === "medium") {
-        changeFilterFn([
-          ["product.productPrice", ">", 100],
-          ["product.productPrice", "<=", 500]
-        ], "queries");
+        changeFilterFn(
+          [
+            ["product.productPrice", ">", 100],
+            ["product.productPrice", "<=", 500],
+          ],
+          "queries"
+        );
       } else if (filterValue === "high") {
         changeFilterFn([["product.productPrice", ">", 500]], "queries");
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
@@ -331,10 +374,12 @@ export const createOrderFilterGroups = (t: (key: string) => string) => [
   },
 ];
 
-
-
 // filters/materialRequestFilters.ts
-export const handleMaterialRequestFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleMaterialRequestFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "status":
       if (filterValue === "pending") {
@@ -347,32 +392,37 @@ export const handleMaterialRequestFilters: FilterHandler = (filterKey, filterVal
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "quantity":
       if (filterValue === "low") {
         changeFilterFn([["materialQuantity", "<=", 100]], "queries");
       } else if (filterValue === "medium") {
-        changeFilterFn([
-          ["materialQuantity", ">", 100],
-          ["materialQuantity", "<=", 1000]
-        ], "queries");
+        changeFilterFn(
+          [
+            ["materialQuantity", ">", 100],
+            ["materialQuantity", "<=", 1000],
+          ],
+          "queries"
+        );
       } else if (filterValue === "high") {
         changeFilterFn([["materialQuantity", ">", 1000]], "queries");
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
 };
 
-export const createMaterialRequestFilterGroups = (t: (key: string) => string) => [
+export const createMaterialRequestFilterGroups = (
+  t: (key: string) => string
+) => [
   {
     label: t("filters.status"),
     key: "status",
@@ -408,7 +458,11 @@ export const createMaterialRequestFilterGroups = (t: (key: string) => string) =>
 ];
 
 // filters/categoryFilters.ts
-export const handleCategoryFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleCategoryFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "status":
       if (filterValue === "active") {
@@ -419,11 +473,11 @@ export const handleCategoryFilters: FilterHandler = (filterKey, filterValue, cha
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
@@ -467,16 +521,28 @@ export const createOrderSearchHandler = (
           return changeFilterFn([["orderStatus", "==", status]], "queries");
         } else if (searchValue.startsWith("customer:")) {
           const customerName = searchValue.replace("customer:", "");
-          return changeFilterFn([["customer.customerName", "contains", customerName]], "queries");
+          return changeFilterFn(
+            [["customer.customerName", "contains", customerName]],
+            "queries"
+          );
         } else if (searchValue.startsWith("product:")) {
           const productName = searchValue.replace("product:", "");
-          return changeFilterFn([["product.productName", "contains", productName]], "queries");
+          return changeFilterFn(
+            [["product.productName", "contains", productName]],
+            "queries"
+          );
         } else if (searchValue.startsWith("email:")) {
           const email = searchValue.replace("email:", "");
-          return changeFilterFn([["customer.customerEmail", "contains", email]], "queries");
+          return changeFilterFn(
+            [["customer.customerEmail", "contains", email]],
+            "queries"
+          );
         } else if (searchValue.startsWith("phone:")) {
           const phone = searchValue.replace("phone:", "");
-          return changeFilterFn([["customer.customerPhone", "contains", phone]], "queries");
+          return changeFilterFn(
+            [["customer.customerPhone", "contains", phone]],
+            "queries"
+          );
         } else if (searchValue.startsWith("quantity:")) {
           const quantity = parseInt(searchValue.replace("quantity:", ""));
           if (!isNaN(quantity)) {
@@ -485,22 +551,28 @@ export const createOrderSearchHandler = (
         } else if (searchValue.startsWith("total:")) {
           const total = parseFloat(searchValue.replace("total:", ""));
           if (!isNaN(total)) {
-            return changeFilterFn([["product.productPrice", ">=", total]], "queries");
+            return changeFilterFn(
+              [["product.productPrice", ">=", total]],
+              "queries"
+            );
           }
         } else {
-          return changeFilterFn([
+          return changeFilterFn(
             [
-              "$or",
-              "custom",
               [
-                ["customer.customerName", "contains", searchValue],
-                ["customer.customerEmail", "contains", searchValue],
-                ["product.productNameAr", "contains", searchValue],
-                
-                ["product.productNameEn", "contains", searchValue],
+                "$or",
+                "custom",
+                [
+                  ["customer.customerName", "contains", searchValue],
+                  ["customer.customerEmail", "contains", searchValue],
+                  ["product.productNameAr", "contains", searchValue],
+
+                  ["product.productNameEn", "contains", searchValue],
+                ],
               ],
             ],
-          ], "queries");
+            "queries"
+          );
         }
       } else {
         changeFilterFn([], "queries");
@@ -522,37 +594,58 @@ export const createMaterialRequestSearchHandler = (
           if (status === "pending") {
             return changeFilterFn([["materialActions", "==", null]], "queries");
           } else if (status === "approved") {
-            return changeFilterFn([["materialActions", "==", "approve"]], "queries");
+            return changeFilterFn(
+              [["materialActions", "==", "approve"]],
+              "queries"
+            );
           } else if (status === "denied") {
-            return changeFilterFn([["materialActions", "==", "denied"]], "queries");
+            return changeFilterFn(
+              [["materialActions", "==", "denied"]],
+              "queries"
+            );
           }
         } else if (searchValue.startsWith("email:")) {
           const email = searchValue.replace("email:", "");
-          return changeFilterFn([["materialEmail", "contains", email]], "queries"); // Fixed typo: materialEmail -> materialEmail
+          return changeFilterFn(
+            [["materialEmail", "contains", email]],
+            "queries"
+          ); // Fixed typo: materialEmail -> materialEmail
         } else if (searchValue.startsWith("phone:")) {
           const phone = searchValue.replace("phone:", "");
-          return changeFilterFn([["materialPhone", "contains", phone]], "queries");
+          return changeFilterFn(
+            [["materialPhone", "contains", phone]],
+            "queries"
+          );
         } else if (searchValue.startsWith("material:")) {
           const material = searchValue.replace("material:", "");
-          return changeFilterFn([["materialName", "contains", material]], "queries");
+          return changeFilterFn(
+            [["materialName", "contains", material]],
+            "queries"
+          );
         } else if (searchValue.startsWith("quantity:")) {
           const quantity = parseInt(searchValue.replace("quantity:", ""));
           if (!isNaN(quantity)) {
-            return changeFilterFn([["materialQuantity", ">=", quantity]], "queries");
+            return changeFilterFn(
+              [["materialQuantity", ">=", quantity]],
+              "queries"
+            );
           }
         } else {
-          return changeFilterFn([
+          return changeFilterFn(
             [
-              "$or",
-              "custom",
               [
-                ["materialName", "contains", searchValue],
-                ["materialEmail", "contains", searchValue], // Fixed typo
-                ["materialPhone", "contains", searchValue],
-                ["materialIntendedUse", "contains", searchValue],
+                "$or",
+                "custom",
+                [
+                  ["materialName", "contains", searchValue],
+                  ["materialEmail", "contains", searchValue], // Fixed typo
+                  ["materialPhone", "contains", searchValue],
+                  ["materialIntendedUse", "contains", searchValue],
+                ],
               ],
             ],
-          ], "queries");
+            "queries"
+          );
         }
       } else {
         changeFilterFn([], "queries");
@@ -572,25 +665,36 @@ export const createCategorySearchHandler = (
         if (searchValue.startsWith("status:")) {
           const status = searchValue.replace("status:", "").toLowerCase();
           const isActive = status === "active";
-          return changeFilterFn([["categoryStatus", "==", isActive]], "queries");
+          return changeFilterFn(
+            [["categoryStatus", "==", isActive]],
+            "queries"
+          );
         } else if (searchValue.startsWith("name:")) {
           const name = searchValue.replace("name:", "");
-          return changeFilterFn([["categoryName", "contains", name]], "queries");
+          return changeFilterFn(
+            [["categoryName", "contains", name]],
+            "queries"
+          );
         } else if (searchValue.startsWith("desc:")) {
           const desc = searchValue.replace("desc:", "");
-          return changeFilterFn([["categoryDescription", "contains", desc]], "queries");
+          return changeFilterFn(
+            [["categoryDescription", "contains", desc]],
+            "queries"
+          );
         } else {
-          return changeFilterFn([
+          return changeFilterFn(
             [
-              "$or",
-              "custom",
               [
-                ["categoryNameAr", "contains", searchValue],
-                ["categoryNameEn", "contains", searchValue],
-           
+                "$or",
+                "custom",
+                [
+                  ["categoryNameAr", "contains", searchValue],
+                  ["categoryNameEn", "contains", searchValue],
+                ],
               ],
             ],
-          ], "queries");
+            "queries"
+          );
         }
       } else {
         changeFilterFn([], "queries");
@@ -599,24 +703,30 @@ export const createCategorySearchHandler = (
   };
 };
 
-
 // filters/consultationRequestFilters.ts
-export const handleConsultationRequestFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleConsultationRequestFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "status":
       const statusMap: Record<string, string> = {
-        "new": "new",
-        "contacted": "contacted", 
-        "closed": "closed"
+        new: "new",
+        contacted: "contacted",
+        closed: "closed",
       };
-      
+
       if (filterValue !== "all" && statusMap[filterValue]) {
-        changeFilterFn([["ConsultationRequestsStatus", "==", statusMap[filterValue]]], "queries");
+        changeFilterFn(
+          [["ConsultationRequestsStatus", "==", statusMap[filterValue]]],
+          "queries"
+        );
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "customerStatus":
       // This checks if a customer exists for this consultation
       if (filterValue === "existing") {
@@ -628,17 +738,19 @@ export const handleConsultationRequestFilters: FilterHandler = (filterKey, filte
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
 };
 
-export const createConsultationRequestFilterGroups = (t: (key: string) => string) => [
+export const createConsultationRequestFilterGroups = (
+  t: (key: string) => string
+) => [
   {
     label: t("filters.status"),
     key: "status",
@@ -682,36 +794,57 @@ export const createConsultationRequestSearchHandler = (
       if (searchValue) {
         if (searchValue.startsWith("status:")) {
           const status = searchValue.replace("status:", "").toLowerCase();
-          return changeFilterFn([["ConsultationRequestsStatus", "==", status]], "queries");
+          return changeFilterFn(
+            [["ConsultationRequestsStatus", "==", status]],
+            "queries"
+          );
         } else if (searchValue.startsWith("name:")) {
           const name = searchValue.replace("name:", "");
-          return changeFilterFn([["ConsultationRequestsName", "contains", name]], "queries");
+          return changeFilterFn(
+            [["ConsultationRequestsName", "contains", name]],
+            "queries"
+          );
         } else if (searchValue.startsWith("email:")) {
           const email = searchValue.replace("email:", "");
-          return changeFilterFn([["ConsultationRequestsEmail", "contains", email]], "queries");
+          return changeFilterFn(
+            [["ConsultationRequestsEmail", "contains", email]],
+            "queries"
+          );
         } else if (searchValue.startsWith("phone:")) {
           const phone = searchValue.replace("phone:", "");
-          return changeFilterFn([["ConsultationRequestsPhone", "contains", phone]], "queries");
+          return changeFilterFn(
+            [["ConsultationRequestsPhone", "contains", phone]],
+            "queries"
+          );
         } else if (searchValue.startsWith("area:")) {
           const area = searchValue.replace("area:", "");
-          return changeFilterFn([["consultationRequestsArea", "contains", area]], "queries");
+          return changeFilterFn(
+            [["consultationRequestsArea", "contains", area]],
+            "queries"
+          );
         } else if (searchValue.startsWith("message:")) {
           const message = searchValue.replace("message:", "");
-          return changeFilterFn([["ConsultationRequestsMessage", "contains", message]], "queries");
+          return changeFilterFn(
+            [["ConsultationRequestsMessage", "contains", message]],
+            "queries"
+          );
         } else {
-          return changeFilterFn([
+          return changeFilterFn(
             [
-              "$or",
-              "custom",
               [
-                ["ConsultationRequestsName", "contains", searchValue],
-                ["ConsultationRequestsEmail", "contains", searchValue],
-                ["ConsultationRequestsPhone", "contains", searchValue],
-                ["consultationRequestsArea", "contains", searchValue],
-                ["ConsultationRequestsMessage", "contains", searchValue],
+                "$or",
+                "custom",
+                [
+                  ["ConsultationRequestsName", "contains", searchValue],
+                  ["ConsultationRequestsEmail", "contains", searchValue],
+                  ["ConsultationRequestsPhone", "contains", searchValue],
+                  ["consultationRequestsArea", "contains", searchValue],
+                  ["ConsultationRequestsMessage", "contains", searchValue],
+                ],
               ],
             ],
-          ], "queries");
+            "queries"
+          );
         }
       } else {
         changeFilterFn([], "queries");
@@ -720,42 +853,56 @@ export const createConsultationRequestSearchHandler = (
   };
 };
 // filters/customerFilters.ts
-export const handleCustomerFilters: FilterHandler = (filterKey, filterValue, changeFilterFn) => {
+export const handleCustomerFilters: FilterHandler = (
+  filterKey,
+  filterValue,
+  changeFilterFn
+) => {
   switch (filterKey) {
     case "source":
       const sourceMap: Record<string, string> = {
-        "order": "order",
-        "consultation": "consultation",
-        "material_request": "material request",
-        "other": "Other"
+        order: "order",
+        consultation: "consultation",
+        material_request: "material request",
+        other: "Other",
       };
-      
+
       if (filterValue !== "all" && sourceMap[filterValue]) {
-        changeFilterFn([["customerSource", "==", sourceMap[filterValue]]], "queries");
+        changeFilterFn(
+          [["customerSource", "==", sourceMap[filterValue]]],
+          "queries"
+        );
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "hasAddress":
       if (filterValue === "with_address") {
         changeFilterFn([["customerAddress", "!=", ""]], "queries");
       } else if (filterValue === "without_address") {
-        changeFilterFn([
-          ["$or", "custom", [
-            ["customerAddress", "==", ""],
-            ["customerAddress", "==", null]
-          ]]
-        ], "queries");
+        changeFilterFn(
+          [
+            [
+              "$or",
+              "custom",
+              [
+                ["customerAddress", "==", ""],
+                ["customerAddress", "==", null],
+              ],
+            ],
+          ],
+          "queries"
+        );
       } else {
         changeFilterFn([], "queries");
       }
       break;
-      
+
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
-      
+
     default:
       changeFilterFn([], "queries");
   }
@@ -770,6 +917,7 @@ export const createCustomerFilterGroups = (t: (key: string) => string) => [
       { label: t("filters.order"), value: "order" },
       { label: t("filters.consultation"), value: "consultation" },
       { label: t("filters.material_request"), value: "material_request" },
+      { label: t("filters.contact"), value: "contact" },
       { label: t("filters.other"), value: "other" },
     ],
   },
@@ -809,38 +957,128 @@ export const createCustomerSearchHandler = (
           return changeFilterFn([["customerSource", "==", source]], "queries");
         } else if (searchValue.startsWith("name:")) {
           const name = searchValue.replace("name:", "");
-          return changeFilterFn([["customerName", "contains", name]], "queries");
+          return changeFilterFn(
+            [["customerName", "contains", name]],
+            "queries"
+          );
         } else if (searchValue.startsWith("email:")) {
           const email = searchValue.replace("email:", "");
-          return changeFilterFn([["customerEmail", "contains", email]], "queries");
+          return changeFilterFn(
+            [["customerEmail", "contains", email]],
+            "queries"
+          );
         } else if (searchValue.startsWith("phone:")) {
           const phone = searchValue.replace("phone:", "");
-          return changeFilterFn([["customerPhone", "contains", phone]], "queries");
+          return changeFilterFn(
+            [["customerPhone", "contains", phone]],
+            "queries"
+          );
         } else if (searchValue.startsWith("address:")) {
           const address = searchValue.replace("address:", "");
-          return changeFilterFn([["customerAddress", "contains", address]], "queries");
+          return changeFilterFn(
+            [["customerAddress", "contains", address]],
+            "queries"
+          );
         } else if (searchValue.startsWith("notes:")) {
           const notes = searchValue.replace("notes:", "");
-          return changeFilterFn([["customerNotes", "contains", notes]], "queries");
+          return changeFilterFn(
+            [["customerNotes", "contains", notes]],
+            "queries"
+          );
         } else {
-          return changeFilterFn([
+          return changeFilterFn(
             [
-              "$or",
-              "custom",
               [
-                ["customerName", "contains", searchValue],
-                ["customerEmail", "contains", searchValue],
-                ["customerPhone", "contains", searchValue],
-                ["customerSource", "contains", searchValue],
-                ["customerAddress", "contains", searchValue],
-                ["customerNotes", "contains", searchValue],
+                "$or",
+                "custom",
+                [
+                  ["customerName", "contains", searchValue],
+                  ["customerEmail", "contains", searchValue],
+                  ["customerPhone", "contains", searchValue],
+                  ["customerSource", "contains", searchValue],
+                  ["customerAddress", "contains", searchValue],
+                  ["customerNotes", "contains", searchValue],
+                ],
               ],
             ],
-          ], "queries");
+            "queries"
+          );
         }
       } else {
         changeFilterFn([], "queries");
       }
     }
   };
-}
+};
+
+// في ملف filters.ts، أضف هذه الدوال:
+
+export const createContactFilterGroups = (t: (key: string) => string) => [
+  {
+    key: "status",
+    label: t("contacts.status"),
+    options: [
+      { label: t("contacts.active"), value: "active" },
+      { label: t("contacts.inactive"), value: "inactive" },
+    ],
+  },
+  // {
+  //   key: "hasCustomer",
+  //   label: t("contacts.customer_status"),
+  //   options: [
+  //     { label: t("contacts.with_customer"), value: "yes" },
+  //     { label: t("contacts.without_customer"), value: "no" },
+  //   ],
+  // },
+];
+
+export const createContactSearchHandler = (ChangeFilter: Function) => {
+  return (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const value = (e.target as HTMLInputElement).value.trim();
+      if (!value) {
+        ChangeFilter([]);
+        return;
+      }
+
+      const searchQueries = [
+        { field: "contactName", operator: "regex", value },
+        { field: "email", operator: "regex", value },
+        { field: "phoneNumber", operator: "regex", value },
+        { field: "address", operator: "regex", value },
+        { field: "message", operator: "regex", value },
+      ];
+
+      ChangeFilter([{ operator: "or", queries: searchQueries }]);
+    }
+  };
+};
+
+export const handleContactFilters = (
+  filterKey: string,
+  filterValue: any,
+  ChangeFilter: Function
+) => {
+  switch (filterKey) {
+    case "status":
+      ChangeFilter([
+        {
+          field: "status",
+          operator: "eq",
+          value: filterValue === "active",
+        },
+      ]);
+      break;
+      // case "hasCustomer":
+      ChangeFilter([
+        {
+          field: "customer",
+          operator: filterValue === "yes" ? "exists" : "notexists",
+          value: true,
+        },
+      ]);
+      break;
+    default:
+      break;
+  }
+};
