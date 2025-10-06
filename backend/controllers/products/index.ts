@@ -681,7 +681,7 @@ export default class ProductController extends BaseApi {
     res.end();
 
   } catch (error: any) {
-    console.error("Export error:", error);
+    console.log("Export error:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to export products",

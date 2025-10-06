@@ -6,6 +6,7 @@ import ConsultationRequestsController from "../../controllers/consultationReques
 import MaterialRequestController from "../../controllers/materialRequests";
 import EventController from "../../controllers/events";
 import CustomerController from "../../controllers/customer";
+import ContactController from '../../controllers/contact/index';
 
 // Initialize public routes
 const publicRouter = Router();
@@ -18,26 +19,27 @@ const consultationRequestsController = new ConsultationRequestsController();
 const materialRequestController = new MaterialRequestController();
 const eventController = new EventController();
 const customerController = new CustomerController();
-
+const contactController = new ContactController();
 /* ==============================
    PUBLIC PRODUCT ROUTES
 ================================ */
+
+// ✅ Export route (MUST come FIRST - before /:id)
+publicRouter.get(
+  "/products/export",
+  productController.exportProducts.bind(productController)
+);
+
 // Get all products (for website display)
 publicRouter.get(
   "/products",
   productController.getProducts.bind(productController)
 );
 
-// Get single product by ID
+// ✅ Get single product by ID (MUST come LAST)
 publicRouter.get(
   "/products/:id",
   productController.getOneProduct.bind(productController)
-);
-
-// Export (if needed for public)
-publicRouter.get(
-  "/products/export",
-  productController.exportProducts.bind(productController)
 );
 
 /* ==============================
@@ -154,4 +156,18 @@ publicRouter.patch(
   customerController.editCustomer.bind(customerController)
 );
 
+/* ==============================
+   PUBLIC CONTACT ROUTES (✅ جديد)
+================================ */
+// Create contact request (anyone can submit contact form)
+publicRouter.post(
+  "/contacts",
+  contactController.addContact.bind(contactController)
+);
+
+// Get contact by ID (to check submission status)
+publicRouter.get(
+  "/contacts/:id",
+  contactController.getOneContact.bind(contactController)
+);
 export default publicRouter;

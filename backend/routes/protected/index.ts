@@ -10,6 +10,7 @@ import ConsultationRequestsController from "../../controllers/consultationReques
 import DashboardController from "../../controllers/dashboard/index";
 import EventController from "../../controllers/events";
 import DatabaseController from "../../controllers/database";
+import ContactController from "../../controllers/contact";
 
 // Initialize protected routes
 const protectedRouter = Router();
@@ -24,7 +25,7 @@ const consultationRequestsController = new ConsultationRequestsController();
 const dashboardController = new DashboardController();
 const eventController = new EventController();
 const databaseController = new DatabaseController();
-
+const contactController = new ContactController();
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -599,5 +600,53 @@ protectedRouter.get(
   "/database/download-template",
   databaseController.downloadTemplate.bind(databaseController)
 );
+
+
+/* ==============================
+   CONTACT ROUTES (✅ جديد - كامل مثل Products)
+================================ */
+
+// Export/Import routes (MUST come before /:id routes)
+protectedRouter.get(
+  "/contacts/export",
+  contactController.exportContacts.bind(contactController)
+);
+protectedRouter.get(
+  "/contacts/download-template",
+  contactController.downloadTemplate.bind(contactController)
+);
+protectedRouter.post(
+  "/contacts/import",
+  contactController.importContacts.bind(contactController)
+);
+
+// Status update route (MUST come before /:id)
+protectedRouter.patch(
+  "/contacts/:id/status",
+  contactController.updateContactStatus.bind(contactController)
+);
+
+// Basic CRUD routes
+protectedRouter.get(
+  "/contacts",
+  contactController.getContacts.bind(contactController)
+);
+protectedRouter.get(
+  "/contacts/:id",
+  contactController.getOneContact.bind(contactController)
+);
+protectedRouter.post(
+  "/contacts",
+  contactController.addContact.bind(contactController)
+);
+protectedRouter.put(
+  "/contacts/:id",
+  contactController.editContact.bind(contactController)
+);
+protectedRouter.delete(
+  "/contacts/:id",
+  contactController.deleteContact.bind(contactController)
+);
+
 
 export default protectedRouter;

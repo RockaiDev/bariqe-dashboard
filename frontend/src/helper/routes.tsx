@@ -12,6 +12,7 @@ import {
   ReportsPage,
   SettingsPage,
 } from "@/screens";
+import ContactPage from "@/screens/Contact";
 import type { RouteObject } from "react-router-dom";
 
 const globalRoutes: RouteObject[] = [
@@ -71,6 +72,11 @@ const routes: RouteObject[] = [
     path: "/help",
     element: <HelpPage />,
   },
+    {
+    path: "/contact",
+    element: <ContactPage />,
+  },
+
 
   ...globalRoutes,
 ];

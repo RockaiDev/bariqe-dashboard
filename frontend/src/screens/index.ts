@@ -10,3 +10,5 @@ export { default as ConsultationsPage } from "./Consultations/index";
 export { default as ReportsPage } from "./Reports/index";
 export { default as SettingsPage } from "./Settings/index";
 export { default as HelpPage } from "./Help/index";
+export { default as ContsctPage } from "./Contact/index";
+

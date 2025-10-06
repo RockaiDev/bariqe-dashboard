@@ -84,6 +84,7 @@ export default function CustomersPage() {
     { value: "order", label: intl.formatMessage({ id: "customers.source_order" }) },
     { value: "consultation", label: intl.formatMessage({ id: "customers.source_consultation" }) },
     { value: "material_request", label: intl.formatMessage({ id: "customers.source_material_request" }) },
+    { value: "contact", label: intl.formatMessage({ id: "customers.source_contact" }) },
     { value: "other", label: intl.formatMessage({ id: "customers.source_other" }) },
   ];
 
@@ -267,6 +268,7 @@ export default function CustomersPage() {
       order: "bg-blue-100 text-blue-700",
       consultation: "bg-green-100 text-green-700",
       material_request: "bg-orange-100 text-orange-700",
+      contact: "bg-purple-100 text-purple-700",
       other: "bg-gray-100 text-gray-700",
     };
     return colors[source] || "bg-gray-100 text-gray-700";
@@ -1024,6 +1026,7 @@ function AddCustomer({
     { value: "order", label: intl.formatMessage({ id: "customers.source_order" }) },
     { value: "consultation", label: intl.formatMessage({ id: "customers.source_consultation" }) },
     { value: "material_request", label: intl.formatMessage({ id: "customers.source_material_request" }) },
+    { value: "contact", label: intl.formatMessage({ id: "customers.source_contact" }) },
     { value: "other", label: intl.formatMessage({ id: "customers.source_other" }) },
   ];
 

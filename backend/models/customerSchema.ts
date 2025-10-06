@@ -28,7 +28,7 @@ const customerSchema = new Schema(
     customerSource: {
       type: String,
       required: true,
-      enum: ["order", "consultation", "material_request", "other"],
+      enum: ["order", "consultation", "material_request","contact", "other"],
     },
     customerLocation:{
       type: String,
