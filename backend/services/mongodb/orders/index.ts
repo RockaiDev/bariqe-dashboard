@@ -1,4 +1,4 @@
-// src/services/mongodb/order.ts
+// src/services/mongodb/orders/index.ts
 import ApiError from "../../../utils/errors/ApiError";
 import MongooseFeatures from "../features/index";
 import OrderModel from "../../../models/orderSchema";
@@ -13,12 +13,16 @@ export default class OrderService extends MongooseFeatures {
     super();
     this.keys = [
       "customer",
-      "product",
-      "quantity",
+      "products",
       "orderQuantity",
-      "orderDiscount", // Fixed typo
-      "orderStatus", // Fixed typo
+      "orderDiscount",
+      "orderStatus",
     ];
+  }
+
+  // Helper function to escape regex
+  private escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   // 🟢 Get all orders
@@ -31,13 +35,9 @@ export default class OrderService extends MongooseFeatures {
       queries = [],
     } = pick(query, ["perPage", "page", "sorts", "queries"]);
 
-    // Preprocess queries: if searching by customerName or productName
-    // translate those into queries against the customer/product collections
-    // and replace them with ['customer','in', [ids]] or ['product','in', [ids]]
     const preprocessQueries = async (rawQueries: any) => {
       let qs: any = rawQueries;
 
-      // If queries arrive as a JSON string, try to parse it
       if (typeof qs === "string") {
         try {
           let decoded = decodeURIComponent(qs);
@@ -47,7 +47,7 @@ export default class OrderService extends MongooseFeatures {
           decoded = decoded.replace(/\\"/g, '"');
           qs = JSON.parse(decoded);
         } catch (e) {
-          // leave as-is; PaginateHandler will handle fallback
+          // leave as-is
         }
       }
 
@@ -59,13 +59,9 @@ export default class OrderService extends MongooseFeatures {
 
           const [field, op, value] = t;
 
-          // handle $or custom tuples where value is array of tuples
           if (field === "$or" && op === "custom" && Array.isArray(value)) {
             const mappedSub = await Promise.all(
-              value.map(async (sub: any) => {
-                // recursively map sub-tuples
-                return await mapTuple(sub);
-              })
+              value.map(async (sub: any) => await mapTuple(sub))
             );
             return ["$or", "custom", mappedSub];
           }
@@ -75,6 +71,7 @@ export default class OrderService extends MongooseFeatures {
             "customer.customerName",
             "customer.name",
           ].includes(field);
+          
           const isProductName = [
             "productName",
             "productNameAr",
@@ -85,31 +82,22 @@ export default class OrderService extends MongooseFeatures {
           ].includes(field);
 
           if (isCustomerName) {
-            // find matching customers
-            const searchVal =
-              typeof value === "string" ? value : String(value || "");
-            const regex = new RegExp(
-              searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-              "i"
-            );
+            const searchVal = typeof value === "string" ? value : String(value || "");
+            const escapedSearch = this.escapeRegex(searchVal);
+            const regex = new RegExp(escapedSearch, "i");
+            
             const customers = await CustomerModel.find({
               customerName: { $regex: regex },
             }).select("_id");
             const ids = customers.map((c: any) => c._id);
-            return [
-              "customer",
-              op === "==" ? "==" : "in",
-              ids.length ? ids : [null],
-            ];
+            return ["customer", op === "==" ? "==" : "in", ids.length ? ids : [null]];
           }
 
           if (isProductName) {
-            const searchVal =
-              typeof value === "string" ? value : String(value || "");
-            const regex = new RegExp(
-              searchVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-              "i"
-            );
+            const searchVal = typeof value === "string" ? value : String(value || "");
+            const escapedSearch = this.escapeRegex(searchVal);
+            const regex = new RegExp(escapedSearch, "i");
+            
             const products = await ProductModel.find({
               $or: [
                 { productNameAr: { $regex: regex } },
@@ -119,7 +107,7 @@ export default class OrderService extends MongooseFeatures {
 
             const ids = products.map((p: any) => p._id);
             return [
-              "product",
+              "products.product",
               op === "==" ? "==" : "in",
               ids.length ? ids : [null],
             ];
@@ -148,9 +136,9 @@ export default class OrderService extends MongooseFeatures {
     const populatedData = await OrderModel.populate(result.data, [
       { path: "customer", select: "customerName customerEmail customerPhone" },
       {
-        path: "product",
+        path: "products.product",
         select:
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers",
       },
     ]);
 
@@ -163,8 +151,8 @@ export default class OrderService extends MongooseFeatures {
       const order = await OrderModel.findById(id)
         .populate("customer", "customerName customerEmail customerPhone")
         .populate(
-          "product",
-          "productNameAr productNameEn productDescriptionAr  productDescriptionEn productPrice productImage productCode"
+          "products.product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         );
 
       if (!order) throw new ApiError("NOT_FOUND", "Order not found");
@@ -177,11 +165,21 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Add new order
   public async AddOrder(body: any) {
     try {
-      if (!body.customer || !body.product || !body.quantity) {
+      if (!body.customer || !body.products || !Array.isArray(body.products) || body.products.length === 0) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'customer', 'product', 'quantity' are required"
+          "Fields 'customer' and 'products' array are required"
         );
+      }
+
+      // Validate each product in the array
+      for (const item of body.products) {
+        if (!item.product || !item.quantity) {
+          throw new ApiError(
+            "BAD_REQUEST",
+            "Each product must have 'product' id and 'quantity'"
+          );
+        }
       }
 
       const newOrder = pick(body, this.keys);
@@ -190,8 +188,8 @@ export default class OrderService extends MongooseFeatures {
       const populatedOrder = await OrderModel.findById(order._id)
         .populate("customer", "customerName customerEmail customerPhone")
         .populate(
-          "product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+          "products.product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         );
 
       return populatedOrder;
@@ -211,8 +209,8 @@ export default class OrderService extends MongooseFeatures {
       })
         .populate("customer", "customerName customerEmail customerPhone")
         .populate(
-          "product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+          "products.product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         );
 
       if (!updatedOrder) {
@@ -240,40 +238,51 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Export orders for Excel
   public async ExportOrders(query: any) {
     try {
-      const { sorts = [], queries = [] } = pick(query, ["sorts", "queries"]);
-
-      // Get all orders without pagination for export
       const orders = await OrderModel.find({})
         .populate("customer", "customerName customerEmail customerPhone")
         .populate(
-          "product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+          "products.product",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         )
         .sort({ createdAt: -1 });
 
-      // Format data for Excel export
-      const formattedOrders = orders.map((order: any) => ({
-        orderNumber: order._id.toString(),
-        customerName: order.customer?.customerName || "N/A",
-        customerEmail: order.customer?.customerEmail || "N/A",
-        customerPhone: order.customer?.customerPhone || "N/A",
-        productCode: order.product?.productCode || "N/A",
-        productNameAr: order.product?.productNameAr || "N/A",
-        productNameEn: order.product?.productNameEn || "N/A",
-        productDescriptionAr: order.product?.productDescriptionAr || "N/A",
-        productDescriptionEn: order.product?.productDescriptionEn || "N/A",
-        productPrice: order.product?.productPrice || 0,
-        quantity: order.quantity || 0,
-        orderQuantity: order.orderQuantity || 0,
-        orderDiscount: order.orderDiscount || 0,
-        orderStatus: order.orderStatus || "Pending",
-        totalAmount: (order.product?.productPrice || 0) * (order.quantity || 0),
-        discountedAmount:
-          (order.product?.productPrice || 0) *
-          (order.quantity || 0) *
-          (1 - (order.orderDiscount || 0) / 100),
-        orderDate: order.createdAt,
-      }));
+      // Format data for Excel export - one row per product in order
+      const formattedOrders: any[] = [];
+
+      orders.forEach((order: any) => {
+        order.products.forEach((item: any, index: number) => {
+          const productPrice = item.product?.productPrice || 0;
+          const quantity = item.quantity || 0;
+          const itemDiscount = item.itemDiscount || 0;
+          const orderDiscount = order.orderDiscount || 0;
+
+          const subtotal = productPrice * quantity;
+          const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
+          const finalAmount = afterItemDiscount * (1 - orderDiscount / 100);
+
+          formattedOrders.push({
+            orderNumber: order._id.toString(),
+            itemNumber: index + 1,
+            totalItems: order.products.length,
+            customerName: order.customer?.customerName || "N/A",
+            customerEmail: order.customer?.customerEmail || "N/A",
+            customerPhone: order.customer?.customerPhone || "N/A",
+            productCode: item.product?.productCode || "N/A",
+            productNameAr: item.product?.productNameAr || "N/A",
+            productNameEn: item.product?.productNameEn || "N/A",
+            productPrice: productPrice,
+            quantity: quantity,
+            itemDiscount: itemDiscount,
+            orderDiscount: orderDiscount,
+            subtotal: subtotal,
+            afterItemDiscount: afterItemDiscount,
+            finalAmount: finalAmount,
+            orderQuantity: order.orderQuantity || "",
+            orderStatus: order.orderStatus || "pending",
+            orderDate: order.createdAt,
+          });
+        });
+      });
 
       return formattedOrders;
     } catch (error) {
@@ -289,7 +298,40 @@ export default class OrderService extends MongooseFeatures {
       updated: [] as any[],
     };
 
-    for (const orderData of ordersData) {
+    // Group rows by orderNumber or customer+orderDate to combine products
+    const ordersMap = new Map<string, any>();
+
+    for (const row of ordersData) {
+      try {
+        const key = row.orderNumber || `${row.customerEmail}_new_${Date.now()}`;
+        
+        if (!ordersMap.has(key)) {
+          ordersMap.set(key, {
+            customerEmail: row.customerEmail,
+            orderQuantity: row.orderQuantity,
+            orderDiscount: row.orderDiscount || 0,
+            orderStatus: row.orderStatus || "pending",
+            products: [],
+            orderNumber: row.orderNumber,
+          });
+        }
+
+        const orderGroup = ordersMap.get(key);
+        orderGroup.products.push({
+          productCode: row.productCode,
+          quantity: row.quantity,
+          itemDiscount: row.itemDiscount || 0,
+        });
+      } catch (error: any) {
+        results.failed.push({
+          data: row,
+          error: error.message || "Error grouping order items",
+        });
+      }
+    }
+
+    // Process each grouped order
+    for (const [key, orderData] of ordersMap.entries()) {
       try {
         // Find customer by email
         const customer = await CustomerModel.findOne({
@@ -304,15 +346,32 @@ export default class OrderService extends MongooseFeatures {
           continue;
         }
 
-        // Find product by product code
-        const product = await ProductModel.findOne({
-          productCode: orderData.productCode,
-        });
+        // Find all products and prepare products array
+        const productsArray = [];
+        for (const item of orderData.products) {
+          const product = await ProductModel.findOne({
+            productCode: item.productCode,
+          });
 
-        if (!product) {
+          if (!product) {
+            results.failed.push({
+              data: item,
+              error: `Product with code ${item.productCode} not found`,
+            });
+            continue;
+          }
+
+          productsArray.push({
+            product: product._id,
+            quantity: item.quantity,
+            itemDiscount: item.itemDiscount || 0,
+          });
+        }
+
+        if (productsArray.length === 0) {
           results.failed.push({
             data: orderData,
-            error: `Product with code ${orderData.productCode} not found`,
+            error: "No valid products found for this order",
           });
           continue;
         }
@@ -320,30 +379,28 @@ export default class OrderService extends MongooseFeatures {
         // Prepare order data
         const newOrderData = {
           customer: customer._id,
-          product: product._id,
-          quantity: orderData.quantity,
-          orderQuantity: orderData.orderQuantity || orderData.quantity,
+          products: productsArray,
+          orderQuantity: orderData.orderQuantity,
           orderDiscount: orderData.orderDiscount || 0,
-          orderStatus: orderData.orderStatus || "Pending",
+          orderStatus: orderData.orderStatus || "pending",
         };
 
-        // Check if order already exists (optional - you can define your own logic)
-        const existingOrder = await OrderModel.findOne({
-          customer: customer._id,
-          product: product._id,
-          orderNumber: orderData.orderNumber,
-        });
+        // Check if order already exists
+        let existingOrder = null;
+        if (orderData.orderNumber) {
+          existingOrder = await OrderModel.findById(orderData.orderNumber).catch(() => null);
+        }
 
-        if (existingOrder && orderData.orderNumber) {
+        if (existingOrder) {
           // Update existing order
           const updatedOrder = await OrderModel.findByIdAndUpdate(
             existingOrder._id,
             newOrderData,
-            { new: true }
+            { new: true, runValidators: true }
           )
             .populate("customer", "customerName customerEmail customerPhone")
             .populate(
-              "product",
+              "products.product",
               "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
             );
 
@@ -354,7 +411,7 @@ export default class OrderService extends MongooseFeatures {
           const populatedOrder = await OrderModel.findById(newOrder._id)
             .populate("customer", "customerName customerEmail customerPhone")
             .populate(
-              "product",
+              "products.product",
               "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
             );
 

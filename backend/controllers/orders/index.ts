@@ -1,11 +1,10 @@
-// src/controllers/order/index.ts
 import { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
-import OrderService from '../../services/mongodb/orders/index';
+import OrderService from "../../services/mongodb/orders/index";
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -124,6 +123,8 @@ export default class OrderController extends BaseApi {
       // Define columns for orders sheet
       ordersSheet.columns = [
         { header: "Order Number", key: "orderNumber", width: 25 },
+        { header: "Item #", key: "itemNumber", width: 10 },
+        { header: "Total Items", key: "totalItems", width: 12 },
         { header: "Customer Name", key: "customerName", width: 25 },
         { header: "Customer Email", key: "customerEmail", width: 30 },
         { header: "Customer Phone", key: "customerPhone", width: 20 },
@@ -132,11 +133,13 @@ export default class OrderController extends BaseApi {
         { header: "Product Name (EN)", key: "productNameEn", width: 30 },
         { header: "Product Price", key: "productPrice", width: 15 },
         { header: "Quantity", key: "quantity", width: 12 },
-        { header: "Order Quantity", key: "orderQuantity", width: 15 },
+        { header: "Item Discount %", key: "itemDiscount", width: 18 },
         { header: "Order Discount %", key: "orderDiscount", width: 18 },
+        { header: "Subtotal", key: "subtotal", width: 15 },
+        { header: "After Item Discount", key: "afterItemDiscount", width: 20 },
+        { header: "Final Amount", key: "finalAmount", width: 18 },
+        { header: "Order Quantity", key: "orderQuantity", width: 15 },
         { header: "Order Status", key: "orderStatus", width: 15 },
-        { header: "Total Amount", key: "totalAmount", width: 15 },
-        { header: "Discounted Amount", key: "discountedAmount", width: 18 },
         { header: "Order Date", key: "orderDate", width: 20 },
       ];
 
@@ -161,10 +164,15 @@ export default class OrderController extends BaseApi {
 
         // Format price columns
         row.getCell("productPrice").numFmt = "$#,##0.00";
-        row.getCell("totalAmount").numFmt = "$#,##0.00";
-        row.getCell("discountedAmount").numFmt = "$#,##0.00";
+        row.getCell("subtotal").numFmt = "$#,##0.00";
+        row.getCell("afterItemDiscount").numFmt = "$#,##0.00";
+        row.getCell("finalAmount").numFmt = "$#,##0.00";
 
-        // Format discount column
+        // Format discount columns
+        if (order.itemDiscount) {
+          row.getCell("itemDiscount").value = order.itemDiscount / 100;
+          row.getCell("itemDiscount").numFmt = "0%";
+        }
         if (order.orderDiscount) {
           row.getCell("orderDiscount").value = order.orderDiscount / 100;
           row.getCell("orderDiscount").numFmt = "0%";
@@ -176,7 +184,6 @@ export default class OrderController extends BaseApi {
         // Add conditional formatting for status
         const statusCell = row.getCell("orderStatus");
         switch (order.orderStatus?.toLowerCase()) {
-          case "completed":
           case "delivered":
             statusCell.font = { color: { argb: "FF008000" } };
             break;
@@ -185,6 +192,9 @@ export default class OrderController extends BaseApi {
             break;
           case "cancelled":
             statusCell.font = { color: { argb: "FFFF0000" } };
+            break;
+          case "shipped":
+            statusCell.font = { color: { argb: "FF0000FF" } };
             break;
           default:
             statusCell.font = { color: { argb: "FF000000" } };
@@ -237,9 +247,11 @@ export default class OrderController extends BaseApi {
 
       // Define columns
       ordersSheet.columns = [
+        { header: "Order Number", key: "orderNumber", width: 25 },
         { header: "Customer Email", key: "customerEmail", width: 30 },
         { header: "Product Code", key: "productCode", width: 20 },
         { header: "Quantity", key: "quantity", width: 12 },
+        { header: "Item Discount %", key: "itemDiscount", width: 18 },
         { header: "Order Quantity", key: "orderQuantity", width: 15 },
         { header: "Order Discount %", key: "orderDiscount", width: 18 },
         { header: "Order Status", key: "orderStatus", width: 15 },
@@ -260,22 +272,48 @@ export default class OrderController extends BaseApi {
         horizontal: "center",
       };
 
-      // Add sample data
-      const sampleRow = ordersSheet.addRow({
+      // Add sample data - multiple products for same order
+      ordersSheet.addRow({
+        orderNumber: "",
         customerEmail: "customer@example.com",
         productCode: "PROD001",
         quantity: 10,
-        orderQuantity: 10,
+        itemDiscount: 5,
+        orderQuantity: "20 units",
+        orderDiscount: 10,
+        orderStatus: "pending",
+      });
+
+      ordersSheet.addRow({
+        orderNumber: "",
+        customerEmail: "customer@example.com",
+        productCode: "PROD002",
+        quantity: 5,
+        itemDiscount: 0,
+        orderQuantity: "20 units",
+        orderDiscount: 10,
+        orderStatus: "pending",
+      });
+
+      ordersSheet.addRow({
+        orderNumber: "",
+        customerEmail: "customer2@example.com",
+        productCode: "PROD003",
+        quantity: 15,
+        itemDiscount: 3,
+        orderQuantity: "15 units",
         orderDiscount: 5,
-        orderStatus: "Pending",
+        orderStatus: "shipped",
       });
 
       // Add data validation for Status
-      ordersSheet.getCell("F2").dataValidation = {
-        type: "list",
-        allowBlank: false,
-        formulae: ['"Pending,Processing,Shipped,Delivered,Cancelled"'],
-      };
+      for (let i = 2; i <= 100; i++) {
+        ordersSheet.getCell(`H${i}`).dataValidation = {
+          type: "list",
+          allowBlank: false,
+          formulae: ['"pending,shipped,delivered,cancelled"'],
+        };
+      }
 
       // Add instructions sheet
       const instructionsSheet = workbook.addWorksheet("Instructions", {
@@ -283,40 +321,65 @@ export default class OrderController extends BaseApi {
       });
 
       instructionsSheet.columns = [
-        { header: "Instructions", key: "instructions", width: 80 },
+        { header: "Instructions", key: "instructions", width: 100 },
       ];
 
       // Style header
-      instructionsSheet.getRow(1).font = { bold: true };
+      instructionsSheet.getRow(1).font = { bold: true, size: 14 };
       instructionsSheet.getRow(1).fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFFF0000" },
+      };
+      instructionsSheet.getRow(1).font = {
+        bold: true,
+        color: { argb: "FFFFFFFF" },
       };
 
       // Add instruction rows
       const instructions = [
         "How to use this template:",
         "",
-        "1. Orders Sheet:",
-        "   - Customer Email: Must match an existing customer email in the system (required)",
-        "   - Product Code: Must match an existing product code in the system (required)",
-        "   - Quantity: Number of items ordered (required)",
-        "   - Order Quantity: Total order quantity (optional, defaults to quantity)",
-        "   - Order Discount %: Discount percentage as number (e.g., 5 for 5%)",
-        "   - Order Status: Choose from: Pending, Processing, Shipped, Delivered, Cancelled",
+        "1. MULTIPLE PRODUCTS PER ORDER:",
+        "   - Leave 'Order Number' EMPTY for new orders",
+        "   - Use the SAME customer email for products in the same order",
+        "   - Each row = one product in the order",
+        "   - Example: 2 rows with same email = 1 order with 2 products",
         "",
-        "2. Important Notes:",
-        "   - Do not modify column headers",
-        "   - Customers and Products must exist in the system before import",
-        "   - Customer Email and Product Code are used to link to existing records",
-        "   - Leave no empty rows between data",
-        "   - Duplicate orders will be updated if they have the same customer and product",
+        "2. COLUMNS EXPLANATION:",
+        "   - Order Number: Leave empty for new orders, or paste existing order ID to update",
+        "   - Customer Email: Must match existing customer (required)",
+        "   - Product Code: Must match existing product (required)",
+        "   - Quantity: Number of units for THIS product (required)",
+        "   - Item Discount %: Discount for THIS specific product (0-100)",
+        "   - Order Quantity: Description/notes (e.g., '20 units total')",
+        "   - Order Discount %: Additional discount on the ENTIRE order (0-100)",
+        "   - Order Status: pending, shipped, delivered, or cancelled",
+        "",
+        "3. EXAMPLE - Order with 2 products:",
+        "   Row 1: [empty], customer@email.com, PROD001, 10, 5, '20 total', 10, pending",
+        "   Row 2: [empty], customer@email.com, PROD002, 5, 0, '20 total', 10, pending",
+        "   → This creates ONE order with TWO products",
+        "",
+        "4. DISCOUNT CALCULATION:",
+        "   - Item Discount applies to each product separately",
+        "   - Order Discount applies to the total order after item discounts",
+        "   - Final = (Price × Qty × (1 - Item%)) × (1 - Order%)",
+        "",
+        "5. IMPORTANT NOTES:",
+        "   - Customer and Product must exist in system before import",
+        "   - Same customer email + empty Order Number = new order with multiple products",
+        "   - Different customer emails = different orders",
+        "   - Delete sample data before importing your real data",
+        "   - Maximum file size: 5MB",
       ];
 
       instructions.forEach((text, index) => {
         if (index > 0) {
-          instructionsSheet.addRow([text]);
+          const row = instructionsSheet.addRow([text]);
+          if (text.match(/^\d+\./)) {
+            row.font = { bold: true, size: 12 };
+          }
         }
       });
 
@@ -380,15 +443,17 @@ export default class OrderController extends BaseApi {
         ordersSheet.eachRow((row, rowNumber) => {
           if (rowNumber > 1) {
             try {
-              const customerEmail = String(row.getCell(1).value || "").trim();
-              const productCode = String(row.getCell(2).value || "").trim();
-              const quantity = Number(row.getCell(3).value) || 0;
-              const orderQuantity = Number(row.getCell(4).value) || quantity;
-              const orderDiscount = Number(row.getCell(5).value) || 0;
-              const orderStatus = String(row.getCell(6).value || "").trim() || "Pending";
+              const orderNumber = String(row.getCell(1).value || "").trim();
+              const customerEmail = String(row.getCell(2).value || "").trim();
+              const productCode = String(row.getCell(3).value || "").trim();
+              const quantity = Number(row.getCell(4).value) || 0;
+              const itemDiscount = Number(row.getCell(5).value) || 0;
+              const orderQuantity = String(row.getCell(6).value || "").trim();
+              const orderDiscount = Number(row.getCell(7).value) || 0;
+              const orderStatus = String(row.getCell(8).value || "").trim().toLowerCase() || "pending";
 
               // Skip empty rows
-              if ( !productCode) return;
+              if (!customerEmail && !productCode) return;
 
               // Validation
               if (!customerEmail || !productCode) {
@@ -397,25 +462,33 @@ export default class OrderController extends BaseApi {
               if (quantity <= 0) {
                 throw new Error("Quantity must be greater than 0");
               }
+              if (itemDiscount < 0 || itemDiscount > 100) {
+                throw new Error("Item discount must be between 0 and 100");
+              }
+              if (orderDiscount < 0 || orderDiscount > 100) {
+                throw new Error("Order discount must be between 0 and 100");
+              }
 
-              const validStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+              const validStatuses = ["pending", "shipped", "delivered", "cancelled"];
               if (!validStatuses.includes(orderStatus)) {
                 throw new Error(`Invalid order status '${orderStatus}'`);
               }
 
               ordersData.push({
+                orderNumber: orderNumber || null,
                 customerEmail,
                 productCode,
                 quantity,
-                orderQuantity,
+                itemDiscount,
+                orderQuantity: orderQuantity || `${quantity} units`,
                 orderDiscount,
                 orderStatus,
               });
             } catch (err: any) {
               orderErrors.push({
                 row: rowNumber,
-                customerEmail: String(row.getCell(1).value || "").trim() || null,
-                productCode: String(row.getCell(2).value || "").trim() || null,
+                customerEmail: String(row.getCell(2).value || "").trim() || null,
+                productCode: String(row.getCell(3).value || "").trim() || null,
                 error: err.message,
               });
             }
