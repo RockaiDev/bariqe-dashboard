@@ -67,7 +67,7 @@ export default function HeaderLayout({
 
               {/* Avatar */}
               <AvatarArea />
-            </div>
+            </div> 
           </header>
 
           {/* Main content */}

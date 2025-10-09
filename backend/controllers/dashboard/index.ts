@@ -390,7 +390,10 @@ export default class DashboardController extends BaseApi {
         .sort({ createdAt: -1 })
         .limit(10)
         .populate("customer", "customerName customerEmail customerPhone customerLocation")
-        .populate("product", "productNameEn productNameAr productPrice productCode")
+        .populate(
+              "products.product",
+              "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+            )
         .lean();
 
       return recentOrders.map((order: any) => ({
