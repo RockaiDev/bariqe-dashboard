@@ -27,6 +27,7 @@ import {
   Layers,
   Truck,
   Contact,
+  Building2,
 } from "lucide-react";
 
 import Logo from "../assets/logoMain.svg";
@@ -99,6 +100,11 @@ export default function AppSidebar() {
       label: intl.formatMessage({ id: "nav_settings" }),
       href: "/settings",
     },
+    {
+      icon: Building2,
+      label: intl.formatMessage({ id: "nav_business_info" }),
+      href: "/business-info",
+    },
       
   ];
 
@@ -112,7 +118,7 @@ export default function AppSidebar() {
     <Sidebar
       collapsible="icon"
       side={isRTL ? "right" : "left"}
-      className="!relative lg:!relative md:!fixed sm:!fixed !z-50"
+      className="!relative lg:!relative md:!fixed sm:!fixed !z-50 h-full"
       variant="sidebar"
     >
       {/* Header */}
@@ -160,7 +166,7 @@ export default function AppSidebar() {
       </SidebarHeader>
 
       {/* Navigation */}
-      <SidebarContent>
+      <SidebarContent className="h-full">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="!gap-2 lg:!gap-3">

@@ -11,7 +11,7 @@ import DashboardController from "../../controllers/dashboard/index";
 import EventController from "../../controllers/events";
 import DatabaseController from "../../controllers/database";
 import ContactController from "../../controllers/contact";
-
+import BusinessInfoController from "../../controllers/businessInfo";
 // Initialize protected routes
 const protectedRouter = Router();
 
@@ -26,6 +26,7 @@ const dashboardController = new DashboardController();
 const eventController = new EventController();
 const databaseController = new DatabaseController();
 const contactController = new ContactController();
+const businessInfoController = new BusinessInfoController();
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -34,7 +35,11 @@ const storage = multer.diskStorage({
     // تحديد المجلد حسب نوع الملف
     if (file.fieldname === "productImage" || 
         file.fieldname === "categoryImage" || 
-        file.fieldname === "eventImage") {
+        file.fieldname === "eventImage" ||
+        file.fieldname === "logo" ||
+        file.fieldname === "bannerImage" ||
+        file.fieldname === "heroImages" ||
+        file.fieldname === "image") {
       uploadDir = "uploads/temp/";
     } else if (file.fieldname === "file") {
       uploadDir = "uploads/";
@@ -56,30 +61,36 @@ const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
     if (file.fieldname === "file") {
-      // Excel files
       const ext = require("path").extname(file.originalname).toLowerCase();
       if (ext !== ".xlsx" && ext !== ".xls") {
         return cb(new Error("Only Excel files are allowed"));
       }
     }
     
-    // ✅ إضافة دعم صور المنتجات والفئات والأحداث
-    if (file.fieldname === "productImage" || 
-        file.fieldname === "categoryImage" || 
-        file.fieldname === "eventImage") {
-      // Image files
+    // ✅ Support all image uploads
+    if (
+      file.fieldname === "productImage" || 
+      file.fieldname === "categoryImage" || 
+      file.fieldname === "eventImage" ||
+      file.fieldname === "logo" ||
+      file.fieldname === "aboutHeroImage" ||    // ✅ NEW
+      file.fieldname === "reviewsHeroImage" ||  // ✅ NEW
+      file.fieldname === "bannerImage" ||
+      file.fieldname === "heroImages" ||
+      file.fieldname === "image"
+    ) {
       const allowedTypes = [
         "image/jpeg",
         "image/jpg", 
         "image/png",
         "image/webp",
+        "image/gif",
       ];
       if (!allowedTypes.includes(file.mimetype)) {
-        return cb(new Error("Only JPEG, PNG, and WebP images are allowed"));
+        return cb(new Error("Only JPEG, PNG, WebP, and GIF images are allowed"));
       }
     }
     
-    // ✅ إضافة دعم ملفات الأحداث (PDF, DOC, etc.)
     if (file.fieldname === "eventFiles") {
       const allowedTypes = [
         "application/pdf",
@@ -99,7 +110,7 @@ const upload = multer({
     cb(null, true);
   },
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit للأحداث، 5MB للباقي
+    fileSize: 10 * 1024 * 1024, // 10MB
   },
 });
 
@@ -648,5 +659,146 @@ protectedRouter.delete(
   contactController.deleteContact.bind(contactController)
 );
 
+/* ==============================
+   BUSINESS INFO ROUTES (Updated)
+================================ */
 
+// Export/Import routes (MUST come before /:id routes)
+protectedRouter.get(
+  "/business-info/export",
+  businessInfoController.exportBusinessInfo.bind(businessInfoController)
+);
+protectedRouter.get(
+  "/business-info/template/download",
+  businessInfoController.downloadTemplate.bind(businessInfoController)
+);
+protectedRouter.post(
+  "/business-info/import",
+  businessInfoController.importBusinessInfo.bind(businessInfoController)
+);
+protectedRouter.post(
+  "/business-info/:id/import",
+  businessInfoController.importBusinessInfo.bind(businessInfoController)
+);
+
+// ============================================
+// 🟢 ABOUT MAIN SETTINGS (✅ NEW - يجب أن يأتي أولاً)
+// ============================================
+protectedRouter.put(
+  "/business-info/:id/about-settings",
+  businessInfoController.updateAboutSettings.bind(businessInfoController)
+);
+
+// 🟢 About Sections Management
+protectedRouter.post(
+  "/business-info/:id/about-sections",
+  businessInfoController.addAboutSection.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id/about-sections/:sectionId",
+  businessInfoController.updateAboutSection.bind(businessInfoController)
+);
+protectedRouter.delete(
+  "/business-info/:id/about-sections/:sectionId",
+  businessInfoController.deleteAboutSection.bind(businessInfoController)
+);
+
+// ============================================
+// 🟢 REVIEWS MAIN SETTINGS (✅ NEW - Optional)
+// ============================================
+protectedRouter.put(
+  "/business-info/:id/reviews-settings",
+  businessInfoController.updateReviewsSettings.bind(businessInfoController)
+);
+
+// 🟢 Reviews Management
+protectedRouter.post(
+  "/business-info/:id/reviews",
+  businessInfoController.addReview.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id/reviews/:reviewId",
+  businessInfoController.updateReview.bind(businessInfoController)
+);
+protectedRouter.delete(
+  "/business-info/:id/reviews/:reviewId",
+  businessInfoController.deleteReview.bind(businessInfoController)
+);
+
+// 🟢 Members Management
+protectedRouter.post(
+  "/business-info/:id/members",
+  businessInfoController.addMember.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id/members/:memberId",
+  businessInfoController.updateMember.bind(businessInfoController)
+);
+protectedRouter.delete(
+  "/business-info/:id/members/:memberId",
+  businessInfoController.deleteMember.bind(businessInfoController)
+);
+
+// 🟢 Partners Management
+protectedRouter.post(
+  "/business-info/:id/partners",
+  businessInfoController.addPartner.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id/partners/:partnerId",
+  businessInfoController.updatePartner.bind(businessInfoController)
+);
+protectedRouter.delete(
+  "/business-info/:id/partners/:partnerId",
+  businessInfoController.deletePartner.bind(businessInfoController)
+);
+
+// 🟢 Locations Management
+protectedRouter.post(
+  "/business-info/:id/locations",
+  businessInfoController.addLocation.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id/locations/:locationId",
+  businessInfoController.updateLocation.bind(businessInfoController)
+);
+protectedRouter.delete(
+  "/business-info/:id/locations/:locationId",
+  businessInfoController.deleteLocation.bind(businessInfoController)
+);
+
+// 🟢 Media Upload Routes
+protectedRouter.post(
+  "/business-info/:id/upload-media",
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "aboutHeroImage", maxCount: 1 },
+    { name: "reviewsHeroImage", maxCount: 1 },
+  ]),
+  businessInfoController.uploadMedia.bind(businessInfoController)
+);
+
+protectedRouter.post(
+  "/business-info/upload-image",
+  upload.single("image"),
+  businessInfoController.uploadImage.bind(businessInfoController)
+);
+
+// Basic CRUD routes (⚠️ يجب أن تأتي في النهاية)
+protectedRouter.get(
+  "/business-info",
+  businessInfoController.getBusinessInfo.bind(businessInfoController)
+);
+protectedRouter.get(
+  "/business-info/:id",
+  businessInfoController.getBusinessInfoById.bind(businessInfoController)
+);
+protectedRouter.post(
+  "/business-info",
+  businessInfoController.upsertBusinessInfo.bind(businessInfoController)
+);
+protectedRouter.put(
+  "/business-info/:id",
+  businessInfoController.upsertBusinessInfo.bind(businessInfoController)
+);
 export default protectedRouter;

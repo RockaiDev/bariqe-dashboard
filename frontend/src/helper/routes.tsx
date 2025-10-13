@@ -1,4 +1,5 @@
 import {
+  BusinessInfoPage,
   CategoryPage,
   ConsultationsPage,
   CustomersPage,
@@ -72,10 +73,14 @@ const routes: RouteObject[] = [
     path: "/help",
     element: <HelpPage />,
   },
+      {
+      path: "/contact",
+      element: <ContactPage />,
+    },
     {
-    path: "/contact",
-    element: <ContactPage />,
-  },
+      path: "/business-info",
+      element: <BusinessInfoPage />,
+    },
 
 
   ...globalRoutes,
