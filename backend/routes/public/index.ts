@@ -7,6 +7,7 @@ import MaterialRequestController from "../../controllers/materialRequests";
 import EventController from "../../controllers/events";
 import CustomerController from "../../controllers/customer";
 import ContactController from '../../controllers/contact/index';
+import BusinessInfoController from "../../controllers/businessInfo";
 
 // Initialize public routes
 const publicRouter = Router();
@@ -20,6 +21,7 @@ const materialRequestController = new MaterialRequestController();
 const eventController = new EventController();
 const customerController = new CustomerController();
 const contactController = new ContactController();
+const businessInfoController = new BusinessInfoController();
 /* ==============================
    PUBLIC PRODUCT ROUTES
 ================================ */
@@ -170,4 +172,54 @@ publicRouter.get(
   "/contacts/:id",
   contactController.getOneContact.bind(contactController)
 );
+/* ==============================
+   PUBLIC BUSINESS INFO ROUTES (Updated)
+================================ */
+
+// Get active business info (for website)
+publicRouter.get(
+  "/business-info",
+  businessInfoController.getBusinessInfo.bind(businessInfoController)
+);
+
+// Get business info by ID
+publicRouter.get(
+  "/business-info/:id",
+  businessInfoController.getBusinessInfoById.bind(businessInfoController)
+);
+
+// 🟢 Get About Sections only (for About Us page)
+publicRouter.get(
+  "/business-info/:id/about",
+  async (req, res, next) => {
+    try {
+      const businessInfo = await businessInfoController.getBusinessInfoById(
+        req,
+        res,
+        next
+      );
+      // This will be handled by the controller
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// 🟢 Get Reviews only (for Testimonials page)
+publicRouter.get(
+  "/business-info/:id/reviews",
+  async (req, res, next) => {
+    try {
+      const businessInfo = await businessInfoController.getBusinessInfoById(
+        req,
+        res,
+        next
+      );
+      // This will be handled by the controller
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default publicRouter;

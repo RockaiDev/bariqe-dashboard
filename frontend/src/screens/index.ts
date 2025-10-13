@@ -11,4 +11,5 @@ export { default as ReportsPage } from "./Reports/index";
 export { default as SettingsPage } from "./Settings/index";
 export { default as HelpPage } from "./Help/index";
 export { default as ContsctPage } from "./Contact/index";
+export { default as BusinessInfoPage } from "./businessInfo/index";
 
