@@ -52,6 +52,7 @@ import {
 import axiosInstance from "@/helper/axiosInstance";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ✅ تحديث Interface لإضافة customerLocation
 interface ConsultationRequest {
@@ -85,7 +86,7 @@ interface LocationData {
 
 export default function ConsultationRequestsPage() {
   const intl = useIntl();
-
+ const { isRTL } = useLanguage();
   // pagination & filters
   const [filters, setFilters] = useState({
     page: 1,
@@ -673,8 +674,14 @@ export default function ConsultationRequestsPage() {
                 </TableCell>
                 <TableCell>
                   {consultation.createdAt
-                    ? new Date(consultation.createdAt).toLocaleDateString("ar-SA")
-                    : "-"}
+                    ? new Date(consultation.createdAt).toLocaleDateString(    isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
+                    : "N/A"}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   {consultation.customers ? (
@@ -1073,7 +1080,14 @@ export default function ConsultationRequestsPage() {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.createdAt
-                        ? new Date(viewing.createdAt).toLocaleString("ar-SA")
+                        ? new Date(viewing.createdAt).toLocaleString(
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                         : intl.formatMessage({ id: "consultation_requests.not_available" })}
                     </p>
                   </div>
@@ -1087,7 +1101,14 @@ export default function ConsultationRequestsPage() {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.updatedAt
-                        ? new Date(viewing.updatedAt).toLocaleString("ar-SA")
+                        ? new Date(viewing.updatedAt).toLocaleString(
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                         : intl.formatMessage({ id: "consultation_requests.not_available" })}
                     </p>
                   </div>

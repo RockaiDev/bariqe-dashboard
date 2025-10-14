@@ -516,7 +516,7 @@
   "orders.customer_address": "عنوان العميل",
   "orders.notes": "الملاحظات",
   "orders.additional_notes": "ملاحظات إضافية",
-
+  "orders.customer_notes": "ملاحظات العميل",
   "orders.select_customer_required": "اختر العميل *",
   "orders.choose_customer": "اختر عميل",
 

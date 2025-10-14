@@ -71,7 +71,7 @@ export default class OrderService extends MongooseFeatures {
             "customer.customerName",
             "customer.name",
           ].includes(field);
-          
+
           const isProductName = [
             "productName",
             "productNameAr",
@@ -82,22 +82,28 @@ export default class OrderService extends MongooseFeatures {
           ].includes(field);
 
           if (isCustomerName) {
-            const searchVal = typeof value === "string" ? value : String(value || "");
+            const searchVal =
+              typeof value === "string" ? value : String(value || "");
             const escapedSearch = this.escapeRegex(searchVal);
             const regex = new RegExp(escapedSearch, "i");
-            
+
             const customers = await CustomerModel.find({
               customerName: { $regex: regex },
             }).select("_id");
             const ids = customers.map((c: any) => c._id);
-            return ["customer", op === "==" ? "==" : "in", ids.length ? ids : [null]];
+            return [
+              "customer",
+              op === "==" ? "==" : "in",
+              ids.length ? ids : [null],
+            ];
           }
 
           if (isProductName) {
-            const searchVal = typeof value === "string" ? value : String(value || "");
+            const searchVal =
+              typeof value === "string" ? value : String(value || "");
             const escapedSearch = this.escapeRegex(searchVal);
             const regex = new RegExp(escapedSearch, "i");
-            
+
             const products = await ProductModel.find({
               $or: [
                 { productNameAr: { $regex: regex } },
@@ -134,7 +140,7 @@ export default class OrderService extends MongooseFeatures {
     );
 
     const populatedData = await OrderModel.populate(result.data, [
-      { path: "customer", select: "customerName customerEmail customerPhone" },
+      { path: "customer", select: "customerName customerEmail customerPhone customerAddress customerLocation " },
       {
         path: "products.product",
         select:
@@ -149,7 +155,10 @@ export default class OrderService extends MongooseFeatures {
   public async GetOneOrder(id: string) {
     try {
       const order = await OrderModel.findById(id)
-        .populate("customer", "customerName customerEmail customerPhone")
+        .populate(
+          "customer",
+          " customerName customerEmail customerPhone customerAddress"
+        )
         .populate(
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
@@ -165,7 +174,12 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Add new order
   public async AddOrder(body: any) {
     try {
-      if (!body.customer || !body.products || !Array.isArray(body.products) || body.products.length === 0) {
+      if (
+        !body.customer ||
+        !body.products ||
+        !Array.isArray(body.products) ||
+        body.products.length === 0
+      ) {
         throw new ApiError(
           "BAD_REQUEST",
           "Fields 'customer' and 'products' array are required"
@@ -186,7 +200,10 @@ export default class OrderService extends MongooseFeatures {
       const order = await super.addDocument(OrderModel, newOrder);
 
       const populatedOrder = await OrderModel.findById(order._id)
-        .populate("customer", "customerName customerEmail customerPhone")
+        .populate(
+          "customer",
+          " customerName customerEmail customerPhone customerAddress"
+        )
         .populate(
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
@@ -207,7 +224,10 @@ export default class OrderService extends MongooseFeatures {
         new: true,
         runValidators: true,
       })
-        .populate("customer", "customerName customerEmail customerPhone")
+        .populate(
+          "customer",
+          " customerName customerEmail customerPhone customerAddress"
+        )
         .populate(
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
@@ -239,7 +259,10 @@ export default class OrderService extends MongooseFeatures {
   public async ExportOrders(query: any) {
     try {
       const orders = await OrderModel.find({})
-        .populate("customer", "customerName customerEmail customerPhone")
+        .populate(
+          "customer",
+          " customerName customerEmail customerPhone customerAddress"
+        )
         .populate(
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
@@ -304,7 +327,7 @@ export default class OrderService extends MongooseFeatures {
     for (const row of ordersData) {
       try {
         const key = row.orderNumber || `${row.customerEmail}_new_${Date.now()}`;
-        
+
         if (!ordersMap.has(key)) {
           ordersMap.set(key, {
             customerEmail: row.customerEmail,
@@ -388,7 +411,9 @@ export default class OrderService extends MongooseFeatures {
         // Check if order already exists
         let existingOrder = null;
         if (orderData.orderNumber) {
-          existingOrder = await OrderModel.findById(orderData.orderNumber).catch(() => null);
+          existingOrder = await OrderModel.findById(
+            orderData.orderNumber
+          ).catch(() => null);
         }
 
         if (existingOrder) {
@@ -398,7 +423,10 @@ export default class OrderService extends MongooseFeatures {
             newOrderData,
             { new: true, runValidators: true }
           )
-            .populate("customer", "customerName customerEmail customerPhone")
+            .populate(
+              "customer",
+              " customerName customerEmail customerPhone customerAddress" 
+            )
             .populate(
               "products.product",
               "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
@@ -409,7 +437,10 @@ export default class OrderService extends MongooseFeatures {
           // Create new order
           const newOrder = await OrderModel.create(newOrderData);
           const populatedOrder = await OrderModel.findById(newOrder._id)
-            .populate("customer", "customerName customerEmail customerPhone")
+            .populate(
+              "customer",
+              "customerName customerEmail customerPhone customerAddress"
+            )
             .populate(
               "products.product",
               "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
