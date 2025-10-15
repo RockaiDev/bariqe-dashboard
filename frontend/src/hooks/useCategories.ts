@@ -30,6 +30,7 @@ interface CategoryResponse {
   count: number;
 }
 
+
 async function fetchCategories(
   filters: CategoryFilters
 ): Promise<CategoryResponse> {
