@@ -53,6 +53,7 @@ import toast from "react-hot-toast";
 import axiosInstance from "@/helper/axiosInstance";
 import ConfirmationDialog from "@/components/shared/ConfirmationDialog";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface MaterialRequest {
   _id: string;
@@ -90,7 +91,7 @@ const ACTION_OPTIONS = [
 
 export default function MaterialRequestPage() {
   const intl = useIntl();
-  
+   const { isRTL } = useLanguage();
   const [filters, setFilters] = useState({
     page: 1,
     perPage: 10,
@@ -476,12 +477,14 @@ export default function MaterialRequestPage() {
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {req.createdAt
-                    ? new Date(req.createdAt).toLocaleDateString("en-US", {
-                        year: "2-digit",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "-"}
+                    ? new Date(req.createdAt).toLocaleDateString(    isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
+                    : "N/A"}
                 </TableCell>
                 <TableCell className="text-right">
                   <div

@@ -5,6 +5,7 @@ import OrderModel from "../../../models/orderSchema";
 import CustomerModel from "../../../models/customerSchema";
 import ProductModel from "../../../models/productSchema";
 import { pick } from "lodash";
+import { sendNewOrderEmail } from "../../../services/email";
 
 export default class OrderService extends MongooseFeatures {
   public keys: string[];
@@ -140,7 +141,11 @@ export default class OrderService extends MongooseFeatures {
     );
 
     const populatedData = await OrderModel.populate(result.data, [
-      { path: "customer", select: "customerName customerEmail customerPhone customerAddress customerLocation " },
+      {
+        path: "customer",
+        select:
+          "customerName customerEmail customerPhone customerAddress customerLocation ",
+      },
       {
         path: "products.product",
         select:
@@ -208,6 +213,61 @@ export default class OrderService extends MongooseFeatures {
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         );
+
+      try {
+        const po: any = populatedOrder as any;
+        // Build a normalized object for the email template
+        const mailOrder: any = {
+          _id: po?._id,
+          status: po?.orderStatus || po?.status || "pending",
+          createdAt: po?.createdAt,
+          notes: po?.notes,
+          customer: {
+            name: po?.customer?.customerName || po?.customer?.name || "N/A",
+            email: po?.customer?.customerEmail || po?.customer?.email || "N/A",
+            phone: po?.customer?.customerPhone || po?.customer?.phone || "N/A",
+          },
+          products: [],
+          totalAmount: 0,
+        };
+
+        const orderLevelDiscount = po?.orderDiscount || 0;
+        if (Array.isArray(po?.products)) {
+          for (const item of po.products) {
+            const prod: any = item.product || {};
+            const unitPrice = prod.productPrice || 0;
+            const qty = item.quantity || 0;
+            const itemDiscount = item.itemDiscount || 0;
+            const subtotal = unitPrice * qty;
+            const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
+            const finalAmount =
+              afterItemDiscount * (1 - orderLevelDiscount / 100);
+            mailOrder.products.push({
+              product: {
+                name:
+                  prod.productNameEn ||
+                  prod.productNameAr ||
+                  prod.name ||
+                  prod.productName ||
+                  "N/A",
+              },
+              quantity: qty,
+              price: unitPrice,
+              itemDiscount,
+              subtotal,
+              afterItemDiscount,
+              finalAmount,
+            });
+            mailOrder.totalAmount += finalAmount;
+          }
+        }
+
+        await sendNewOrderEmail(mailOrder).catch((e) => {
+          console.error("Failed to send new order email:", e);
+        });
+      } catch (e) {
+        console.error("Error triggering new order email:", e);
+      }
 
       return populatedOrder;
     } catch (error) {
@@ -425,7 +485,7 @@ export default class OrderService extends MongooseFeatures {
           )
             .populate(
               "customer",
-              " customerName customerEmail customerPhone customerAddress" 
+              " customerName customerEmail customerPhone customerAddress"
             )
             .populate(
               "products.product",
@@ -445,6 +505,69 @@ export default class OrderService extends MongooseFeatures {
               "products.product",
               "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
             );
+
+          // Send notification email for imported-created order (non-blocking)
+          try {
+            const po: any = populatedOrder as any;
+            const mailOrder: any = {
+              _id: po?._id,
+              status: po?.orderStatus || po?.status || "pending",
+              createdAt: po?.createdAt,
+              notes: po?.notes,
+              customer: {
+                name: po?.customer?.customerName || po?.customer?.name || "N/A",
+                email:
+                  po?.customer?.customerEmail || po?.customer?.email || "N/A",
+                phone:
+                  po?.customer?.customerPhone || po?.customer?.phone || "N/A",
+              },
+              products: [],
+              totalAmount: 0,
+            };
+
+            const orderLevelDiscount = po?.orderDiscount || 0;
+            if (Array.isArray(po?.products)) {
+              for (const item of po.products) {
+                const prod: any = item.product || {};
+                const unitPrice = prod.productPrice || 0;
+                const qty = item.quantity || 0;
+                const itemDiscount = item.itemDiscount || 0;
+                const subtotal = unitPrice * qty;
+                const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
+                const finalAmount =
+                  afterItemDiscount * (1 - orderLevelDiscount / 100);
+                mailOrder.products.push({
+                  product: {
+                    name:
+                      prod.productNameEn ||
+                      prod.productNameAr ||
+                      prod.name ||
+                      prod.productName ||
+                      "N/A",
+                  },
+                  quantity: qty,
+                  price: unitPrice,
+                  itemDiscount,
+                  subtotal,
+                  afterItemDiscount,
+                  finalAmount,
+                });
+                mailOrder.totalAmount += finalAmount;
+              }
+            }
+
+            sendNewOrderEmail(mailOrder).catch((e) => {
+              console.error(
+                "Failed to send new order email for imported order:",
+                e
+              );
+            });
+          } catch (e) {
+            console.error(
+              "Error triggering new order email for imported order:",
+              e
+            );
+          }
 
           results.success.push(populatedOrder);
         }
