@@ -53,6 +53,7 @@ import {
   createCustomerFilterGroups,
   handleCustomerFilters,
 } from "@/components/shared/filters";
+import { useLanguage } from "@/context/LanguageContext";
 
 export interface Customer {
   _id: string;
@@ -78,7 +79,7 @@ interface LocationData {
 
 export default function CustomersPage() {
   const intl = useIntl();
-
+ const { isRTL } = useLanguage();
   // Customer source options
   const customerSources = [
     { value: "order", label: intl.formatMessage({ id: "customers.source_order" }) },
@@ -528,8 +529,14 @@ export default function CustomersPage() {
                   <div className="flex items-center gap-1 text-sm text-gray-600 text-center">
                     <Calendar className="w-3 h-3" />
                     {c.createdAt
-                      ? new Date(c.createdAt).toLocaleDateString("ar-SA")
-                      : "-"}
+                      ? new Date(c.createdAt).toLocaleDateString(    isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
+                    : "N/A"}
                   </div>
                 </TableCell>
                 <TableCell className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap text-center">
@@ -683,7 +690,14 @@ export default function CustomersPage() {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.createdAt
-                        ? new Date(viewing.createdAt).toLocaleString("ar-SA")
+                        ? new Date(viewing.createdAt).toLocaleString(
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                         : intl.formatMessage({ id: "customers.not_available" })}
                     </p>
                   </div>
@@ -697,7 +711,14 @@ export default function CustomersPage() {
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="text-sm">
                       {viewing.updatedAt
-                        ? new Date(viewing.updatedAt).toLocaleString("ar-SA")
+                        ? new Date(viewing.updatedAt).toLocaleString(
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                         : intl.formatMessage({ id: "customers.not_available" })}
                     </p>
                   </div>

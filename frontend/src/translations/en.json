@@ -526,6 +526,7 @@
   "orders.notes": "Notes",
   "orders.additional_notes": "Additional Notes",
 
+  "orders.customer_notes": "Customer Notes",
   "orders.select_customer_required": "Select Customer *",
   "orders.choose_customer": "Choose Customer",
 
