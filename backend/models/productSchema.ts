@@ -63,7 +63,7 @@ const productSchema = new Schema(
     },
     productImage: {
       type: String,
-       default: "https://res.cloudinary.com/dh6z6gsjk/image/upload/v1759126342/d-koi-5nI9N2wNcBU-unsplash_dj9qql.jpg",
+       default: "https://res.cloudinary.com/dh6z6gsjk/image/upload/v1760606981/d-koi-5nI9N2wNcBU-unsplash_1_iofavw.jpg",
     },
     productImagePublicId: {
       type: String,
