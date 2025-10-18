@@ -13,12 +13,9 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Upload, 
-  Loader2,
-  Image as ImageIcon 
+  Loader2
 } from "lucide-react";
 import SectionCard from "../SectionCard";
-import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface BasicInfoTabProps {
   businessInfo: any;
@@ -31,7 +28,6 @@ export default function BasicInfoTab({
 }: BasicInfoTabProps) {
   const intl = useIntl();
   const queryClient = useQueryClient();
-  const uploadImage = useImageUpload();
   
   const [formData, setFormData] = useState({
     logo: "",
@@ -96,28 +92,6 @@ export default function BasicInfoTab({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error(
-        intl.formatMessage({ id: "business_info.invalid_file_type" })
-      );
-      return;
-    }
-
-    try {
-      const url = await uploadImage.mutateAsync({
-        file,
-        options: { folder: "business/logos", prefix: "logo" },
-      });
-
-      setFormData((prev) => ({ ...prev, logo: url }));
-    } finally {
-      e.target.value = "";
-    }
-  }
 
   function handleSave() {
     if (!formData.title_ar || !formData.title_en) {
@@ -129,7 +103,6 @@ export default function BasicInfoTab({
   }
 
   const isSaving = saveMutation.isPending;
-  const isUploading = uploadImage.isPending;
 
   return (
     <div className="space-y-6">
@@ -414,10 +387,10 @@ export default function BasicInfoTab({
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          disabled={isSaving || isUploading || !formData.title_ar || !formData.title_en}
+          disabled={isSaving || !formData.title_ar || !formData.title_en}
           className="bg-primary text-white hover:bg-primary/90"
         >
-          {isSaving || isUploading ? (
+          {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               {intl.formatMessage({ id: "business_info.saving" })}
