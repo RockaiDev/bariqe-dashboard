@@ -134,13 +134,13 @@ export default function BasicInfoTab({
   return (
     <div className="space-y-6">
       {/* Logo Section */}
-      <SectionCard
+      {/* <SectionCard
         title={intl.formatMessage({ id: "business_info.logo" })}
         description={intl.formatMessage({ id: "business_info.logo_desc" })}
       >
         <div className="border rounded-lg p-6 bg-gray-50">
           <div className="flex items-center gap-6">
-            {/* Logo Preview */}
+      
             <div className="w-32 h-32 rounded-lg bg-white border-2 overflow-hidden flex items-center justify-center flex-shrink-0">
               {formData.logo ? (
                 <img
@@ -153,7 +153,7 @@ export default function BasicInfoTab({
               )}
             </div>
 
-            {/* Upload Controls */}
+     
             <div className="flex-1 space-y-3">
               <div className="flex gap-2">
                 <label className="flex-1">
@@ -223,7 +223,7 @@ export default function BasicInfoTab({
             </div>
           </div>
         </div>
-      </SectionCard>
+      </SectionCard> */}
 
       {/* Basic Information */}
       <SectionCard
