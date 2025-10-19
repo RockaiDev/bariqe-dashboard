@@ -33,16 +33,13 @@ export default class MaterialRequestService extends MongooseFeatures {
     ]);
 
     try {
-      // Create base query
       let baseQuery = MaterialRequestModel.find({});
 
-      // Apply population
       baseQuery = baseQuery.populate({
         path: "customer",
         select: "customerName customerEmail customerPhone customerLocation customerAddress"
       });
 
-      // Apply sorting
       if (sorts && sorts.length > 0) {
         const sortObj: any = {};
         sorts.forEach((sort: any) => {
@@ -53,7 +50,6 @@ export default class MaterialRequestService extends MongooseFeatures {
         baseQuery = baseQuery.sort({ createdAt: -1 });
       }
 
-      // Apply filters/queries
       if (queries && queries.length > 0) {
         queries.forEach((queryItem: any) => {
           if (queryItem.field && queryItem.value) {
@@ -66,15 +62,12 @@ export default class MaterialRequestService extends MongooseFeatures {
         });
       }
 
-      // Get total count for pagination
       const totalQuery = MaterialRequestModel.find(baseQuery.getQuery());
       const total = await totalQuery.countDocuments();
 
-      // Apply pagination
       const skip = (Number(page) - 1) * Number(perPage);
       baseQuery = baseQuery.skip(skip).limit(Number(perPage));
 
-      // Execute query
       const data = await baseQuery.exec();
 
       const result = {
@@ -112,10 +105,10 @@ export default class MaterialRequestService extends MongooseFeatures {
     }
   }
 
-  // 🟢 Add new material request
+  // 🟢 Add new material request مع البحث عن عميل موجود أو إنشاء جديد
   public async AddMaterialRequest(body: any) {
     try {
-      // Validation logic
+      // Validation
       if (!body.materialName || !body.materialQuantity || !body.materialIntendedUse) {
         throw new ApiError(
           "BAD_REQUEST",
@@ -123,16 +116,84 @@ export default class MaterialRequestService extends MongooseFeatures {
         );
       }
 
-      // إذا لم يكن هناك customer، يجب أن يكون هناك email و phone
-      if (!body.customer && (!body.materialEmail || !body.materialPhone)) {
+      let customerId;
+      let existingCustomer = null;
+      let isNewCustomer = false;
+
+      // 🔍 التحقق من وجود customerId في الـ body (من البحث في الـ frontend)
+      if (body.customerId) {
+        customerId = body.customerId;
+        existingCustomer = await CustomerModel.findById(customerId);
+        
+        if (!existingCustomer) {
+          throw new ApiError("NOT_FOUND", "Customer not found");
+        }
+      } else if (body.customerName && body.customerPhone) {
+        // 🔍 البحث عن عميل موجود بنفس الهاتف أو الإيميل
+        const searchQuery: any = {
+          $or: [
+            { customerPhone: body.customerPhone }
+          ]
+        };
+
+        if (body.customerEmail) {
+          searchQuery.$or.push({ customerEmail: body.customerEmail });
+        }
+
+        existingCustomer = await CustomerModel.findOne(searchQuery);
+
+        if (existingCustomer) {
+          // ✅ استخدام الكاستمر الموجود
+          customerId = existingCustomer._id;
+          console.log(`Using existing customer: ${customerId}`);
+        } else {
+          // 🆕 إنشاء كاستمر جديد
+          const customerData: any = {
+            customerName: body.customerName,
+            customerPhone: body.customerPhone,
+            customerAddress: body.customerAddress || "",
+            customerSource: "material_request",
+            customerNotes: `Created from material request: ${body.materialName}`,
+          };
+
+          if (body.customerEmail) {
+            customerData.customerEmail = body.customerEmail;
+          }
+
+          const newCustomer = await CustomerModel.create(customerData);
+
+          if (!newCustomer) {
+            throw new ApiError("INTERNAL_SERVER_ERROR", "Failed to create customer");
+          }
+
+          customerId = newCustomer._id;
+          existingCustomer = newCustomer;
+          isNewCustomer = true;
+          console.log(`Created new customer: ${customerId}`);
+        }
+      } else {
         throw new ApiError(
           "BAD_REQUEST",
-          "Either 'customer' or both 'materialEmail' and 'materialPhone' are required"
+          "Either 'customerId' or 'customerName' and 'customerPhone' are required"
         );
       }
 
-      const newReq = pick(body, this.keys);
-      const materialRequest = await MaterialRequestModel.create(newReq);
+      // 📝 تحضير بيانات Material Request
+      const materialRequestData: any = {
+        materialName: body.materialName,
+        materialQuantity: body.materialQuantity,
+        materialIntendedUse: body.materialIntendedUse,
+        materialActions: body.materialActions || "pending",
+        customer: customerId,
+      };
+
+      // إضافة الحقول الاختيارية
+      if (body.materialLocation) {
+        materialRequestData.materialLocation = body.materialLocation;
+      }
+
+      // ✅ إنشاء Material Request
+      const materialRequest = await MaterialRequestModel.create(materialRequestData);
       
       // Populate customer في الاستجابة
       const populatedRequest = await MaterialRequestModel.findById(materialRequest._id)
@@ -141,8 +202,18 @@ export default class MaterialRequestService extends MongooseFeatures {
           select: "customerName customerEmail customerPhone customerLocation customerAddress"
         });
 
-      return populatedRequest;
+      // 📤 إرجاع البيانات
+      return {
+        materialRequest: populatedRequest,
+        customer: existingCustomer,
+        isNewCustomer,
+        message: isNewCustomer 
+          ? "Material request created and new customer added successfully"
+          : "Material request created with existing customer successfully"
+      };
+
     } catch (error) {
+      console.error("Error in AddMaterialRequest:", error);
       throw error;
     }
   }
@@ -237,14 +308,19 @@ export default class MaterialRequestService extends MongooseFeatures {
       try {
         let customerId = null;
 
-        // البحث عن customer إذا كان موجوداً
-        if (requestData.materialEmail && requestData.customerName) {
-          const existingCustomer = await CustomerModel.findOne({
+        // البحث عن customer موجود
+        if (requestData.materialPhone) {
+          const searchQuery: any = {
             $or: [
-              { customerEmail: requestData.materialEmail },
               { customerPhone: requestData.materialPhone }
             ]
-          });
+          };
+
+          if (requestData.materialEmail) {
+            searchQuery.$or.push({ customerEmail: requestData.materialEmail });
+          }
+
+          const existingCustomer = await CustomerModel.findOne(searchQuery);
 
           if (existingCustomer) {
             customerId = existingCustomer._id;
@@ -275,7 +351,6 @@ export default class MaterialRequestService extends MongooseFeatures {
         });
 
         if (existingRequest) {
-          // Update existing request
           const updatedRequest = await MaterialRequestModel.findByIdAndUpdate(
             existingRequest._id,
             newRequestData,
@@ -287,7 +362,6 @@ export default class MaterialRequestService extends MongooseFeatures {
 
           results.updated.push(updatedRequest);
         } else {
-          // Create new request
           const newRequest = await MaterialRequestModel.create(newRequestData);
           const populatedRequest = await MaterialRequestModel.findById(newRequest._id)
             .populate({
