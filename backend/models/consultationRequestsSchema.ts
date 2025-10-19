@@ -9,7 +9,7 @@ const consultationRequestsSchema = new Schema(
     },
     ConsultationRequestsEmail: {
       type: String,
-      required: true,
+     
       match: [/.+@.+\..+/, "Please fill a valid email address"],
     },
     customers:{
@@ -24,7 +24,7 @@ const consultationRequestsSchema = new Schema(
     },
     consultationRequestsArea:{
       type: String,
-      required: true,
+  
     } ,
     ConsultationRequestsMessage: {
       type: String,
