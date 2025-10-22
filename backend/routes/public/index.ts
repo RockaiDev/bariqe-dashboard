@@ -134,7 +134,20 @@ publicRouter.get(
   "/events/:id",
   eventController.getOne.bind(eventController)
 );
+publicRouter.get(
+  "/events/:eventId/files/:fileId/download",
+  eventController.downloadEventFile.bind(eventController)
+);
 
+publicRouter.get(
+  "/events/:eventId/files/:fileId/preview", 
+  eventController.previewEventFile.bind(eventController)
+);
+
+publicRouter.get(
+  "/events/:eventId/files/:fileId/info",
+  eventController.getFileInfo.bind(eventController)
+);
 /* ==============================
    PUBLIC CUSTOMER ROUTES
 ================================ */

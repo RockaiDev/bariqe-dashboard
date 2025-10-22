@@ -757,7 +757,7 @@ function AddMaterialRequest({
 
   const canSubmit =
     form.materialName.trim() &&
-    form.materialIntendedUse.trim() &&
+ 
     form.materialQuantity > 0 &&
     (customerMode === "new" ? 
       (customerForm.customerName.trim() && 
@@ -770,7 +770,7 @@ function AddMaterialRequest({
     return (
       form.materialName !== "" ||
       form.materialQuantity !== 0 ||
-      form.materialIntendedUse !== "" ||
+      form.materialIntendedUse === "" ||
       form.materialLocation !== "" ||
       form.materialActions !== "pending" ||
       form.customer !== "" ||
@@ -895,7 +895,7 @@ function AddMaterialRequest({
       const requestData = {
         materialName: form.materialName,
         materialQuantity: form.materialQuantity,
-        materialIntendedUse: form.materialIntendedUse,
+        materialIntendedUse: form.materialIntendedUse || "",
         materialLocation: form.materialLocation, // ✅ موقع الطلب منفصل
         materialActions: form.materialActions === "pending" ? undefined : form.materialActions,
         customer: customerId || undefined,
@@ -1208,7 +1208,7 @@ function AddMaterialRequest({
                   onChange={(e) =>
                     setForm((f) => ({ ...f, materialIntendedUse: e.target.value }))
                   }
-                  required
+                 
                 />
               </div>
             </div>

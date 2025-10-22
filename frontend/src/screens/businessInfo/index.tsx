@@ -10,7 +10,7 @@ import LoadingComponent from "@/components/shared/LoadingComponent";
 
 // Tabs
 import BasicInfoTab from "./tabs/BasicInfoTab";
-import AboutSectionsTab from "./tabs/AboutSectionsTab";
+// import AboutSectionsTab from "./tabs/AboutSectionsTab";
 import MembersTab from "./tabs/MembersTab";
 import PartnersTab from "./tabs/PartnersTab";
 import LocationsTab from "./tabs/LocationsTab";
@@ -46,10 +46,10 @@ export default function BusinessInfo() {
       key: "basic",
       label: intl.formatMessage({ id: "business_info.basic_info" }),
     },
-    {
-      key: "about",
-      label: intl.formatMessage({ id: "business_info.about_sections" }),
-    },
+    // {
+    //   key: "about",
+    //   label: intl.formatMessage({ id: "business_info.about_sections" }),
+    // },
     {
       key: "members",
       label: intl.formatMessage({ id: "business_info.team_members" }),
@@ -272,9 +272,9 @@ export default function BusinessInfo() {
           {active === "basic" && (
             <BasicInfoTab businessInfo={businessInfo} onUpdate={refetch} />
           )}
-          {active === "about" && (
+          {/* {active === "about" && (
             <AboutSectionsTab businessInfo={businessInfo} onUpdate={refetch} />
-          )}
+          )} */}
           {active === "members" && (
             <MembersTab businessInfo={businessInfo} onUpdate={refetch} />
           )}

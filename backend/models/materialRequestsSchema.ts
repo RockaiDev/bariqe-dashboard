@@ -27,7 +27,7 @@ const materialRequestSchema = new Schema({
   },
   materialIntendedUse: {
     type: String,
-    required: true,
+
   },
   materialLocation: { // ✅ إضافة materialLocation
     type: String,

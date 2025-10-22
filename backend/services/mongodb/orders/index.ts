@@ -226,6 +226,7 @@ export default class OrderService extends MongooseFeatures {
             name: po?.customer?.customerName || po?.customer?.name || "N/A",
             email: po?.customer?.customerEmail || po?.customer?.email || "N/A",
             phone: po?.customer?.customerPhone || po?.customer?.phone || "N/A",
+            address: po?.customer?.customerAddress || po?.customer?.address || "N/A",
           },
           products: [],
           totalAmount: 0,
@@ -520,6 +521,7 @@ export default class OrderService extends MongooseFeatures {
                   po?.customer?.customerEmail || po?.customer?.email || "N/A",
                 phone:
                   po?.customer?.customerPhone || po?.customer?.phone || "N/A",
+                  address: po?.customer?.customerAddress || po?.customer?.address || "N/A",
               },
               products: [],
               totalAmount: 0,

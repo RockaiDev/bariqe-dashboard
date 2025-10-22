@@ -427,7 +427,7 @@ export default class MaterialRequestController extends BaseApi {
               if (!materialName && !materialEmail) return;
 
               // Validation
-              if (!materialName || !materialQuantity || !materialIntendedUse) {
+              if (!materialName || !materialQuantity ) {
                 throw new Error("Missing required fields: Material Name, Quantity, and Intended Use are required");
               }
 

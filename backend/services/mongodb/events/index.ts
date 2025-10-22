@@ -5,6 +5,7 @@ import EventModel from "../../../models/eventSchema";
 import { pick } from "lodash";
 import fs from "fs";
 import path from "path";
+import CloudinaryService from "../../cloudinary/CloudinaryService";
 
 export default class EventService extends MongooseFeatures {
   public keys: string[];
@@ -15,7 +16,8 @@ export default class EventService extends MongooseFeatures {
       "titleAr",
       "titleEn", 
       "date",
-      "tags",
+      "tagsAr",
+      "tagsEn",
       "contentAr",
       "contentEn",
       "eventImage",
@@ -58,6 +60,62 @@ export default class EventService extends MongooseFeatures {
     }
   }
 
+  // 🟢 Get event file with download URL
+  public async GetEventFile(eventId: string, fileId: string) {
+    try {
+      const event = await EventModel.findById(eventId);
+      if (!event) throw new ApiError("NOT_FOUND", "Event not found");
+
+      const file = event.files?.find(f => f._id?.toString() === fileId);
+      if (!file) throw new ApiError("NOT_FOUND", "File not found");
+
+      // If file is stored in Cloudinary, generate download URL
+      if (file.cloudinaryPublicId) {
+        try {
+          const downloadUrl = await CloudinaryService.getPdfDownloadUrl(file.cloudinaryPublicId);
+          const previewUrl = await CloudinaryService.getPdfPreviewUrl(file.cloudinaryPublicId);
+          
+          return {
+            ...file.toObject?.(),
+            downloadUrl,
+            previewUrl,
+            isCloudinary: true
+          };
+        } catch (cloudinaryError) {
+          console.error('Error generating Cloudinary URLs:', cloudinaryError);
+          // Fallback to local file if Cloudinary fails
+          return {
+            ...file.toObject?.(),
+            downloadUrl: file.path,
+            previewUrl: file.path,
+            isCloudinary: false
+          };
+        }
+      }
+
+      // Local file
+      return {
+        ...file.toObject?.(),
+        downloadUrl: file.path,
+        previewUrl: file.path,
+        isCloudinary: false
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Helper function to process tags
+  private processTags(tags: string | string[]): string[] {
+    if (Array.isArray(tags)) {
+      return tags.map(tag => tag.trim()).filter(Boolean);
+    }
+    if (typeof tags === 'string') {
+      return tags.split(',').map(tag => tag.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
   // 🟢 Add new event
   public async AddEvent(body: any, files?: any[]) {
     try {
@@ -69,21 +127,27 @@ export default class EventService extends MongooseFeatures {
         );
       }
 
-      // Process tags
-      if (body.tags && typeof body.tags === 'string') {
-        body.tags = body.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
+      // Process Arabic tags
+      if (body.tagsAr) {
+        body.tagsAr = this.processTags(body.tagsAr);
+      }
+
+      // Process English tags
+      if (body.tagsEn) {
+        body.tagsEn = this.processTags(body.tagsEn);
       }
 
       const newEvent = pick(body, this.keys);
       
-      // Handle file uploads (documents only, images handled separately)
-      if (files && files.length > 0) {
-        newEvent.files = files.map(file => ({
+      // Handle Cloudinary files (already processed by controller)
+      if (body.files && Array.isArray(body.files)) {
+        newEvent.files = body.files.map((file: any) => ({
           filename: file.filename,
-          originalName: file.originalname,
+          originalName: file.originalName,
           mimetype: file.mimetype,
           size: file.size,
-          path: file.path,
+          path: file.path, // Cloudinary URL
+          cloudinaryPublicId: file.cloudinaryPublicId // Store public ID for downloads
         }));
       }
 
@@ -105,21 +169,27 @@ export default class EventService extends MongooseFeatures {
   // 🟢 Edit event
   public async EditOneEvent(id: string, body: any, files?: any[]) {
     try {
-      // Process tags
-      if (body.tags && typeof body.tags === 'string') {
-        body.tags = body.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
+      // Process Arabic tags
+      if (body.tagsAr) {
+        body.tagsAr = this.processTags(body.tagsAr);
+      }
+
+      // Process English tags
+      if (body.tagsEn) {
+        body.tagsEn = this.processTags(body.tagsEn);
       }
 
       const updateData = pick(body, this.keys);
       
-      // Handle new file uploads (documents only)
-      if (files && files.length > 0) {
-        const newFiles = files.map(file => ({
+      // Handle new Cloudinary files from controller
+      if (body.newFiles && Array.isArray(body.newFiles)) {
+        const newFiles = body.newFiles.map((file: any) => ({
           filename: file.filename,
-          originalName: file.originalname,
+          originalName: file.originalName,
           mimetype: file.mimetype,
           size: file.size,
-          path: file.path,
+          path: file.path, // Cloudinary URL
+          cloudinaryPublicId: file.cloudinaryPublicId
         }));
 
         // Get existing event to handle files
@@ -160,12 +230,22 @@ export default class EventService extends MongooseFeatures {
     try {
       // Get event to clean up files
       const event = await EventModel.findById(id);
-      if (event && event.files && event.files.length > 0) {
-        event.files.forEach((file: any) => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
+      if (event) {
+        // Delete image from Cloudinary
+        if (event.eventImage) {
+          await CloudinaryService.deleteImage(event.eventImage);
+        }
+
+        // Delete files from Cloudinary
+        if (event.files && event.files.length > 0) {
+          for (const file of event.files) {
+            if (file.cloudinaryPublicId) {
+              await CloudinaryService.deleteDocument(file.path);
+            } else if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
           }
-        });
+        }
       }
 
       const deleted = await super.deleteDocument(EventModel, id);
@@ -189,9 +269,19 @@ export default class EventService extends MongooseFeatures {
 
       const fileToRemove = event.files![fileIndex];
       
-      // Remove file from filesystem
-      if (fs.existsSync(fileToRemove.path)) {
-        fs.unlinkSync(fileToRemove.path);
+      // Remove file from Cloudinary if it exists there
+      if (fileToRemove.cloudinaryPublicId) {
+        try {
+          await CloudinaryService.deleteDocument(fileToRemove.path);
+        } catch (cloudinaryError) {
+          console.error('Error deleting from Cloudinary:', cloudinaryError);
+          // Continue with database removal even if Cloudinary deletion fails
+        }
+      } else {
+        // Remove file from filesystem (only if it's a local file)
+        if (fileToRemove.path && !fileToRemove.path.startsWith('http') && fs.existsSync(fileToRemove.path)) {
+          fs.unlinkSync(fileToRemove.path);
+        }
       }
 
       // Remove file from database
@@ -214,7 +304,8 @@ export default class EventService extends MongooseFeatures {
         titleAr: event.titleAr,
         titleEn: event.titleEn,
         date: event.date,
-        tags: Array.isArray(event.tags) ? event.tags.join(', ') : event.tags || '',
+        tagsAr: Array.isArray(event.tagsAr) ? event.tagsAr.join(', ') : event.tagsAr || '',
+        tagsEn: Array.isArray(event.tagsEn) ? event.tagsEn.join(', ') : event.tagsEn || '',
         contentAr: event.contentAr,
         contentEn: event.contentEn,
         status: event.status,
@@ -247,16 +338,24 @@ export default class EventService extends MongooseFeatures {
           throw new Error("Missing required fields: Arabic/English titles or content");
         }
 
-        // Process tags
-        if (eventData.tags && typeof eventData.tags === 'string') {
-          eventData.tags = eventData.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
+        // Process Arabic tags
+        let processedTagsAr = [];
+        if (eventData.tagsAr) {
+          processedTagsAr = this.processTags(eventData.tagsAr);
+        }
+
+        // Process English tags
+        let processedTagsEn = [];
+        if (eventData.tagsEn) {
+          processedTagsEn = this.processTags(eventData.tagsEn);
         }
 
         const newEventData = {
           titleAr: eventData.titleAr.trim(),
           titleEn: eventData.titleEn.trim(),
           date: new Date(eventData.date),
-          tags: eventData.tags || [],
+          tagsAr: processedTagsAr,
+          tagsEn: processedTagsEn,
           contentAr: eventData.contentAr.trim(),
           contentEn: eventData.contentEn.trim(),
           status: eventData.status || 'draft',

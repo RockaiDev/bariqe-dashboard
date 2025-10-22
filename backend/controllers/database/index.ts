@@ -533,7 +533,7 @@ export default class DatabaseController extends BaseApi {
         materialEmail: request.materialEmail,
         materialPhone: request.materialPhone,
         materialQuantity: request.materialQuantity,
-        materialIntendedUse: request.materialIntendedUse,
+        materialIntendedUse: request.materialIntendedUse || "",
         materialActions: request.materialActions || "pending",
         createdAt: request.createdAt ? new Date(request.createdAt) : new Date(),
         updatedAt: request.updatedAt ? new Date(request.updatedAt) : new Date(),

@@ -19,6 +19,10 @@ export interface EventFile {
   mimetype: string;
   size: number;
   path: string;
+  cloudinaryPublicId?: string;
+  downloadUrl?: string;
+  previewUrl?: string;
+  isCloudinary?: boolean;
 }
 
 export interface Event {
@@ -26,10 +30,12 @@ export interface Event {
   titleAr: string;
   titleEn: string;
   date: string;
-  tags: string[];
+  tagsAr: string[];
+  tagsEn: string[];
   contentAr: string;
   contentEn: string;
-  image?: string;
+  eventImage?: string;
+  eventImagePublicId?: string;
   status: 'draft' | 'published' | 'archived';
   author?: string;
   files?: EventFile[];
@@ -72,9 +78,16 @@ export interface ImportResult {
   };
 }
 
+export interface FileInfo {
+  file: EventFile;
+  message: string;
+}
+
 const fetchBlob = async (url: string): Promise<Blob> => {
   try {
-    const response = await axiosInstance.get(url, {
+    const fullUrl = url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL || 'http://localhost:4001'}${url}`;
+    
+    const response = await axiosInstance.get(fullUrl, {
       responseType: 'blob',
     });
     return response.data;
@@ -93,7 +106,6 @@ const eventsApi = {
     try {
       const params = new URLSearchParams();
       
-      // Add filters
       Object.entries(filters).forEach(([key, value]: [string, any]) => {
         if (value !== undefined && value !== null && value !== '') {
           if (Array.isArray(value) && value.length > 0) {
@@ -107,11 +119,20 @@ const eventsApi = {
       const url = `/events${params.toString() ? `?${params.toString()}` : ''}`;
       console.log('Requesting:', url);
       
-      const response :any = await axiosInstance.get(url);
+      const response: any = await axiosInstance.get(url);
       console.log('Events API Response:', response);
       
-      // التعامل مع الهيكل الجديد للاستجابة
-      if (response?.data) {
+      if (response?.data?.result?.data) {
+        return {
+          data: response.data.result.data,
+          totalItems: response.data.result.totalItems || response.data.result.data.length,
+          totalPages: response.data.result.totalPages || 1,
+          currentPage: response.data.result.currentPage || 1,
+          perPage: response.data.result.perPage || 10,
+        };
+      }
+
+      if (response?.data && Array.isArray(response.data)) {
         return {
           data: response.data,
           totalItems: response.count || response.data.length,
@@ -121,7 +142,6 @@ const eventsApi = {
         };
       }
 
-      // إذا كانت البيانات array مباشرة
       if (Array.isArray(response)) {
         return {
           data: response,
@@ -132,7 +152,6 @@ const eventsApi = {
         };
       }
 
-      // البيانات في الجذر
       return {
         data: response.events || [],
         totalItems: response.totalItems || 0,
@@ -150,17 +169,14 @@ const eventsApi = {
   // Get single event
   get: async (id: string): Promise<Event> => {
     try {
-      const response :any= await axiosInstance.get(`/events/${id}`);
-      console.log('Single event response:', response.data);
+      const response: any = await axiosInstance.get(`/events/${id}`);
+      console.log('Single event response:', response);
       
-      // التعامل مع الهيكل الجديد
-      return response;
-
-      if (response.result) {
-        return response.result;
+      if (response) {
+        return response;
       }
       
-      return response.result;
+      return response.data;
     } catch (error) {
       console.error('Get event error:', error);
       throw error;
@@ -170,20 +186,17 @@ const eventsApi = {
   // Create event
   create: async (payload: FormData): Promise<Event> => {
     try {
-      const response :any= await axiosInstance.post('/events', payload, {
+      const response: any = await axiosInstance.post('/events', payload, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
       console.log('Create event response:', response.data);
       
-      // التعامل مع الهيكل الجديد
-      return response;
-
-      if (response.result) {
-        return response.result.result;
+      if (response.data?.result) {
+        return response.data.result;
       }
       
-      return response.result;
+      return response.data;
     } catch (error) {
       console.error('Create event error:', error);
       throw error;
@@ -197,7 +210,6 @@ const eventsApi = {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      // التعامل مع الهيكل الجديد
       if (response.data?.result) {
         return response.data.result;
       }
@@ -224,7 +236,6 @@ const eventsApi = {
     try {
       const response = await axiosInstance.delete(`/events/${eventId}/files/${fileId}`);
 
-      // التعامل مع الهيكل الجديد
       if (response.data?.result) {
         return response.data.result;
       }
@@ -232,6 +243,51 @@ const eventsApi = {
       return response.data;
     } catch (error) {
       console.error('Remove file error:', error);
+      throw error;
+    }
+  },
+
+  // Get file info with Cloudinary URLs
+  getFileInfo: async (eventId: string, fileId: string): Promise<FileInfo> => {
+    try {
+      const response = await axiosInstance.get(`/events/${eventId}/files/${fileId}/info`);
+      
+      if (response.data?.result) {
+        return response.data.result;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Get file info error:', error);
+      throw error;
+    }
+  },
+
+  // Download file
+  downloadFile: async (eventId: string, fileId: string): Promise<Blob> => {
+    try {
+      const response:any = await axiosInstance.get(`/events/${eventId}/files/${fileId}/download`, {
+        responseType: 'blob'
+      });
+      console.log('Download file response:', response);
+      
+      return response;
+    } catch (error) {
+      console.error('Download file error:', error);
+      throw error;
+    }
+  },
+
+  // Preview file
+  previewFile: async (eventId: string, fileId: string): Promise<Blob> => {
+    try {
+      const response = await axiosInstance.get(`/events/${eventId}/files/${fileId}/preview`, {
+        responseType: 'blob'
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Preview file error:', error);
       throw error;
     }
   },
@@ -252,7 +308,6 @@ const eventsApi = {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      // التعامل مع الهيكل الجديد
       if (response.data?.result) {
         return response.data.result;
       }
@@ -265,15 +320,18 @@ const eventsApi = {
   },
 };
 
-// باقي الكود يبقى كما هو...
+// Query Keys
 export const eventKeys = {
   all: ['events'] as const,
   lists: () => [...eventKeys.all, 'list'] as const,
   list: (filters: EventsFilters) => [...eventKeys.lists(), filters] as const,
   details: () => [...eventKeys.all, 'detail'] as const,
   detail: (id: string) => [...eventKeys.details(), id] as const,
+  files: () => [...eventKeys.all, 'files'] as const,
+  file: (eventId: string, fileId: string) => [...eventKeys.files(), eventId, fileId] as const,
 };
 
+// Main Events Hook
 export function useEvents(filters: EventsFilters = {}) {
   const queryClient = useQueryClient();
 
@@ -325,6 +383,7 @@ export function useEvents(filters: EventsFilters = {}) {
   return { list, create, update, del };
 }
 
+// Single Event Hook
 export const useEvent = (id: string) => {
   return useQuery({
     queryKey: eventKeys.detail(id),
@@ -335,6 +394,7 @@ export const useEvent = (id: string) => {
   });
 };
 
+// File Management Hooks
 export const useRemoveEventFile = () => {
   const queryClient = useQueryClient();
 
@@ -354,6 +414,57 @@ export const useRemoveEventFile = () => {
   });
 };
 
+export const useFileInfo = (eventId: string, fileId: string) => {
+  return useQuery({
+    queryKey: eventKeys.file(eventId, fileId),
+    queryFn: () => eventsApi.getFileInfo(eventId, fileId),
+    enabled: !!eventId && !!fileId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useDownloadFile = () => {
+  return useMutation({
+    mutationFn: ({ eventId, fileId }: { eventId: string; fileId: string }) => 
+      eventsApi.downloadFile(eventId, fileId),
+    onSuccess: (blob) => {
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `file_${Date.now()}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('File downloaded successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Download file mutation error:', error);
+      toast.error(error.response?.data?.message || error.message || 'Failed to download file');
+    },
+  });
+};
+
+export const usePreviewFile = () => {
+  return useMutation({
+    mutationFn: ({ eventId, fileId }: { eventId: string; fileId: string }) => 
+      eventsApi.previewFile(eventId, fileId),
+    onSuccess: (blob) => {
+      // Open file in new tab for preview
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      // Don't revoke URL immediately as it's being used in new tab
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    },
+    onError: (error: any) => {
+      console.error('Preview file mutation error:', error);
+      toast.error(error.response?.data?.message || error.message || 'Failed to preview file');
+    },
+  });
+};
+
+// Export/Import Hooks
 export const useExportEvents = () => {
   return useMutation({
     mutationFn: eventsApi.export,
@@ -403,7 +514,7 @@ export const useImportEvents = () => {
     mutationFn: eventsApi.import,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      toast.success( 'Events imported successfully!');
+      toast.success('Events imported successfully!');
     },
     onError: (error: any) => {
       console.error('Import mutation error:', error);

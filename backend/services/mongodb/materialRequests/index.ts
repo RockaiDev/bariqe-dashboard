@@ -109,10 +109,10 @@ export default class MaterialRequestService extends MongooseFeatures {
   public async AddMaterialRequest(body: any) {
     try {
       // Validation
-      if (!body.materialName || !body.materialQuantity || !body.materialIntendedUse) {
+      if (!body.materialName || !body.materialQuantity ) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'materialName', 'materialQuantity', 'materialIntendedUse' are required"
+          "Fields 'materialName', 'materialQuantity'are required"
         );
       }
 
@@ -331,7 +331,7 @@ export default class MaterialRequestService extends MongooseFeatures {
         const newRequestData: any = {
           materialName: requestData.materialName,
           materialQuantity: requestData.materialQuantity,
-          materialIntendedUse: requestData.materialIntendedUse,
+          materialIntendedUse: requestData.materialIntendedUse || 'N/A',
           materialActions: requestData.materialActions?.toLowerCase() || 'pending',
         };
 
