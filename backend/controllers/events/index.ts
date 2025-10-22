@@ -93,6 +93,118 @@ export default class EventController extends BaseApi {
     }
   }
 
+  /**
+   * Get file information
+   */
+  public async getFileInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId, fileId } = req.params;
+
+      const fileInfo = await eventService.GetEventFile(eventId, fileId);
+
+      // التأكد من أن البيانات ليست undefined
+      if (!fileInfo) {
+        return super.send(res, {
+          file: {
+            _id: fileId,
+            filename: '',
+            originalName: '',
+            mimetype: '',
+            size: 0,
+            path: '',
+            isCloudinary: false
+          },
+          message: "File not found"
+        });
+      }
+
+      super.send(res, {
+        file: fileInfo,
+        message: "File information retrieved successfully"
+      });
+    } catch (err) {
+      // إرجاع بيانات افتراضية في حالة الخطأ
+      super.send(res, {
+        file: {
+          _id: req.params.fileId,
+          filename: '',
+          originalName: '',
+          mimetype: '',
+          size: 0,
+          path: '',
+          isCloudinary: false
+        },
+        message: "Error retrieving file information"
+      });
+    }
+  }
+
+  /**
+   * Download event file
+   */
+  public async downloadEventFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId, fileId } = req.params;
+
+      const fileInfo = await eventService.GetEventFile(eventId, fileId);
+
+      if (fileInfo.isCloudinary && fileInfo.downloadUrl) {
+        // إعادة التوجيه إلى رابط Cloudinary للتحميل
+        return res.redirect(fileInfo.downloadUrl);
+      } else if (fileInfo.isCloudinary && fileInfo.path) {
+        // استخدام الرابط المباشر مع flags التحميل
+        const downloadUrl = fileInfo.path.includes('fl_attachment') 
+          ? fileInfo.path 
+          : fileInfo.path.replace('/upload/', '/upload/fl_attachment/');
+        return res.redirect(downloadUrl);
+      } else {
+        // Serve local file
+        if (fs.existsSync(fileInfo.path)) {
+          return res.download(fileInfo.path, fileInfo.originalName);
+        } else {
+          return res.status(404).json({ message: "File not found on server" });
+        }
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Preview event file
+   */
+  public async previewEventFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId, fileId } = req.params;
+
+      const fileInfo = await eventService.GetEventFile(eventId, fileId);
+
+      if (fileInfo.isCloudinary && fileInfo.previewUrl) {
+        // إعادة التوجيه إلى رابط Cloudinary للمعاينة
+        return res.redirect(fileInfo.previewUrl);
+      } else if (fileInfo.isCloudinary && fileInfo.path) {
+        // استخدام الرابط المباشر بدون flags التحميل للمعاينة
+        const previewUrl = fileInfo.path.replace('/fl_attachment/', '/');
+        return res.redirect(previewUrl);
+      } else {
+        // Serve local file
+        if (fs.existsSync(fileInfo.path)) {
+          const fileStream = fs.createReadStream(fileInfo.path);
+          res.setHeader('Content-Type', fileInfo.mimetype);
+          res.setHeader('Content-Disposition', `inline; filename="${fileInfo.originalName}"`);
+          fileStream.pipe(res);
+        } else {
+          return res.status(404).json({ message: "File not found on server" });
+        }
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Get all events
+   */
   public async getEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await eventService.GetEvents(req.query);
@@ -102,6 +214,9 @@ export default class EventController extends BaseApi {
     }
   }
 
+  /**
+   * Get single event
+   */
   public async getOne(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await eventService.GetOneEvent(req.params.id);
@@ -111,8 +226,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Add event (with image support)
-  // في EventController - تحديث addEvent
+  /**
+   * Add new event
+   */
   public async addEvent(req: Request, res: Response, next: NextFunction) {
     try {
       let eventData = { ...req.body };
@@ -142,7 +258,48 @@ export default class EventController extends BaseApi {
         this.cleanupFile(imageFile.path);
       }
 
-      const data = await eventService.AddEvent(eventData, documentFiles);
+      // Handle document files upload to Cloudinary
+      if (documentFiles && documentFiles.length > 0) {
+        const uploadedFiles = [];
+        for (const file of documentFiles) {
+          try {
+            const publicId = `event_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Use the new PDF upload method
+            const uploadResult = await CloudinaryService.uploadPdfFromPath(
+              file.path,
+              "events/documents",
+              publicId
+            );
+            
+            uploadedFiles.push({
+              filename: file.filename,
+              originalName: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size,
+              path: uploadResult.url, // Store Cloudinary URL
+              cloudinaryPublicId: uploadResult.publicId // Store public ID for downloads
+            });
+
+            // Clean up temporary file
+            this.cleanupFile(file.path);
+          } catch (uploadError) {
+            console.error('Error uploading document to Cloudinary:', uploadError);
+            // Fallback to local storage if Cloudinary fails
+            uploadedFiles.push({
+              filename: file.filename,
+              originalName: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size,
+              path: `/uploads/events/${file.filename}`,
+              cloudinaryPublicId: null
+            });
+          }
+        }
+        eventData.files = uploadedFiles;
+      }
+
+      const data = await eventService.AddEvent(eventData, []);
       super.send(res, data);
     } catch (err) {
       // Clean up uploaded files in case of error
@@ -156,7 +313,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // في EventController - تحديث editEvent
+  /**
+   * Edit event
+   */
   public async editEvent(req: Request, res: Response, next: NextFunction) {
     try {
       let eventData = { ...req.body };
@@ -195,10 +354,51 @@ export default class EventController extends BaseApi {
         }
       }
 
+      // Handle document files upload to Cloudinary
+      if (documentFiles && documentFiles.length > 0) {
+        const uploadedFiles = [];
+        for (const file of documentFiles) {
+          try {
+            const publicId = `event_doc_${req.params.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Use the new PDF upload method
+            const uploadResult = await CloudinaryService.uploadPdfFromPath(
+              file.path,
+              "events/documents",
+              publicId
+            );
+            
+            uploadedFiles.push({
+              filename: file.filename,
+              originalName: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size,
+              path: uploadResult.url, // Store Cloudinary URL
+              cloudinaryPublicId: uploadResult.publicId
+            });
+
+            // Clean up temporary file
+            this.cleanupFile(file.path);
+          } catch (uploadError) {
+            console.error('Error uploading document to Cloudinary:', uploadError);
+            // Fallback to local storage if Cloudinary fails
+            uploadedFiles.push({
+              filename: file.filename,
+              originalName: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size,
+              path: `/uploads/events/${file.filename}`,
+              cloudinaryPublicId: null
+            });
+          }
+        }
+        eventData.newFiles = uploadedFiles; // Use newFiles to distinguish from existing files
+      }
+
       const data = await eventService.EditOneEvent(
         req.params.id,
         eventData,
-        documentFiles
+        []
       );
       super.send(res, data);
     } catch (err) {
@@ -213,7 +413,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Add event with base64 image
+  /**
+   * Add event with base64 image
+   */
   public async addEventWithBase64(
     req: Request,
     res: Response,
@@ -245,9 +447,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Edit event (with image support)
-
-  // 🟢 Edit event with base64 image
+  /**
+   * Edit event with base64 image
+   */
   public async editEventWithBase64(
     req: Request,
     res: Response,
@@ -293,7 +495,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Change event image only
+  /**
+   * Change event image only
+   */
   public async changeEventImage(
     req: Request,
     res: Response,
@@ -359,7 +563,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Remove event image only
+  /**
+   * Remove event image only
+   */
   public async removeEventImage(
     req: Request,
     res: Response,
@@ -375,7 +581,6 @@ export default class EventController extends BaseApi {
       }
 
       const oldImageUrl = this.getExistingEventImage(existingEvent);
-
       if (!oldImageUrl) {
         return res
           .status(400)
@@ -402,7 +607,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Delete event (with image cleanup)
+  /**
+   * Delete event
+   */
   public async deleteEvent(req: Request, res: Response, next: NextFunction) {
     try {
       // Get existing event to delete image
@@ -422,6 +629,9 @@ export default class EventController extends BaseApi {
     }
   }
 
+  /**
+   * Remove event file
+   */
   public async removeEventFile(
     req: Request,
     res: Response,
@@ -429,6 +639,28 @@ export default class EventController extends BaseApi {
   ) {
     try {
       const { eventId, fileId } = req.params;
+      
+      // Get the event to find the file details
+      const event = await eventService.GetOneEvent(eventId);
+      if (!event || !event.files) {
+        return res.status(404).json({ message: "Event or file not found" });
+      }
+
+      const fileToRemove = event.files.find((f: any) => f._id?.toString() === fileId);
+      if (!fileToRemove) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      // Delete from Cloudinary if it has a cloudinaryPublicId
+      if ((fileToRemove as any).cloudinaryPublicId) {
+        try {
+          await CloudinaryService.deleteDocument(fileToRemove.path);
+        } catch (cloudinaryError) {
+          console.error('Error deleting from Cloudinary:', cloudinaryError);
+          // Continue with local deletion even if Cloudinary fails
+        }
+      }
+
       const result = await eventService.RemoveEventFile(eventId, fileId);
       super.send(res, result);
     } catch (err) {
@@ -436,7 +668,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Export events to Excel
+  /**
+   * Export events to Excel
+   */
   public async exportEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const events = await eventService.ExportEvents(req.query);
@@ -459,7 +693,8 @@ export default class EventController extends BaseApi {
         { header: "Title (Arabic)", key: "titleAr", width: 30 },
         { header: "Title (English)", key: "titleEn", width: 30 },
         { header: "Date", key: "date", width: 15 },
-        { header: "Tags", key: "tags", width: 25 },
+        { header: "Tags (Arabic)", key: "tagsAr", width: 25 },
+        { header: "Tags (English)", key: "tagsEn", width: 25 },
         { header: "Content (Arabic)", key: "contentAr", width: 50 },
         { header: "Content (English)", key: "contentEn", width: 50 },
         { header: "Status", key: "status", width: 15 },
@@ -521,7 +756,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Download import template
+  /**
+   * Download import template
+   */
   public async downloadTemplate(
     req: Request,
     res: Response,
@@ -538,7 +775,8 @@ export default class EventController extends BaseApi {
         { header: "Title (Arabic)", key: "titleAr", width: 30 },
         { header: "Title (English)", key: "titleEn", width: 30 },
         { header: "Date", key: "date", width: 15 },
-        { header: "Tags", key: "tags", width: 25 },
+        { header: "Tags (Arabic)", key: "tagsAr", width: 25 },
+        { header: "Tags (English)", key: "tagsEn", width: 25 },
         { header: "Content (Arabic)", key: "contentAr", width: 50 },
         { header: "Content (English)", key: "contentEn", width: 50 },
         { header: "Status", key: "status", width: 15 },
@@ -562,7 +800,8 @@ export default class EventController extends BaseApi {
         titleAr: "حدث تجريبي",
         titleEn: "Sample Event",
         date: new Date(),
-        tags: "tag1, tag2, tag3",
+        tagsAr: "تاق1, تاق2, تاق3",
+        tagsEn: "tag1, tag2, tag3",
         contentAr: "محتوى الحدث التجريبي...",
         contentEn: "Sample event content...",
         status: "draft",
@@ -570,7 +809,7 @@ export default class EventController extends BaseApi {
       });
 
       // Add data validation for Status
-      eventsSheet.getCell("G2").dataValidation = {
+      eventsSheet.getCell("H2").dataValidation = {
         type: "list",
         allowBlank: false,
         formulae: ['"draft,published,archived"'],
@@ -597,16 +836,18 @@ export default class EventController extends BaseApi {
         "1. Title (Arabic): Event title in Arabic (required)",
         "2. Title (English): Event title in English (required)",
         "3. Date: Event date (required)",
-        "4. Tags: Event tags separated by commas (optional)",
-        "5. Content (Arabic): Event content in Arabic (required)",
-        "6. Content (English): Event content in English (required)",
-        "7. Status: Must be one of: draft, published, archived",
-        "8. Author: Event author (optional, defaults to 'System')",
+        "4. Tags (Arabic): Event tags in Arabic separated by commas (optional)",
+        "5. Tags (English): Event tags in English separated by commas (optional)",
+        "6. Content (Arabic): Event content in Arabic (required)",
+        "7. Content (English): Event content in English (required)",
+        "8. Status: Must be one of: draft, published, archived",
+        "9. Author: Event author (optional, defaults to 'System')",
         "",
         "Important Notes:",
         "- Do not modify column headers",
         "- Both Arabic and English titles are required",
         "- Both Arabic and English content are required",
+        "- Tags should be separated by commas",
         "- Date format should be recognizable (DD/MM/YYYY or MM/DD/YYYY)",
         "- Images must be uploaded separately after import",
       ];
@@ -633,7 +874,9 @@ export default class EventController extends BaseApi {
     }
   }
 
-  // 🟢 Import events from Excel
+  /**
+   * Import events from Excel
+   */
   public async importEvents(req: Request, res: Response, next: NextFunction) {
     const uploadSingle = upload.single("file");
 
@@ -665,13 +908,14 @@ export default class EventController extends BaseApi {
               const titleAr = String(row.getCell(1).value || "").trim();
               const titleEn = String(row.getCell(2).value || "").trim();
               const date = row.getCell(3).value;
-              const tags = String(row.getCell(4).value || "").trim();
-              const contentAr = String(row.getCell(5).value || "").trim();
-              const contentEn = String(row.getCell(6).value || "").trim();
+              const tagsAr = String(row.getCell(4).value || "").trim();
+              const tagsEn = String(row.getCell(5).value || "").trim();
+              const contentAr = String(row.getCell(6).value || "").trim();
+              const contentEn = String(row.getCell(7).value || "").trim();
               const status =
-                String(row.getCell(7).value || "").trim() || "draft";
+                String(row.getCell(8).value || "").trim() || "draft";
               const author =
-                String(row.getCell(8).value || "").trim() || "System";
+                String(row.getCell(9).value || "").trim() || "System";
 
               // Skip empty rows
               if (!titleAr && !titleEn && !contentAr && !contentEn) return;
@@ -693,7 +937,8 @@ export default class EventController extends BaseApi {
                 titleAr,
                 titleEn,
                 date: date || new Date(),
-                tags,
+                tagsAr,
+                tagsEn,
                 contentAr,
                 contentEn,
                 status,

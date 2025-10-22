@@ -593,7 +593,20 @@ protectedRouter.delete(
   "/events/:id",
   eventController.deleteEvent.bind(eventController)
 );
+protectedRouter.get(
+  "/events/:eventId/files/:fileId/download",
+  eventController.downloadEventFile.bind(eventController)
+);
 
+protectedRouter.get(
+  "/events/:eventId/files/:fileId/preview", 
+  eventController.previewEventFile.bind(eventController)
+);
+
+protectedRouter.get(
+  "/events/:eventId/files/:fileId/info",
+  eventController.getFileInfo.bind(eventController)
+);
 /* ==============================
    DATABASE MANAGEMENT ROUTES
 ================================ */

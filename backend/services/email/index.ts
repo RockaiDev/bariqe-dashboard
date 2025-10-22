@@ -203,6 +203,18 @@ const getEmailTemplate = (order: any) => {
                           <tr>
                             <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
                               <span style="color: #6b7280; font-size: 14px; font-weight: 500;">
+                                📍 Address
+                              </span>
+                            </td>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
+                              <span style="color: #1f2937; font-size: 14px; font-weight: 600;">
+                                ${order.customer?.address || "N/A"}
+                              </span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                              <span style="color: #6b7280; font-size: 14px; font-weight: 500;">
                                 📅 Order Date
                               </span>
                             </td>
@@ -575,14 +587,14 @@ const getEmailTemplate = (order: any) => {
                     color: #9ca3af;
                     font-size: 12px;
                   ">
-                    © ${new Date().getFullYear()}     <a 
-                href="https://www.rockaidev.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:text-blue-700 transition-colors font-medium"
-              >
-                Rockai Dev
-              </a>. All rights reserved.
+                    © ${new Date().getFullYear()} <a 
+                      href="https://www.rockaidev.com/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style="color: #3b82f6; text-decoration: none; font-weight: 500;"
+                    >
+                      Rockai Dev
+                    </a>. All rights reserved.
                   </p>
                 </td>
               </tr>
@@ -629,6 +641,7 @@ Order ID: ${order._id}
 Customer: ${order.customer?.name || "N/A"}
 Email: ${order.customer?.email || "N/A"}
 Phone: ${order.customer?.phone || "N/A"}
+Address: ${order.customer?.address || "N/A"}
 Status: ${order.status}
 Created At: ${order.createdAt}
 

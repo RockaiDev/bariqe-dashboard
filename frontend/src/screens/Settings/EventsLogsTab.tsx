@@ -1,4 +1,4 @@
-// EventsLogsTab.tsx - محدث لدعم الصور
+
 import { useState, useRef } from "react";
 import { useIntl } from 'react-intl';
 import { useForm, type SubmitHandler } from 'react-hook-form';
@@ -36,7 +36,8 @@ const eventSchema = z.object({
   titleAr: z.string().min(1, 'Arabic title is required'),
   titleEn: z.string().min(1, 'English title is required'),
   date: z.string().min(1, 'Date is required'),
-  tags: z.string().optional(),
+  tagsAr: z.string().optional(),
+  tagsEn: z.string().optional(),
   contentAr: z.string().min(1, 'Arabic content is required'),
   contentEn: z.string().min(1, 'English content is required'),
   status: z.enum(['draft', 'published', 'archived']),
@@ -73,7 +74,8 @@ export default function EventsLogsTab() {
       titleAr: '',
       titleEn: '',
       date: '',
-      tags: '',
+      tagsAr: '',
+      tagsEn: '',
       contentAr: '',
       contentEn: '',
       status: 'draft',
@@ -193,7 +195,8 @@ export default function EventsLogsTab() {
       titleAr: '',
       titleEn: '',
       date: '',
-      tags: '',
+      tagsAr: '',
+      tagsEn: '',
       contentAr: '',
       contentEn: '',
       status: 'draft',
@@ -316,8 +319,9 @@ export default function EventsLogsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Import/Export Section */}
+      {/* Import/Export Section - نفس الكود */}
       <SectionCard title={intl.formatMessage({ id: "events.import_export_events" })}>
+        {/* نفس كود Import/Export بدون تغيير */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Import Section */}
           <div className="space-y-4">
@@ -447,7 +451,7 @@ export default function EventsLogsTab() {
         </div>
       </SectionCard>
 
-      {/* Event Form */}
+      {/* Event Form - محدث لدعم Tags بالعربية والإنجليزية */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <SectionCard title={intl.formatMessage({ id: "events.create_new_event" })}>
           <div className="space-y-6">
@@ -511,23 +515,6 @@ export default function EventsLogsTab() {
                 )}
               </div>
 
-              {/* العلامات */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Tag className="inline h-4 w-4 ml-1" />
-                  {intl.formatMessage({ id: "events.tags" })}
-                </label>
-                <input
-                  {...register('tags')}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  placeholder={intl.formatMessage({ id: "events.tags_placeholder" })}
-                  disabled={create.isPending}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {intl.formatMessage({ id: "events.separate_tags_with_commas" })}
-                </p>
-              </div>
-
               {/* الحالة */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -542,6 +529,42 @@ export default function EventsLogsTab() {
                   <option value="published">{intl.formatMessage({ id: "events.published" })}</option>
                   <option value="archived">{intl.formatMessage({ id: "events.archived" })}</option>
                 </select>
+              </div>
+
+              {/* العلامات بالعربية */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Tag className="inline h-4 w-4 ml-1" />
+                  {intl.formatMessage({ id: "events.tags_ar" })}
+                </label>
+                <input
+                  {...register('tagsAr')}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  placeholder={intl.formatMessage({ id: "events.tags_ar_placeholder" })}
+                  disabled={create.isPending}
+                  dir="rtl"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {intl.formatMessage({ id: "events.separate_tags_with_commas" })}
+                </p>
+              </div>
+
+              {/* العلامات بالإنجليزية */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Tag className="inline h-4 w-4 ml-1" />
+                  {intl.formatMessage({ id: "events.tags_en" })}
+                </label>
+                <input
+                  {...register('tagsEn')}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  placeholder={intl.formatMessage({ id: "events.tags_en_placeholder" })}
+                  disabled={create.isPending}
+                  dir="ltr"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {intl.formatMessage({ id: "events.separate_tags_with_commas" })}
+                </p>
               </div>
             </div>
 
@@ -588,7 +611,7 @@ export default function EventsLogsTab() {
               </div>
             </div>
 
-            {/* Image Upload */}
+            {/* Image Upload - نفس الكود */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <ImagePlus className="inline h-4 w-4 ml-1" />
@@ -642,7 +665,7 @@ export default function EventsLogsTab() {
               </p>
             </div>
 
-            {/* File Upload */}
+            {/* File Upload - نفس الكود */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {intl.formatMessage({ id: "events.attach_files" })}
@@ -748,7 +771,7 @@ export default function EventsLogsTab() {
         </SectionCard>
       </form>
 
-      {/* Current Admin Info */}
+      {/* Current Admin Info - نفس الكود */}
       <SectionCard title={intl.formatMessage({ id: "events.event_author_information" })}>
         <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
           <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">

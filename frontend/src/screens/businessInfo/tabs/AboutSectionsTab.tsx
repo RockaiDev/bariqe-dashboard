@@ -261,7 +261,7 @@ export default function AboutSectionsTab({
               </div>
             </div>
 
-            {/* Main Title & Description */}
+           
             <div className="space-y-4">
               <div>
                 <Label className="text-sm text-gray-600 mb-1 block">
@@ -290,7 +290,7 @@ export default function AboutSectionsTab({
         </div>
       </SectionCard>
 
-      {/* About Sections Card */}
+   
       <SectionCard
         title={intl.formatMessage({ id: "business_info.about_sections" })}
         description={intl.formatMessage({

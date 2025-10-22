@@ -19,7 +19,12 @@ const eventSchema = new Schema(
       type: Date,
       required: true,
     },
-    tags: [{
+    // التاقات بالعربية والإنجليزية
+    tagsAr: [{
+      type: String,
+      trim: true,
+    }],
+    tagsEn: [{
       type: String,
       trim: true,
     }],
@@ -61,6 +66,10 @@ const eventSchema = new Schema(
         type: String,
         required: true,
       },
+      cloudinaryPublicId: {
+        type: String,
+        required: false,
+      },
     }],
     status: {
       type: String,
@@ -82,6 +91,11 @@ eventSchema.virtual('title').get(function() {
 
 eventSchema.virtual('content').get(function() {
   return this.contentEn || this.contentAr;
+});
+
+// Virtual للحصول على التاقات حسب اللغة
+eventSchema.virtual('tags').get(function() {
+  return this.tagsEn || this.tagsAr;
 });
 
 const Event = mongoose.model("Event", eventSchema);

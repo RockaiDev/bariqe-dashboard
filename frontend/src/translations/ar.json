@@ -193,9 +193,9 @@
   "common.delete_warning": "بمجرد الحذف، لا يمكن التراجع عن هذا الإجراء.",
   "common.delete_question": "هل أنت متأكد من أنك تريد حذف هذا العنصر؟",
 
-"common.confirm_delete_title": "حذف {item}؟",
-"common.confirm_delete_description": "هل أنت متأكد من أنك تريد حذف {item}؟ لا يمكن التراجع عن هذا الإجراء.",
-"common.deleting": "جارٍ الحذف...",
+  "common.confirm_delete_title": "حذف {item}؟",
+  "common.confirm_delete_description": "هل أنت متأكد من أنك تريد حذف {item}؟ لا يمكن التراجع عن هذا الإجراء.",
+  "common.deleting": "جارٍ الحذف...",
   "message.success.created": "تم الإنشاء بنجاح!",
   "message.success.updated": "تم التحديث بنجاح!",
   "message.success.deleted": "تم الحذف بنجاح!",
@@ -828,6 +828,16 @@
   "general.confirm_reset_database": "هل أنت متأكد من أنك تريد إعادة تعيين قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.",
   "general.reset_database_not_implemented": "وظيفة إعادة تعيين قاعدة البيانات غير مطبقة حتى الآن",
 
+  "events.preview": "معاينة",
+  "events.open_in_new_tab": "فتح في تبويب جديد",
+  "events.download": "تحميل",
+  "events.files": "ملفات",
+  "events.click_outside_to_close": "انقر خارج الصورة للإغلاق",
+  "events.cannot_preview_pdf": "لا يمكن معاينة ملف PDF",
+  "events.pdf_preview_not_supported": "متصفحك لا يدعم معاينة ملفات PDF مباشرة",
+  "events.download_file": "تحميل الملف",
+  "events.cannot_display_pdf": "لا يمكن عرض ملف PDF",
+  "events.browser_not_support_pdf": "متصفحك لا يدعم عرض ملفات PDF. يرجى تحميل الملف لعرضه.",
   "events.import_export_events": "استيراد/تصدير الأحداث",
   "events.import_events": "استيراد الأحداث",
   "events.select_excel_file": "اختر ملف إكسل للاستيراد",
@@ -953,6 +963,53 @@
   "events.save_changes": "حفظ التغييرات",
   "events.no_date": "لا يوجد تاريخ",
 
+  "events.preview_file": "معاينة الملف",
+  "events.preview_file_ar": "معاينة الملف",
+  "events.tags_ar": "العلامات  (عربي)",
+  "events.tags_en": "العلامات  (إنجليزي)",
+  "events.tags_ar_placeholder": "علامة  (عربي)",
+  "events.tags_en_placeholder": "   علامة (إنجليزي)",
+  "events.download_file_ar": "تحميل الملف",
+  "events.popup_blocked_ar": "تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.",
+  "events.opening_download_link": "جاري فتح رابط التحميل...",
+  "events.opening_download_link_ar": "جاري فتح رابط التحميل...",
+
+  "events.opening_file": "جاري فتح الملف...",
+  "events.opening_file_ar": "جاري فتح الملف...",
+
+  "events.opening_preview": "جاري فتح المعاينة...",
+  "events.opening_preview_ar": "جاري فتح المعاينة...",
+
+  "events.failed_to_download_file": "فشل في تحميل الملف",
+  "events.failed_to_download_file_ar": "فشل في تحميل الملف",
+
+  "events.failed_to_preview_file": "فشل في معاينة الملف",
+  "events.failed_to_preview_file_ar": "فشل في معاينة الملف",
+
+  "events.stored_in_cloud": "مخزن في السحابة",
+  "events.stored_in_cloud_ar": "مخزن في السحابة",
+
+  "events.delete_file": "حذف الملف",
+  "events.delete_file_ar": "حذف الملف",
+
+  "events.file_download_started": "بدأ تحميل الملف",
+  "events.file_download_started_ar": "بدأ تحميل الملف",
+
+  "events.file_download_failed": "فشل تحميل الملف",
+  "events.file_download_failed_ar": "فشل تحميل الملف",
+
+  "events.opening_file_in_new_tab": "جاري فتح الملف في نافذة جديدة",
+  "events.opening_file_in_new_tab_ar": "جاري فتح الملف في نافذة جديدة",
+
+  "events.downloading_ar": "جاري التحميل...",
+
+  "events.file_removed_success_ar": "تم حذف الملف بنجاح",
+
+  "events.failed_to_remove_file_ar": "فشل في حذف الملف",
+
+  "events.saving_ar": "جاري الحفظ...",
+
+  "events.save_changes_ar": "حفظ التغييرات",
   "general.creating_backup": "جاري إنشاء النسخة الاحتياطية...",
   "general.backup_created_success": "تم إنشاء النسخة الاحتياطية بنجاح",
   "general.backup_failed": "فشل في إنشاء النسخة الاحتياطية",
@@ -1374,7 +1431,7 @@
   "business_info.upload_logo": "رفع الشعار",
   "business_info.or_paste_image_url": "أو الصق رابط الصورة",
   "business_info.no_image": "لا توجد صورة",
- 
+
   "business_info.star": "نجمة",
   "business_info.stars": "نجوم",
   "business_info.reviews_main_settings": "إعدادات صفحة الآراء الرئيسية",
@@ -1384,7 +1441,7 @@
   "business_info.import_failed": "فشل الاستيراد",
   "business_info.confirm_import": "هل أنت متأكد من الاستيراد؟ سيتم إضافة أو تحديث الأقسام.",
   "business_info.download_template": "تم تنزيل القالب بنجاح",
-    "business_info.import_title": "استيراد معلومات النشاط التجاري",
+  "business_info.import_title": "استيراد معلومات النشاط التجاري",
   "business_info.import_description": "قم برفع ملف إكسل لاستيراد معلومات النشاط التجاري",
   "business_info.import_instructions_title": "التعليمات:",
   "business_info.import_instruction_1": "قم بتحميل ملف القالب",
@@ -1407,12 +1464,4 @@
   "business_info.import_success_partial": "نجح {success}، فشل {failed}",
   "business_info.import_failed_all": "فشل استيراد {count} عنصر",
   "business_info.no_file_selected": "الرجاء اختيار ملف"
-
-
-
-
-  
-
-  
-
 }

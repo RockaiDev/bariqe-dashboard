@@ -39,6 +39,9 @@ app.use(cookieParser());
 // connect Database
 connectDB();
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // main routes
 app.use("/", router);
 

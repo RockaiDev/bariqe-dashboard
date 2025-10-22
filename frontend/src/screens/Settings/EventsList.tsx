@@ -1,4 +1,4 @@
-// EventsList.tsx - محدث بالكامل مع دعم الصور والـ Dialog
+// EventsList.tsx - محدث بدعم كامل لـ Cloudinary PDF و Tags بالعربية والإنجليزية
 import { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { format } from 'date-fns';
@@ -15,7 +15,9 @@ import {
   useEvents,
   useEvent,
   useRemoveEventFile,
+
   type Event,
+  type EventFile,
 } from '../../hooks/useEvents';
 import {
   Calendar,
@@ -38,21 +40,160 @@ import {
   X,
   Upload,
   Camera,
-  ZoomIn
+  ZoomIn,
+  // Download,
+  File,
+  ExternalLink,
+  // Play
 } from 'lucide-react';
 
-// Form validation schema for editing
+// Form validation schema for editing - محدث لدعم Tags بالعربية والإنجليزية
 const editEventSchema = z.object({
   titleAr: z.string().min(1, 'Arabic title is required'),
   titleEn: z.string().min(1, 'English title is required'),
   date: z.string().min(1, 'Date is required'),
-  tags: z.string().optional(),
+  tagsAr: z.string().optional(),
+  tagsEn: z.string().optional(),
   contentAr: z.string().min(1, 'Arabic content is required'),
   contentEn: z.string().min(1, 'English content is required'),
   status: z.enum(['draft', 'published', 'archived']),
 });
 
 type EditEventFormData = z.infer<typeof editEventSchema>;
+
+// Image Preview Dialog Component
+const ImagePreviewDialog = ({ 
+  open, 
+  onClose, 
+  imageUrl, 
+  title 
+}: { 
+  open: boolean; 
+  onClose: () => void; 
+  imageUrl: string; 
+  title: string;
+}) => {
+  const intl = useIntl();
+  
+  if (!open) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="relative max-w-7xl max-h-[90vh] w-full h-full flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-white rounded-t-lg p-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
+            {title}
+          </h3>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => window.open(imageUrl, '_blank')}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {intl.formatMessage({ id: "events.open_in_new_tab" })}
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <X className="h-4 w-4" />
+              {intl.formatMessage({ id: "events.close" })}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex-1 bg-gray-900 rounded-b-lg overflow-auto flex items-center justify-center p-4">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="max-w-full max-h-full object-contain rounded"
+            style={{ maxHeight: 'calc(90vh - 80px)' }}
+          />
+        </div>
+        
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm">
+          {intl.formatMessage({ id: "events.click_outside_to_close" })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FileActions = ({ 
+  file, 
+  // eventId, 
+  // onRemove 
+}: { 
+  file: EventFile; 
+  eventId: string; 
+  onRemove: (eventId: string, fileId: string, fileName: string) => void;
+}) => {
+  const intl = useIntl();
+
+  // const handleDownload = () => {
+  //   // دائماً استخدم الرابط المباشر من file.path
+  //   if (file.path) {
+  //     window.open(file.path, '_blank');
+  //     toast.success(intl.formatMessage({ id: "events.opening_file" }));
+  //   } else {
+  //     toast.error(intl.formatMessage({ id: "events.failed_to_open_file" }));
+  //   }
+  // };
+
+  const handlePreview = () => {
+    // للمعاينة، استخدم نفس الرابط ولكن في نافذة جديدة
+    if (file.path) {
+      window.open(file.path, '_blank');
+      toast.success(intl.formatMessage({ id: "events.opening_file" }));
+    } else {
+      toast.error(intl.formatMessage({ id: "events.failed_to_open_file" }));
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 mr-2">
+      <Button
+        onClick={handlePreview}
+        variant="outline"
+        size="sm"
+        className="text-blue-600 border-blue-200 hover:bg-blue-50 flex-shrink-0"
+        title={intl.formatMessage({ id: "events.preview_file" })}
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+
+      {/* <Button
+        onClick={handleDownload}
+        variant="outline"
+        size="sm"
+        className="text-green-600 border-green-200 hover:bg-green-50 flex-shrink-0"
+        title={intl.formatMessage({ id: "events.download_file" })}
+      >
+        <Download className="h-4 w-4" />
+      </Button>
+
+      <Button
+        onClick={() => onRemove(eventId, file._id, file.originalName)}
+        variant="outline"
+        size="sm"
+        className="text-red-600 border-red-200 hover:bg-red-50 flex-shrink-0"
+        title={intl.formatMessage({ id: "events.delete_file" })}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button> */}
+    </div>
+  );
+};
 
 export default function EventsList() {
   const intl = useIntl();
@@ -66,6 +207,16 @@ export default function EventsList() {
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  
+  const [imagePreviewDialog, setImagePreviewDialog] = useState<{
+    open: boolean;
+    imageUrl: string;
+    title: string;
+  }>({
+    open: false,
+    imageUrl: '',
+    title: '',
+  });
   
   // Dialog states
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -90,27 +241,6 @@ export default function EventsList() {
     fileName: '',
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    
-    if (!file.type.startsWith('image/')) {
-      toast.error(intl.formatMessage({ id: "events.please_select_image_file" }));
-      return;
-    }
-    
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(intl.formatMessage({ id: "events.image_too_large" }));
-      return;
-    }
-    
-    setSelectedImageFile(file);
-    const url = URL.createObjectURL(file);
-    setEditingImageUrl(url);
-    setRemoveExistingImage(false);
-    toast.success(intl.formatMessage({ id: "events.image_selected" }));
-  };
-
   // Build queries based on filters
   const queries = [];
   if (searchTerm) {
@@ -130,7 +260,6 @@ export default function EventsList() {
   });
 
   const { data: selectedEvent, isLoading: eventLoading } = useEvent(selectedEventId || '');
-  
   const removeFileMutation = useRemoveEventFile();
 
   // React Hook Form for editing
@@ -214,18 +343,20 @@ export default function EventsList() {
     setSelectedEventId(selectedEventId === eventId ? null : eventId);
   };
 
+  // محدث لدعم Tags بالعربية والإنجليزية
   const startEdit = (event: Event) => {
     setEditingEventId(event._id!);
     setValue('titleAr', event.titleAr);
     setValue('titleEn', event.titleEn);
     setValue('date', event.date ? format(new Date(event.date), 'yyyy-MM-dd') : '');
-    setValue('tags', event.tags?.join(', ') || '');
+    setValue('tagsAr', event.tagsAr?.join(', ') || '');
+    setValue('tagsEn', event.tagsEn?.join(', ') || '');
     setValue('contentAr', event.contentAr);
     setValue('contentEn', event.contentEn);
     setValue('status', event.status);
     setSelectedFiles([]);
-    setEditingImageUrl((event as any).eventImage || null);
-    setOriginalImageUrl((event as any).eventImage || null);
+    setEditingImageUrl(event.eventImage || null);
+    setOriginalImageUrl(event.eventImage || null);
     setRemoveExistingImage(false);
     setSelectedImageFile(null);
     toast.success(intl.formatMessage({ id: "events.editing_mode_enabled" }));
@@ -289,9 +420,47 @@ export default function EventsList() {
     }
   };
 
+  // Image handlers
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error(intl.formatMessage({ id: "events.please_select_image_file" }));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(intl.formatMessage({ id: "events.image_too_large" }));
+      return;
+    }
+
+    setSelectedImageFile(file);
+    const url = URL.createObjectURL(file);
+    setEditingImageUrl(url);
+    setRemoveExistingImage(false);
+    toast.success(intl.formatMessage({ id: "events.image_selected" }));
+  };
+
+  const openImagePreview = (imageUrl: string, title: string) => {
+    setImagePreviewDialog({
+      open: true,
+      imageUrl,
+      title,
+    });
+  };
+
+  const closeImagePreview = () => {
+    setImagePreviewDialog({
+      open: false,
+      imageUrl: '',
+      title: '',
+    });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     const validFiles = files.filter(file => {
       if (file.size > 10 * 1024 * 1024) {
         toast.error(intl.formatMessage({ id: "events.file_too_large" }, { fileName: file.name }));
@@ -325,9 +494,10 @@ export default function EventsList() {
   };
 
   const getFileIcon = (mimetype: string) => {
-    if (mimetype.startsWith('image/')) return <FileImage className="h-4 w-4 text-green-600" />;
-    if (mimetype === 'application/pdf') return <FileText className="h-4 w-4 text-red-600" />;
-    return <FilePlus2 className="h-4 w-4 text-blue-600" />;
+    if (mimetype.startsWith('image/')) return <FileImage className="h-5 w-5 text-green-600" />;
+    if (mimetype === 'application/pdf') return <FileText className="h-5 w-5 text-red-600" />;
+    if (mimetype.includes('word') || mimetype.includes('document')) return <File className="h-5 w-5 text-blue-600" />;
+    return <FilePlus2 className="h-5 w-5 text-gray-600" />;
   };
 
   const getEventTitle = (event: Event) => {
@@ -336,6 +506,11 @@ export default function EventsList() {
 
   const getEventContent = (event: Event) => {
     return intl.locale === 'ar' ? event.contentAr : event.contentEn;
+  };
+
+  // دالة جديدة للحصول على Tags حسب اللغة
+  const getEventTags = (event: Event) => {
+    return intl.locale === 'ar' ? event.tagsAr : event.tagsEn;
   };
 
   if (list.isLoading) {
@@ -353,23 +528,23 @@ export default function EventsList() {
             {list.error?.message || intl.formatMessage({ id: "events.error_occurred_loading_events" })}
           </p>
           <div className="space-y-2">
-            <Button 
-              onClick={() => list.refetch()} 
-              variant="outline" 
-              size="sm" 
+            <Button
+              onClick={() => list.refetch()}
+              variant="outline"
+              size="sm"
               className="ml-2"
             >
               <RefreshCw className="h-4 w-4 ml-2" />
               {intl.formatMessage({ id: "events.try_again" })}
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 setSearchTerm('');
                 setStatusFilter('all');
                 setCurrentPage(1);
                 setTimeout(() => list.refetch(), 100);
-              }} 
-              variant="outline" 
+              }}
+              variant="outline"
               size="sm"
             >
               {intl.formatMessage({ id: "events.reset_and_retry" })}
@@ -523,18 +698,6 @@ export default function EventsList() {
                           )}
                         </div>
 
-                        {/* العلامات */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {intl.formatMessage({ id: "events.tags" })}
-                          </label>
-                          <input
-                            {...register('tags')}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            placeholder={intl.formatMessage({ id: "events.tags_placeholder" })}
-                          />
-                        </div>
-
                         {/* الحالة */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -548,6 +711,34 @@ export default function EventsList() {
                             <option value="published">{intl.formatMessage({ id: "events.published" })}</option>
                             <option value="archived">{intl.formatMessage({ id: "events.archived" })}</option>
                           </select>
+                        </div>
+
+                        {/* العلامات بالعربية */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <Tag className="inline h-4 w-4 ml-1" />
+                            {intl.formatMessage({ id: "events.tags_ar" })}
+                          </label>
+                          <input
+                            {...register('tagsAr')}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            placeholder={intl.formatMessage({ id: "events.tags_ar_placeholder" })}
+                            dir="rtl"
+                          />
+                        </div>
+
+                        {/* العلامات بالإنجليزية */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <Tag className="inline h-4 w-4 ml-1" />
+                            {intl.formatMessage({ id: "events.tags_en" })}
+                          </label>
+                          <input
+                            {...register('tagsEn')}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            placeholder={intl.formatMessage({ id: "events.tags_en_placeholder" })}
+                            dir="ltr"
+                          />
                         </div>
                       </div>
 
@@ -593,20 +784,24 @@ export default function EventsList() {
                       </div>
 
                       {/* Image Edit Section */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
                           <ImagePlus className="inline h-4 w-4 ml-1" />
                           {intl.formatMessage({ id: "events.event_image" })}
                         </label>
                         
                         {editingImageUrl && !removeExistingImage ? (
                           <div className="mb-4">
-                            <div className="relative inline-block">
+                            <div className="relative inline-block group">
                               <img 
                                 src={editingImageUrl} 
                                 alt="Preview" 
-                                className="w-48 h-32 object-cover rounded-lg border-2 border-gray-200"
+                                className="w-full max-w-md h-48 object-cover rounded-lg border-2 border-gray-300 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => openImagePreview(editingImageUrl, intl.formatMessage({ id: "events.image_preview" }))}
                               />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-40 rounded-lg">
+                                <ZoomIn className="h-8 w-8 text-white" />
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => {
@@ -618,31 +813,39 @@ export default function EventsList() {
                                     setEditingImageUrl(null);
                                   }
                                 }}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
                               >
                                 <X className="h-4 w-4" />
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center mb-4">
-                            <Camera className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500 mb-2">
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4 bg-white">
+                            <Camera className="mx-auto h-10 w-10 text-gray-400 mb-3" />
+                            <p className="text-sm text-gray-600 mb-1 font-medium">
                               {removeExistingImage 
                                 ? intl.formatMessage({ id: "events.image_will_be_removed" })
-                                : intl.formatMessage({ id: "events.select_new_image" })
+                                : intl.formatMessage({ id: "events.no_image_selected" })
                               }
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {intl.formatMessage({ id: "events.select_image_below" })}
                             </p>
                           </div>
                         )}
 
                         <div className="flex items-center gap-3 flex-wrap">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleImageChange} 
-                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90"
-                          />
+                          <label className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 cursor-pointer transition-colors text-sm font-medium">
+                            <Upload className="h-4 w-4" />
+                            {intl.formatMessage({ id: "events.choose_image" })}
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleImageChange} 
+                              className="hidden"
+                            />
+                          </label>
+                          
                           {originalImageUrl && !removeExistingImage && !selectedImageFile && (
                             <button 
                               type="button" 
@@ -651,11 +854,12 @@ export default function EventsList() {
                                 setEditingImageUrl(null); 
                                 setSelectedImageFile(null); 
                               }} 
-                              className="text-sm text-red-600 hover:text-red-800 underline"
+                              className="px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-medium"
                             >
-                              {intl.formatMessage({ id: "events.remove_existing" })}
+                              {intl.formatMessage({ id: "events.remove_image" })}
                             </button>
                           )}
+                          
                           {removeExistingImage && (
                             <button 
                               type="button" 
@@ -663,51 +867,72 @@ export default function EventsList() {
                                 setRemoveExistingImage(false); 
                                 setEditingImageUrl(originalImageUrl); 
                               }} 
-                              className="text-sm text-blue-600 hover:text-blue-800 underline"
+                              className="px-4 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium"
                             >
-                              {intl.formatMessage({ id: "events.keep_existing" })}
+                              {intl.formatMessage({ id: "events.restore_image" })}
                             </button>
                           )}
                         </div>
+                        
+                        <p className="text-xs text-gray-500 mt-3">
+                          {intl.formatMessage({ id: "events.image_requirements" })}
+                        </p>
                       </div>
 
                       {/* Add New Files */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <FilePlus2 className="inline h-4 w-4 ml-1" />
                           {intl.formatMessage({ id: "events.add_new_files" })}
                         </label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                          <Upload className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500 mb-2">
-                            {intl.formatMessage({ id: "events.select_additional_files" })}
+                        
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-white">
+                          <Upload className="mx-auto h-10 w-10 text-gray-400 mb-3" />
+                          <p className="text-sm text-gray-600 mb-1 font-medium">
+                            {intl.formatMessage({ id: "events.upload_files" })}
                           </p>
-                          <input
-                            type="file"
-                            multiple
-                            accept=".pdf,.doc,.docx,.txt"
-                            onChange={handleFileChange}
-                            className="block w-full text-sm text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90"
-                          />
+                          <p className="text-xs text-gray-500 mb-3">
+                            {intl.formatMessage({ id: "events.supported_formats" })}
+                          </p>
+                          <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 cursor-pointer transition-colors text-sm font-medium">
+                            <FilePlus2 className="h-4 w-4" />
+                            {intl.formatMessage({ id: "events.choose_files" })}
+                            <input
+                              type="file"
+                              multiple
+                              accept=".pdf,.doc,.docx,.txt"
+                              onChange={handleFileChange}
+                              className="hidden"
+                            />
+                          </label>
                         </div>
 
                         {/* Selected New Files */}
                         {selectedFiles.length > 0 && (
-                          <div className="mt-3 space-y-2">
+                          <div className="mt-4 space-y-2">
                             <p className="text-sm font-medium text-gray-700">
-                              {intl.formatMessage({ id: "events.new_files_to_add" }, { count: selectedFiles.length })}:
+                              {intl.formatMessage({ id: "events.selected_files" }, { count: selectedFiles.length })}
                             </p>
                             {selectedFiles.map((file, index) => (
                               <div
                                 key={index}
-                                className="flex items-center justify-between bg-blue-50 p-2 rounded border"
+                                className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200"
                               >
-                                <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <File className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                  </div>
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => removeNewFile(index)}
-                                  className="text-red-500 hover:text-red-700 mr-2"
+                                  className="text-red-500 hover:text-red-700 p-1 hover:bg-red-100 rounded transition-colors mr-2"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-5 w-5" />
                                 </button>
                               </div>
                             ))}
@@ -716,12 +941,13 @@ export default function EventsList() {
                       </div>
 
                       {/* Form Actions */}
-                      <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t">
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-gray-200">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={cancelEdit}
                           disabled={update.isPending}
+                          className="min-w-[120px]"
                         >
                           <X className="h-4 w-4 ml-2" />
                           {intl.formatMessage({ id: "events.cancel" })}
@@ -730,7 +956,7 @@ export default function EventsList() {
                         <Button
                           type="submit"
                           disabled={update.isPending}
-                          className="bg-primary text-white hover:bg-primary/85"
+                          className="bg-primary text-white hover:bg-primary/90 min-w-[120px]"
                         >
                           <Save className="h-4 w-4 ml-2" />
                           {update.isPending ? intl.formatMessage({ id: "events.saving" }) : intl.formatMessage({ id: "events.save_changes" })}
@@ -753,7 +979,7 @@ export default function EventsList() {
                             {intl.formatMessage({ id: `events.${event.status}` })}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-6 text-sm text-gray-500 mb-4 flex-wrap">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
@@ -776,28 +1002,31 @@ export default function EventsList() {
                         </div>
 
                         {/* Event Image Preview */}
-                        {(event as any).eventImage && (
+                        {event.eventImage && (
                           <div className="mb-4">
                             <div className="relative inline-block group">
                               <img 
-                                src={(event as any).eventImage} 
+                                src={event.eventImage} 
                                 alt={getEventTitle(event)}
-                                className="w-40 h-24 object-cover rounded-lg border-2 border-gray-200 hover:scale-105 transition-transform cursor-pointer"
-                                onClick={() => window.open((event as any).eventImage, '_blank')}
+                                className="w-56 h-32 object-cover rounded-lg border-2 border-gray-200 shadow-sm hover:shadow-lg transition-all cursor-pointer hover:scale-105 transform duration-200"
+                                onClick={() => openImagePreview(event.eventImage!, getEventTitle(event))}
                               />
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50 rounded-lg">
-                                <ZoomIn className="h-6 w-6 text-white" />
+                                <div className="text-center text-white">
+                                  <ZoomIn className="h-6 w-6 mx-auto mb-1" />
+                                  <p className="text-xs">{intl.formatMessage({ id: "events.click_to_enlarge" })}</p>
+                                </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {/* Tags */}
-                        {event.tags && event.tags.length > 0 && (
+                        {/* Tags - محدث لعرض Tags حسب اللغة */}
+                        {((event.tagsAr && event.tagsAr.length > 0) || (event.tagsEn && event.tagsEn.length > 0)) && (
                           <div className="flex items-center gap-2 mb-4">
                             <Tag className="h-4 w-4 text-gray-400" />
                             <div className="flex flex-wrap gap-1">
-                              {event.tags.slice(0, 3).map((tag, index) => (
+                              {(getEventTags(event) || []).slice(0, 3).map((tag, index) => (
                                 <span
                                   key={index}
                                   className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-200"
@@ -805,9 +1034,9 @@ export default function EventsList() {
                                   {tag}
                                 </span>
                               ))}
-                              {event.tags.length > 3 && (
+                              {(getEventTags(event) || []).length > 3 && (
                                 <span className="text-xs text-gray-500">
-                                  +{event.tags.length - 3} {intl.formatMessage({ id: "events.more" })}
+                                  +{(getEventTags(event) || []).length - 3} {intl.formatMessage({ id: "events.more" })}
                                 </span>
                               )}
                             </div>
@@ -821,7 +1050,7 @@ export default function EventsList() {
 
                         {/* Meta Info */}
                         <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
-                          {(event as any).eventImage && (
+                          {event.eventImage && (
                             <span className="flex items-center gap-1">
                               <ImagePlus className="h-3 w-3" />
                               {intl.formatMessage({ id: "events.has_image" })}
@@ -908,7 +1137,7 @@ export default function EventsList() {
                             {/* عرض المحتوى بالعربية */}
                             <div className="mb-4">
                               <h6 className="font-medium text-gray-700 mb-2">{intl.formatMessage({ id: "events.arabic_content" })}</h6>
-                              <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto" dir="rtl">
+                              <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto shadow-sm" dir="rtl">
                                 {selectedEvent.contentAr}
                               </div>
                             </div>
@@ -916,10 +1145,53 @@ export default function EventsList() {
                             {/* عرض المحتوى بالإنجليزية */}
                             <div>
                               <h6 className="font-medium text-gray-700 mb-2">{intl.formatMessage({ id: "events.english_content" })}</h6>
-                              <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto" dir="ltr">
+                              <div className="bg-white p-4 rounded-lg border text-sm text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto shadow-sm" dir="ltr">
                                 {selectedEvent.contentEn}
                               </div>
                             </div>
+
+                            {/* عرض Tags بالعربية والإنجليزية */}
+                            {((selectedEvent.tagsAr && selectedEvent.tagsAr.length > 0) || 
+                              (selectedEvent.tagsEn && selectedEvent.tagsEn.length > 0)) && (
+                              <div className="mt-4">
+                                <h6 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                  <Tag className="h-4 w-4" />
+                                  {intl.formatMessage({ id: "events.tags" })}
+                                </h6>
+                                
+                                {selectedEvent.tagsAr && selectedEvent.tagsAr.length > 0 && (
+                                  <div className="mb-2">
+                                    <p className="text-xs text-gray-500 mb-1">{intl.formatMessage({ id: "events.tags_ar" })}:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {selectedEvent.tagsAr.map((tag, index) => (
+                                        <span
+                                          key={`ar-${index}`}
+                                          className="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-200"
+                                        >
+                                          {tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {selectedEvent.tagsEn && selectedEvent.tagsEn.length > 0 && (
+                                  <div>
+                                    <p className="text-xs text-gray-500 mb-1">{intl.formatMessage({ id: "events.tags_en" })}:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {selectedEvent.tagsEn.map((tag, index) => (
+                                        <span
+                                          key={`en-${index}`}
+                                          className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-200"
+                                        >
+                                          {tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
 
                           {/* Files */}
@@ -934,7 +1206,7 @@ export default function EventsList() {
                                   {selectedEvent.files.map((file) => (
                                     <div
                                       key={file._id}
-                                      className="flex items-center justify-between bg-white p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                                      className="flex items-center justify-between bg-white p-3 rounded-lg border hover:bg-gray-50 transition-colors shadow-sm"
                                     >
                                       <div className="flex items-center space-x-3 space-x-reverse flex-1 min-w-0">
                                         {getFileIcon(file.mimetype)}
@@ -945,24 +1217,25 @@ export default function EventsList() {
                                           <p className="text-xs text-gray-500">
                                             {(file.size / 1024 / 1024).toFixed(2)} MB • {file.mimetype}
                                           </p>
+                                          {file.cloudinaryPublicId && (
+                                            <p className="text-xs text-green-600">
+                                              {intl.formatMessage({ id: "events.stored_in_cloud" })}
+                                            </p>
+                                          )}
                                         </div>
                                       </div>
-                                      <Button
-                                        onClick={() => openFileDeleteDialog(selectedEvent._id!, file._id, file.originalName)}
-                                        disabled={removeFileMutation.isPending}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-red-600 border-red-200 hover:bg-red-50 mr-3 flex-shrink-0"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                                      <FileActions 
+                                        file={file} 
+                                        eventId={selectedEvent._id!} 
+                                        onRemove={openFileDeleteDialog}
+                                      />
                                     </div>
                                   ))}
                                 </div>
                               </>
                             ) : (
-                              <div className="text-center py-8 text-gray-500">
-                                <FilePlus2 className="mx-auto h-8 w-8 mb-2" />
+                              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border">
+                                <FilePlus2 className="mx-auto h-8 w-8 mb-2 text-gray-400" />
                                 <p>{intl.formatMessage({ id: "events.no_files_attached" })}</p>
                               </div>
                             )}
@@ -971,7 +1244,7 @@ export default function EventsList() {
 
                         {/* Image Section */}
                         <div className="mt-6">
-                          {(selectedEvent as any)?.eventImage ? (
+                          {selectedEvent.eventImage ? (
                             <div>
                               <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                 <ImagePlus className="h-4 w-4" />
@@ -979,22 +1252,22 @@ export default function EventsList() {
                               </h5>
                               <div className="relative inline-block group">
                                 <img
-                                  src={(selectedEvent as any).eventImage}
-                                  alt="Event"
-                                  className="w-full max-w-lg h-auto rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => window.open((selectedEvent as any).eventImage, '_blank')}
+                                  src={selectedEvent.eventImage}
+                                  alt={getEventTitle(selectedEvent)}
+                                  className="w-full max-w-2xl h-auto rounded-lg border-2 border-gray-200 shadow-md cursor-pointer hover:shadow-xl transition-all hover:scale-[1.02] transform duration-200"
+                                  onClick={() => openImagePreview(selectedEvent.eventImage!, getEventTitle(selectedEvent))}
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50 rounded-lg">
                                   <div className="text-center text-white">
-                                    <ZoomIn className="h-8 w-8 mx-auto mb-2" />
-                                    <p className="text-sm">{intl.formatMessage({ id: "events.click_to_view_full" })}</p>
+                                    <ZoomIn className="h-10 w-10 mx-auto mb-2" />
+                                    <p className="text-sm font-medium">{intl.formatMessage({ id: "events.click_to_view_full" })}</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <ImagePlus className="mx-auto h-8 w-8 mb-2" />
+                            <div className="text-center py-8 text-gray-500 bg-white rounded-lg border">
+                              <ImagePlus className="mx-auto h-8 w-8 mb-2 text-gray-400" />
                               <p>{intl.formatMessage({ id: "events.no_image_attached" })}</p>
                             </div>
                           )}
@@ -1026,6 +1299,7 @@ export default function EventsList() {
                       </div>
                     ) : (
                       <div className="p-6 text-center text-red-600">
+                        <AlertCircle className="mx-auto h-8 w-8 mb-2" />
                         <p>{intl.formatMessage({ id: "events.failed_to_load_event_details" })}</p>
                         <Button 
                           onClick={() => setSelectedEventId(null)} 
@@ -1131,6 +1405,14 @@ export default function EventsList() {
         cancelText={intl.formatMessage({ id: "events.cancel" })}
         variant="delete"
         isDestructive={true}
+      />
+
+      {/* Image Preview Dialog */}
+      <ImagePreviewDialog
+        open={imagePreviewDialog.open}
+        onClose={closeImagePreview}
+        imageUrl={imagePreviewDialog.imageUrl}
+        title={imagePreviewDialog.title}
       />
     </>
   );
