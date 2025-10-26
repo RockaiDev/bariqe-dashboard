@@ -8,8 +8,6 @@ const customerSchema = new Schema(
     },
     customerEmail: {
       type: String,
-      unique: true,
-      sparse: true, // allows multiple null values
       match: [/.+@.+\..+/, "Please fill a valid email address"],
     },
     customerPhone: {
