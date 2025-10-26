@@ -9,7 +9,6 @@ const contactSchema = new Schema({
     },
      email: {
         type: String,
-        required: true,
         trim: true,
         lowercase: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']

@@ -8,9 +8,6 @@ const materialRequestSchema = new Schema({
   },
   materialEmail: {
     type: String,
-    required: function() {
-      return !this.customer; // مطلوب فقط إذا لم يكن هناك customer
-    },
     match: [/.+@.+\..+/, "Please fill a valid email address"],
   },
   materialPhone: {

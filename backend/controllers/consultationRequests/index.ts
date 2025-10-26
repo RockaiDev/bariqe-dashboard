@@ -295,7 +295,7 @@ export default class ConsultationRequestsController extends BaseApi {
         "",
         "1. Consultation Requests Sheet:",
         "   - Client Name: Name of the person requesting consultation (required)",
-        "   - Email: Client's email address (required)",
+        "   - Email: Client's email address (optional)",
         "   - Phone: Client's phone number (required)",
         "   - Customer Address: Customer's address (optional)",
         "   - Consultation Area: Area/field of consultation needed (required)",

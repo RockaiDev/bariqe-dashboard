@@ -431,7 +431,7 @@ export default class ContactController extends BaseApi {
         "",
         "1. Contacts Sheet:",
         "   - Contact Name: Full name of the person (required)",
-        "   - Email: Valid email address (required)",
+        "   - Email: Valid email address (optional)",
         "   - Phone Number: Phone number with country code (required)",
         "   - Address: Full address of the contact (required)",
         "   - Customer Email: Email of existing customer in system (optional)",
@@ -541,16 +541,18 @@ export default class ContactController extends BaseApi {
               if (!contactName && !email) return;
 
               // ✅ Validation
-              if (!contactName || !email || !phoneNumber || !address || !message) {
+              if (!contactName || !phoneNumber || !address || !message) {
                 throw new Error(
-                  "Missing required fields (contactName, email, phoneNumber, address, message)"
+                  "Missing required fields (contactName, phoneNumber, address, message)"
                 );
               }
 
-              // Email validation
-              const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-              if (!emailRegex.test(email)) {
-                throw new Error("Invalid email format");
+              // Email validation (only if email is provided)
+              if (email) {
+                const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                if (!emailRegex.test(email)) {
+                  throw new Error("Invalid email format");
+                }
               }
 
               contactsData.push({

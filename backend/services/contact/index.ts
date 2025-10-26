@@ -83,11 +83,11 @@ export default class ContactService extends MongooseFeatures {
   // 🟢 Add new contact
   public async AddContact(body: any) {
     try {
-      if (!body.contactName || !body.email || !body.phoneNumber || 
+      if (!body.contactName || !body.phoneNumber || 
           !body.address || !body.message) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'contactName', 'email', 'phoneNumber', 'address', 'message' are required"
+          "Fields 'contactName', 'phoneNumber', 'address', 'message' are required"
         );
       }
 

@@ -331,7 +331,7 @@ export default class MaterialRequestController extends BaseApi {
         "1. Material Requests Sheet:",
         "   - Material Name: Name of the requested material (required)",
         "   - Customer Name: If customer exists in system (optional)",
-        "   - Contact Email: Customer's email address (required if no customer)",
+        "   - Contact Email: Customer's email address (optional)",
         "   - Contact Phone: Customer's phone number (required if no customer)",
         "   - Customer Location: Location in format 'City, State, Country' (optional)",
         "   - Quantity: Amount/quantity requested (required)",
@@ -431,9 +431,9 @@ export default class MaterialRequestController extends BaseApi {
                 throw new Error("Missing required fields: Material Name, Quantity, and Intended Use are required");
               }
 
-              // If no customer name, then email and phone are required
-              if (!customerName && (!materialEmail || !materialPhone)) {
-                throw new Error("Either Customer Name or both Contact Email and Phone are required");
+              // If no customer name, then phone is required
+              if (!customerName && !materialPhone) {
+                throw new Error("Either Customer Name or Contact Phone is required");
               }
 
               // Email validation if provided

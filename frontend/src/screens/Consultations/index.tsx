@@ -345,7 +345,6 @@ export default function ConsultationRequestsPage() {
 
       if (
         !consultationForm.ConsultationRequestsName ||
-        !consultationForm.ConsultationRequestsEmail ||
         !consultationForm.ConsultationRequestsPhone ||
         !consultationForm.ConsultationRequestsMessage ||
         !consultationForm.consultationRequestsArea
@@ -762,7 +761,7 @@ export default function ConsultationRequestsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>{intl.formatMessage({ id: "consultation_requests.email_required" })}</Label>
+              <Label>{intl.formatMessage({ id: "consultation_requests.email" })}</Label>
               <Input
                 type="email"
                 value={consultationForm.ConsultationRequestsEmail}

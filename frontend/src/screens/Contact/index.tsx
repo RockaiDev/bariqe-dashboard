@@ -1111,7 +1111,6 @@ function AddContact({
                 onChange={(e) =>
                   setForm((f) => ({ ...f, email: e.target.value }))
                 }
-                required
               />
 
               <FormField
