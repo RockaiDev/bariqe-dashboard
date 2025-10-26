@@ -120,9 +120,9 @@ export default class MaterialRequestService extends MongooseFeatures {
       let existingCustomer = null;
       let isNewCustomer = false;
 
-      // 🔍 التحقق من وجود customerId في الـ body (من البحث في الـ frontend)
-      if (body.customerId) {
-        customerId = body.customerId;
+      // 🔍 التحقق من وجود customer في الـ body (من البحث في الـ frontend)
+      if (body.customer) {
+        customerId = body.customer;
         existingCustomer = await CustomerModel.findById(customerId);
         
         if (!existingCustomer) {
@@ -171,10 +171,14 @@ export default class MaterialRequestService extends MongooseFeatures {
           isNewCustomer = true;
           console.log(`Created new customer: ${customerId}`);
         }
+      } else if (body.materialPhone) {
+        // Handle case where no customer is provided but we have materialPhone
+        // This means we're creating a material request with just contact info
+        customerId = null;
       } else {
         throw new ApiError(
           "BAD_REQUEST",
-          "Either 'customerId' or 'customerName' and 'customerPhone' are required"
+          "Either 'customer' or 'customerName' and 'customerPhone' or 'materialPhone' are required"
         );
       }
 
@@ -186,6 +190,14 @@ export default class MaterialRequestService extends MongooseFeatures {
         materialActions: body.materialActions || "pending",
         customer: customerId,
       };
+
+      // Add materialEmail and materialPhone if no customer is provided
+      if (!customerId && body.materialEmail) {
+        materialRequestData.materialEmail = body.materialEmail;
+      }
+      if (!customerId && body.materialPhone) {
+        materialRequestData.materialPhone = body.materialPhone;
+      }
 
       // إضافة الحقول الاختيارية
       if (body.materialLocation) {

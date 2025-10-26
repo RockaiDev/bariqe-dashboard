@@ -757,13 +757,12 @@ function AddMaterialRequest({
 
   const canSubmit =
     form.materialName.trim() &&
- 
     form.materialQuantity > 0 &&
     (customerMode === "new" ? 
       (customerForm.customerName.trim() && 
        customerForm.customerPhone.trim() && 
        customerForm.customerAddress.trim()) :
-      (form.customer.trim() || (form.materialEmail.trim() && form.materialPhone.trim()))
+      (form.customer.trim() || form.materialPhone.trim())
     );
 
   const hasFormChanges = () => {
