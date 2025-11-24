@@ -39,16 +39,16 @@ app.use(cookieParser());
 // connect Database
 connectDB();
 
+// health check or root route
+app.get("/", (req: Request, res: Response) => {
+  res.send("🚀 API is running..");
+});
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // main routes
 app.use("/", router);
 
-// health check or root route
-app.get("/", (req: Request, res: Response) => {
-  res.send("🚀 API is running..");
-});
 
 // if route not found
 app.use((req: Request, res: Response, next: NextFunction) =>

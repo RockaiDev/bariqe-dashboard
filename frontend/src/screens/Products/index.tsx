@@ -84,7 +84,7 @@ interface Product {
   productNameEn: string;
   productDescriptionAr: string;
   productDescriptionEn: string;
-  productCode: string;
+  // productCode: string;
   productPrice: number;
   productCategory:
     | {
@@ -97,11 +97,13 @@ interface Product {
   productSubCategory?: string; // ✅ إضافة SubCategory
   productImage?: string;
   productStatus: boolean;
+  productMoreSale: boolean;
   productForm: "Solid" | "Liquid" | "Gas" | "Powder" | "Granular";
-  productDiscount?: number;
+  productDiscount?: string;
   discountTiers?: DiscountTier[];
   createdAt?: string;
   updatedAt?: string;
+  amount?:number
 }
 
 interface Category {
@@ -239,15 +241,16 @@ export default function ProductsPage() {
     productNameEn: "",
     productDescriptionAr: "",
     productDescriptionEn: "",
-    productCode: "",
+    // productCode: "",
     productPrice: 0,
     productCategory: "",
-    productSubCategory: "", // ✅ إضافة SubCategory
+    // productSubCategory: "", // ✅ إضافة SubCategory
     productImage: "",
-    productStatus: true,
-    productForm: "" as Product["productForm"],
-    productDiscount: 0,
-    discountTiers: [] as DiscountTier[],
+    // productStatus: true,
+    productMoreSale: false,
+    // productForm: "" as Product["productForm"],
+    productDiscount: "",
+    // discountTiers: [] as DiscountTier[],
   });
 
   // ✅ State for edit subcategories
@@ -259,7 +262,7 @@ export default function ProductsPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Processing states for code validation
-  const [checkingEditCode, setCheckingEditCode] = useState(false);
+  // const [checkingEditCode, setCheckingEditCode] = useState(false);
 
   // Confirmation Dialogs
   const editConfirmDialog = useConfirmationDialog({
@@ -289,28 +292,28 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
 };
 
   // Function to check if product code exists
-  const checkProductCode = async (
-    productCode: string,
-    excludeId?: string
-  ): Promise<boolean> => {
-    try {
-      const response = await axiosInstance.get(
-        `/products/check-code/${productCode}`
-      );
-      const exists = response.data?.exists;
+  // const checkProductCode = async (
+  //   productCode: string,
+  //   excludeId?: string
+  // ): Promise<boolean> => {
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/products/check-code/${productCode}`
+  //     );
+  //     const exists = response.data?.exists;
 
-      // If we're editing, check if the existing product is the same one we're editing
-      if (exists && excludeId) {
-        const existingProduct = response.data?.product;
-        return existingProduct?._id !== excludeId;
-      }
+  //     // If we're editing, check if the existing product is the same one we're editing
+  //     if (exists && excludeId) {
+  //       const existingProduct = response.data?.product;
+  //       return existingProduct?._id !== excludeId;
+  //     }
 
-      return exists;
-    } catch (error) {
-      console.error("Error checking product code:", error);
-      return false;
-    }
-  };
+  //     return exists;
+  //   } catch (error) {
+  //     console.error("Error checking product code:", error);
+  //     return false;
+  //   }
+  // };
 
   // Check if edit form has changes
   const hasEditFormChanges = () => {
@@ -321,18 +324,13 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
       editForm.productNameEn !== editing.productNameEn ||
       editForm.productDescriptionAr !== editing.productDescriptionAr ||
       editForm.productDescriptionEn !== editing.productDescriptionEn ||
-      editForm.productCode !== editing.productCode ||
+      // editForm.productCode !== editing.productCode ||
       editForm.productPrice !== editing.productPrice ||
       editForm.productCategory !==
         (typeof editing.productCategory === "object"
           ? editing.productCategory._id
           : editing.productCategory) ||
-      editForm.productSubCategory !== (editing.productSubCategory || "") || // ✅ Check subcategory changes
-      editForm.productStatus !== Boolean(editing.productStatus) ||
-      editForm.productForm !== (editing.productForm ) ||
-      editForm.productDiscount !== (editing.productDiscount || 0) ||
-      JSON.stringify(editForm.discountTiers) !==
-        JSON.stringify(editing.discountTiers || []) ||
+   
       editImageFile !== null ||
       editImagePreview !== (editing.productImage || "")
     );
@@ -345,18 +343,16 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
       productNameEn: p.productNameEn,
       productDescriptionAr: p.productDescriptionAr,
       productDescriptionEn: p.productDescriptionEn,
-      productCode: p.productCode,
+      // productCode: p.productCode,
       productPrice: p.productPrice,
       productCategory:
         typeof p.productCategory === "object"
           ? p.productCategory._id
           : p.productCategory,
-      productSubCategory: p.productSubCategory || "", // ✅ Set subcategory
       productImage: p.productImage || "",
-      productStatus: Boolean(p.productStatus),
-      productForm: p.productForm ,
-      productDiscount: p.productDiscount || 0,
-      discountTiers: p.discountTiers || [],
+      productMoreSale: p.productMoreSale || false,
+      productDiscount: p.productDiscount || "",
+      // discountTiers: p.discountTiers || [],
     });
     setEditImageFile(null);
     setEditImagePreview(p.productImage || "");
@@ -684,9 +680,8 @@ const handleExportProducts = async () => {
             )
           );
           products.failed.slice(0, 5).forEach((failure: any) => {
-            const code = failure.productCode || "Unknown";
-            const error = failure.error || "Unknown error";
-            toast.error(`Failed: ${code} - ${error}`);
+            
+       
           });
         }
 
@@ -698,9 +693,9 @@ const handleExportProducts = async () => {
             )
           );
           errors.slice(0, 5).forEach((err: any) => {
-            const row = err.row || "Unknown row";
-            const code = err.productCode || err.productName || "Unknown";
-            toast.error(`Row ${row}: ${code} - ${err.error}`);
+            // const row = err.row || "Unknown row";
+         
+            
           });
         }
 
@@ -782,7 +777,7 @@ const handleExportProducts = async () => {
             create={create}
             isLoading={create.isPending}
             categories={activeCategories}
-            checkProductCode={checkProductCode}
+            // checkProductCode={checkProductCode}
             gradeOptions={GRADE_OPTIONS}
             formOptions={FORM_OPTIONS}
             fetchSubCategories={fetchSubCategories} // ✅ Pass fetchSubCategories
@@ -790,244 +785,182 @@ const handleExportProducts = async () => {
         </div>
       </div>
 
-      <DataTable
-        title={intl.formatMessage({ id: "products.management_title" })}
-        icon={Package}
-        loading={list.isLoading}
-        isEmpty={!products?.length}
-        columnCount={12} // ✅ تحديث عدد الأعمدة
-        pagination={pagination}
-        dateFilterAble={true}
-        sort={currentSort}
-        onSortChange={handleSortChange}
-        onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
-        onPerPageChange={(perPage) =>
-          setFilters((f) => ({ ...f, perPage, page: 1 }))
-        }
-        searchProps={{
-          placeholder: intl.formatMessage({
-            id: "products.search_placeholder",
-          }),
-          onKeyDown: createProductSearchHandler(ChangeFilter),
-        }}
-        // في ProductsPage.tsx
-        filterGroups={createProductFilterGroups(
-          activeCategories,
-          (key: string) => intl.formatMessage({ id: key }),
-          isRTL
-        )}
-        onFiltersApply={(filters, dateFilter) => {
-          // تطبيق فلاتر التاريخ
-          if (dateFilter) {
-            handleCustomDateRange(dateFilter, ChangeFilter);
-          } else {
-            handleCustomDateRange(null, ChangeFilter);
-          }
+  <DataTable
+  title={intl.formatMessage({ id: "products.management_title" })}
+  icon={Package}
+  loading={list.isLoading}
+  isEmpty={!products?.length}
+  columnCount={12}
+  pagination={pagination}
+  dateFilterAble={true}
+  sort={currentSort}
+  onSortChange={handleSortChange}
+  onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
+  onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
+  searchProps={{
+    placeholder: intl.formatMessage({
+      id: "products.search_placeholder",
+    }),
+    onKeyDown: createProductSearchHandler(ChangeFilter),
+  }}
+  filterGroups={createProductFilterGroups(
+    activeCategories,
+    (key: string) => intl.formatMessage({ id: key }),
+    isRTL
+  )}
+  onFiltersApply={(filters, dateFilter) => {
+    if (dateFilter) handleCustomDateRange(dateFilter, ChangeFilter);
+    else handleCustomDateRange(null, ChangeFilter);
 
-          // تطبيق باقي الفلاتر
-          Object.entries(filters).forEach(([filterKey, filterValue]) => {
-            handleProductFilters(filterKey, filterValue, ChangeFilter);
-          });
-        }}
-        RenderHead={({ sort, onSortChange }) => (
-          <>
-            <TableHead className="text-right">#</TableHead>
-            {/* Non-sortable column */}
-            <TableHead className="px-2 sm:px-4 py-2">
-              {intl.formatMessage({ id: "products.table.image" })}
-            </TableHead>
+    Object.entries(filters).forEach(([key, val]) => {
+      handleProductFilters(key, val, ChangeFilter);
+    });
+  }}
+  RenderHead={({ sort, onSortChange }) => (
+    <>
+      <TableHead className="text-center w-10">#</TableHead>
 
-            {/* Sortable columns */}
-            <SortableTH
-              sortKey="productCode"
-              label={intl.formatMessage({ id: "products.table.code" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
+      <TableHead className="px-4 py-2 text-center">
+        {intl.formatMessage({ id: "products.table.image" })}
+      </TableHead>
 
-            <SortableTH
-              sortKey={isRTL ? "productNameAr" : "productNameEn"}
-              label={intl.formatMessage({ id: "products.table.name" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            <SortableTH
-              sortKey="productCategory"
-              label={intl.formatMessage({ id: "products.table.category" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            {/* ✅ إضافة عمود SubCategory */}
-            <SortableTH
-              sortKey="productSubCategory"
-              label={intl.formatMessage({ id: "products.table.subcategory" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            <SortableTH
-              sortKey="productPrice"
-              label={intl.formatMessage({ id: "products.table.price" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            <SortableTH
-              sortKey="productForm"
-              label={intl.formatMessage({ id: "products.table.form" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            <SortableTH
-              sortKey="productStatus"
-              label={intl.formatMessage({ id: "products.table.status" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            <SortableTH
-              sortKey="createdAt"
-              label={intl.formatMessage({ id: "products.table.date" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-2 sm:px-4 py-2"
-            />
-
-            {/* Non-sortable actions column */}
-            <TableHead className="px-2 sm:px-4 py-2 text-right">
-              {intl.formatMessage({ id: "common.actions" })}
-            </TableHead>
-          </>
-        )}
-        RenderBody={({ getRowColor }) => (
-          <>
-            {products?.map((p, i) => (
-              <TableRow
-                key={p._id}
-                className={`
-                  ${getRowColor(i)} 
-                  cursor-pointer 
-                  hover:bg-blue-50 
-                  transition-colors 
-                  duration-150 
-                  border-b 
-                  border-gray-200
-                  sub-title-cgrey
-                `}
-                onClick={() => handleView(p)}
-              >
-                <TableCell className="text-right">{i + 1}</TableCell>
-                <TableCell>
-                  <div className="w-12 h-12 rounded-lg bg-gray-100 mx-auto flex items-center justify-center">
-                    {p.productImage ? (
-                      <img
-                        src={p.productImage}
-                        alt={isRTL ? p.productNameAr : p.productNameEn}
-                        className="w-full h-full object-cover"
-                     
-                      />
-                    ) : (
-                     <img
-                        src={productImage}
-                        alt={isRTL ? p.productNameAr : p.productNameEn}
-                        className="w-full h-full object-cover"
-                      
-                      />
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {p.productCode}
-                </TableCell>
-                <TableCell className="font-medium text-black">
-                  {isRTL ? p.productNameAr : p.productNameEn}
-                </TableCell>
-                <TableCell className="w-4">
-                  {getCategoryName(p.productCategory)}
-                </TableCell>
-                {/* ✅ إضافة خلية SubCategory */}
-                <TableCell className="w-4">
-                  {getSubCategoryName(p)}
-                </TableCell>
-                <TableCell className="font-semibold">
-                  {p.productPrice?.toFixed(2)} EGP
-                </TableCell>
-                <TableCell className="text-center">
-                  {FORM_OPTIONS.find((f) => f.value === p.productForm)?.label ||
-                    p.productForm}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium !text-nowrap ${
-                      p.productStatus
-                        ? "bg-green-100 text-green-700 border rounded-lg border-green-700"
-                        : "bg-red-100 text-red-700 border rounded-lg border-red-700"
-                    }`}
-                  >
-                    {p.productStatus
-                      ? intl.formatMessage({ id: "products.status.in_stock" })
-                      : intl.formatMessage({
-                          id: "products.status.out_of_stock",
-                        })}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm text-gray-500">
-                  {p.createdAt
-                    ? new Date(p.createdAt).toLocaleDateString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "2-digit",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
-                    : "N/A"}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div
-                    className={`flex items-center gap-2 ${
-                      isRTL ? "justify-start" : "justify-center"
-                    }`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(p);
-                      }}
-                    >
-                      <Pen className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setToDelete(p);
-                        setDeleteOpen(true);
-                      }}
-                    >
-                      <Trash className="w-4 h-4 text-white" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </>
-        )}
+      <SortableTH
+        sortKey={isRTL ? "productNameAr" : "productNameEn"}
+        label={intl.formatMessage({ id: "products.table.name" })}
+        sort={sort}
+        onSortChange={onSortChange}
+        className="px-4 py-2 text-center"
       />
+
+      <SortableTH
+        sortKey="productCategory"
+        label={intl.formatMessage({ id: "products.table.category" })}
+        sort={sort}
+        onSortChange={onSortChange}
+        className="px-4 py-2 text-center"
+      />
+
+      <SortableTH
+        sortKey="productPrice"
+        label={intl.formatMessage({ id: "products.table.price" })}
+        sort={sort}
+        onSortChange={onSortChange}
+        className="px-4 py-2 text-center"
+      />
+
+      {/* ⭐ عمود الخصم */}
+      <SortableTH
+        sortKey="amount"
+        label={intl.formatMessage({ id: "products.form.amount" })}
+        sort={sort}
+        onSortChange={onSortChange}
+        className="px-4 py-2 text-center"
+      />
+
+      <SortableTH
+        sortKey="createdAt"
+        label={intl.formatMessage({ id: "products.table.date" })}
+        sort={sort}
+        onSortChange={onSortChange}
+        className="px-4 py-2 text-center"
+      />
+
+      <TableHead className="px-4 py-2 text-center">
+        {intl.formatMessage({ id: "common.actions" })}
+      </TableHead>
+    </>
+  )}
+  RenderBody={({ getRowColor }) => (
+    <>
+      {products?.map((p, i) => (
+        <TableRow
+          key={p._id}
+          className={`
+            ${getRowColor(i)}
+            hover:bg-blue-50 transition-colors duration-150
+            border-b border-gray-200
+          `}
+          onClick={() => handleView(p)}
+        >
+          <TableCell className="text-center w-10 font-semibold">{i + 1}</TableCell>
+
+          <TableCell>
+            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 mx-auto shadow-sm">
+              <img
+                src={p.productImage || productImage}
+                alt={isRTL ? p.productNameAr : p.productNameEn}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </TableCell>
+
+          <TableCell className="font-medium text-black text-center">
+            {isRTL ? p.productNameAr : p.productNameEn}
+          </TableCell>
+
+          <TableCell className="text-center text-gray-700">
+            {getCategoryName(p.productCategory)}
+          </TableCell>
+
+          <TableCell className="font-bold text-center">
+            {p.productPrice?.toFixed(2)} SAR
+          </TableCell>
+
+          {/* ⭐ عرض قيمة الخصم */}
+          <TableCell className="font-bold text-center text-green-600">
+            {p.amount
+              ? Number(p.amount)
+              : "0"}
+          </TableCell>
+
+          <TableCell className="text-center text-gray-500">
+            {p.createdAt
+              ? new Date(p.createdAt).toLocaleDateString(
+                  isRTL ? "ar-EG" : "en-US",
+                  {
+                    year: "2-digit",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )
+              : "N/A"}
+          </TableCell>
+
+          <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(p);
+                }}
+                className="shadow-sm"
+              >
+                <Pen className="w-4 h-4" />
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setToDelete(p);
+                  setDeleteOpen(true);
+                }}
+                className="shadow-sm"
+              >
+                <Trash className="w-4 h-4 text-white" />
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  )}
+/>
+
+      
 
       {/* View Details Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
@@ -1113,14 +1046,14 @@ const handleExportProducts = async () => {
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">
+                  {/* <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({ id: "products.form.code" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
+                  </Label> */}
+                  {/* <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-mono font-medium">
                       {viewing.productCode}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="space-y-2">
@@ -1157,16 +1090,7 @@ const handleExportProducts = async () => {
                 </div>
 
                 {/* ✅ إضافة عرض SubCategory */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "products.form.subcategory" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-medium">
-                      {getSubCategoryName(viewing)}
-                    </p>
-                  </div>
-                </div>
+              
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
@@ -1174,12 +1098,12 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-bold text-lg text-green-600">
-                      {viewing.productPrice?.toFixed(2)} EGP
+                      {viewing.productPrice?.toFixed(2)} SAR
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({ id: "products.form.form" })}
                   </Label>
@@ -1187,9 +1111,9 @@ const handleExportProducts = async () => {
                     {FORM_OPTIONS.find((f) => f.value === viewing.productForm)
                       ?.label || viewing.productForm}
                   </div>
-                </div>
+                </div> */}
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({ id: "products.form.status" })}
                   </Label>
@@ -1208,7 +1132,7 @@ const handleExportProducts = async () => {
                           })}
                     </span>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Descriptions */}
@@ -1237,7 +1161,7 @@ const handleExportProducts = async () => {
               </div>
 
               {/* General Discount */}
-              {viewing.productDiscount && viewing.productDiscount > 0 && (
+              {viewing.productDiscount && viewing.productDiscount !=="" && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({
@@ -1246,15 +1170,15 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
                     <p className="text-yellow-800 font-medium">
-                      {viewing.productDiscount}%
-                      {intl.formatMessage({ id: "products.discount.off" })}
+                      {viewing.productDiscount}
+                      {/* {intl.formatMessage({ id: "products.discount.off" })} */}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* Discount Tiers */}
-              {viewing.discountTiers && viewing.discountTiers?.length > 0 && (
+              {/* {viewing.discountTiers && viewing.discountTiers?.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({
@@ -1287,7 +1211,7 @@ const handleExportProducts = async () => {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Timestamps */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1386,13 +1310,13 @@ const handleExportProducts = async () => {
 
               // Validate basic form data
               if (
-                !editForm.productCode ||
+                // !editForm.productCode ||
                 !editForm.productNameAr ||
                 !editForm.productNameEn ||
                 !editForm.productDescriptionAr ||
                 !editForm.productDescriptionEn ||
                 !editForm.productCategory ||
-                !editForm.productSubCategory || // ✅ Add subcategory validation
+               // ✅ Add subcategory validation
                 editForm.productPrice <= 0 
               ) {
                 toast.error(
@@ -1404,47 +1328,47 @@ const handleExportProducts = async () => {
               }
 
               // Validate discount tiers have the same code
-              const validTiers = editForm.discountTiers.every(
-                (tier) => tier.code === editForm.productCode
-              );
+              // const validTiers = editForm.discountTiers.every(
+              //   (tier) => tier.code === editForm.productCode
+              // );
 
-              if (!validTiers) {
-                toast.error(
-                  intl.formatMessage({
-                    id: "products.validation.discount_tiers_code",
-                  })
-                );
-                return;
-              }
+              // if (!validTiers) {
+              //   toast.error(
+              //     intl.formatMessage({
+              //       id: "products.validation.discount_tiers_code",
+              //     })
+              //   );
+              //   return;
+              // }
 
               // Check if product code exists (only if it changed)
-              if (editForm.productCode !== editing.productCode) {
-                setCheckingEditCode(true);
-                try {
-                  const codeExists = await checkProductCode(
-                    editForm.productCode,
-                    editing._id
-                  );
-                  if (codeExists) {
-                    toast.error(
-                      intl.formatMessage({
-                        id: "products.validation.code_exists",
-                      })
-                    );
-                    setCheckingEditCode(false);
-                    return;
-                  }
-                } catch (error) {
-                  toast.error(
-                    intl.formatMessage({
-                      id: "products.validation.code_check_failed",
-                    })
-                  );
-                  setCheckingEditCode(false);
-                  return;
-                }
-                setCheckingEditCode(false);
-              }
+              // if (editForm.productCode !== editing.productCode) {
+              //   setCheckingEditCode(true);
+              //   try {
+              //     const codeExists = await checkProductCode(
+              //       editForm.productCode,
+              //       editing._id
+              //     );
+              //     if (codeExists) {
+              //       toast.error(
+              //         intl.formatMessage({
+              //           id: "products.validation.code_exists",
+              //         })
+              //       );
+              //       setCheckingEditCode(false);
+              //       return;
+              //     }
+              //   } catch (error) {
+              //     toast.error(
+              //       intl.formatMessage({
+              //         id: "products.validation.code_check_failed",
+              //       })
+              //     );
+              //     setCheckingEditCode(false);
+              //     return;
+              //   }
+              //   setCheckingEditCode(false);
+              // }
 
               const payload = { ...editForm };
               let data: any = payload;
@@ -1562,7 +1486,7 @@ const handleExportProducts = async () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
+              {/* <FormField
                 id="edit_productCode"
                 label={intl.formatMessage({ id: "products.form.code" })}
                 value={editForm.productCode}
@@ -1577,7 +1501,7 @@ const handleExportProducts = async () => {
                   }))
                 }
                 required
-              />
+              /> */}
 
               <FormField
                 id="edit_productNameAr"
@@ -1640,7 +1564,7 @@ const handleExportProducts = async () => {
               </div>
 
               {/* ✅ SubCategory Selector */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="edit_productSubCategory">
                   {intl.formatMessage({ id: "products.form.subcategory" })}{" "}
                   <span className="text-red-500">*</span>
@@ -1669,7 +1593,7 @@ const handleExportProducts = async () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               <FormField
                 id="edit_productPrice"
@@ -1687,36 +1611,9 @@ const handleExportProducts = async () => {
                 required
               />
 
-              {/* Form Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="edit_productForm">
-                  {intl.formatMessage({ id: "products.form.form" })}{" "}
-                
-                </Label>
-                <Select
-                  value={editForm.productForm}
-                  onValueChange={(value) =>
-                    setEditForm((f) => ({ ...f, productForm: value as any }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={intl.formatMessage({
-                        id: "products.form.select_form",
-                      })}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FORM_OPTIONS?.map((form) => (
-                      <SelectItem key={form.value} value={form.value}>
-                        {form.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          
 
-              <FormField
+              {/* <FormField
                 id="edit_productDiscount"
                 label={intl.formatMessage({
                   id: "products.form.general_discount_percent",
@@ -1731,6 +1628,18 @@ const handleExportProducts = async () => {
                     productDiscount: parseFloat(e.target.value) || 0,
                   }))
                 }
+              /> */}
+
+
+              <FormField
+                id="edit_productDiscount"
+                label={intl.formatMessage({ id: "products.form.general_discount_percent" })}
+                value={editForm.productDiscount}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, productDiscount: e.target.value }))
+                }
+                required
+                dir="ltr"
               />
             </div>
 
@@ -1773,141 +1682,23 @@ const handleExportProducts = async () => {
             </div>
 
             {/* Discount Tiers Section */}
-            <div className="col-span-full space-y-2">
-              <Label className="text-sm font-medium">
-                {intl.formatMessage({ id: "products.form.tiered_discounts" })}
-              </Label>
-              <div className="border rounded-md p-4 space-y-3">
-                {editForm.discountTiers?.map((tier, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-12 gap-2 items-end"
-                  >
-                    {/* Quantity */}
-                    <div className="col-span-5 space-y-1">
-                      <Label
-                        htmlFor={`edit-quantity-${index}`}
-                        className="text-xs font-medium text-gray-700"
-                      >
-                        {intl.formatMessage({ id: "products.form.quantity" })}
-                      </Label>
-                      <Input
-                        id={`edit-quantity-${index}`}
-                        type="number"
-                        placeholder={intl.formatMessage({
-                          id: "products.form.quantity",
-                        })}
-                        min="1"
-                        value={tier.quantity}
-                        onChange={(e) => {
-                          const newTiers = [...editForm.discountTiers];
-                          newTiers[index] = {
-                            ...newTiers[index],
-                            quantity: parseInt(e.target.value) || 0,
-                          };
-                          setEditForm((f) => ({
-                            ...f,
-                            discountTiers: newTiers,
-                          }));
-                        }}
-                      />
-                    </div>
-
-                    {/* Discount */}
-                    <div className="col-span-5 space-y-1">
-                      <Label
-                        htmlFor={`edit-discount-${index}`}
-                        className="text-xs font-medium text-gray-700"
-                      >
-                        {intl.formatMessage({
-                          id: "products.form.discount_percent",
-                        })}
-                      </Label>
-                      <Input
-                        id={`edit-discount-${index}`}
-                        type="number"
-                        placeholder={intl.formatMessage({
-                          id: "products.form.discount_percent",
-                        })}
-                        min="0"
-                        max="100"
-                        value={tier.discount}
-                        onChange={(e) => {
-                          const newTiers = [...editForm.discountTiers];
-                          newTiers[index] = {
-                            ...newTiers[index],
-                            discount: parseFloat(e.target.value) || 0,
-                          };
-                          setEditForm((f) => ({
-                            ...f,
-                            discountTiers: newTiers,
-                          }));
-                        }}
-                      />
-                    </div>
-
-                    {/* Remove button */}
-                    <div className="col-span-2 flex justify-end">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          const newTiers = editForm.discountTiers.filter(
-                            (_, i) => i !== index
-                          );
-                          setEditForm((f) => ({
-                            ...f,
-                            discountTiers: newTiers,
-                          }));
-                        }}
-                      >
-                        <X className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add new tier */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditForm((f) => ({
-                      ...f,
-                      discountTiers: [
-                        ...f.discountTiers,
-                        { quantity: 0, discount: 0, code: f.productCode },
-                      ],
-                    }));
-                  }}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {intl.formatMessage({
-                    id: "products.form.add_discount_tier",
-                  })}
-                </Button>
-              </div>
-            </div>
-
+         
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
-                <Label htmlFor="edit_productStatus">
-                  {intl.formatMessage({ id: "products.form.stock_status" })}
+                <Label htmlFor="edit_productMoreSale">
+                  {intl.formatMessage({ id: "products.form.more_sale" })}
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                {/* <p className="text-sm text-muted-foreground">
                   {intl.formatMessage({
                     id: "products.form.stock_status_description",
                   })}
-                </p>
+                </p> */}
               </div>
               <Switch
-                id="edit_productStatus"
-                checked={editForm.productStatus}
+                id="edit_productMoreSale"
+                checked={editForm.productMoreSale}
                 onCheckedChange={(checked) =>
-                  setEditForm((f) => ({ ...f, productStatus: checked }))
+                  setEditForm((f) => ({ ...f, productMoreSale: checked }))
                 }
               />
             </div>
@@ -1922,24 +1713,18 @@ const handleExportProducts = async () => {
                 type="submit"
                 className="text-white"
                 disabled={
-                  !editForm.productCode ||
+                  // !editForm.productCode ||
                   !editForm.productNameAr ||
                   !editForm.productNameEn ||
                   !editForm.productDescriptionAr ||
                   !editForm.productDescriptionEn ||
                   !editForm.productCategory ||
-                  !editForm.productSubCategory || // ✅ Add subcategory validation
-                  editForm.productPrice <= 0 ||
-                  checkingEditCode ||
-                  update.isPending
+                
+                  editForm.productPrice <= 0 
+              
                 }
               >
-                {checkingEditCode ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: "products.checking_code" })}
-                  </>
-                ) : update.isPending ? (
+                {  update.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {intl.formatMessage({ id: "products.updating" })}
@@ -2104,14 +1889,14 @@ function AddProduct({
   create,
   isLoading,
   categories,
-  checkProductCode,
-  formOptions,
+  // checkProductCode,
+  // formOptions,
   fetchSubCategories, // ✅ Add fetchSubCategories prop
 }: {
   create: any;
   isLoading: boolean;
   categories: Category[];
-  checkProductCode: (code: string) => Promise<boolean>;
+  // checkProductCode: (code: string) => Promise<boolean>;
   gradeOptions: { label: string; value: string }[];
   formOptions: { label: string; value: string }[];
   fetchSubCategories: (categoryId: string) => Promise<SubCategory[]>; // ✅ Add type
@@ -2129,14 +1914,16 @@ function AddProduct({
     productNameEn: "",
     productDescriptionAr: "",
     productDescriptionEn: "",
-    productCode: "",
+    // productCode: "",
     productPrice: 0,
+    amount: 0,
     productCategory: "",
     productSubCategory: "", // ✅ Add subcategory
     productImage: "",
     productStatus: true,
+    productMoreSale: false,
     productForm: "" as const,
-    productDiscount: 0,
+    productDiscount: "",
     discountTiers: [] as DiscountTier[],
   });
 
@@ -2151,15 +1938,15 @@ function AddProduct({
     },
   });
 
-  const canSubmit =
-    form.productCode.trim() &&
-    form.productNameAr.trim() &&
-    form.productNameEn.trim() &&
-    form.productDescriptionAr.trim() &&
-    form.productDescriptionEn.trim() &&
-    form.productCategory.trim() &&
-    form.productSubCategory.trim() && // ✅ Add subcategory validation
-    form.productPrice > 0;
+  // const canSubmit =
+  //   form.productCode.trim() &&
+  //   form.productNameAr.trim() &&
+  //   form.productNameEn.trim() &&
+  //   form.productDescriptionAr.trim() &&
+  //   form.productDescriptionEn.trim() &&
+  //   form.productCategory.trim() &&
+  //   form.productSubCategory.trim() && // ✅ Add subcategory validation
+  //   form.productPrice > 0;
 
   // Check if form has changes
   const hasFormChanges = () => {
@@ -2168,12 +1955,12 @@ function AddProduct({
       form.productNameEn !== "" ||
       form.productDescriptionAr !== "" ||
       form.productDescriptionEn !== "" ||
-      form.productCode !== "" ||
+      // form.productCode !== "" ||
       form.productPrice !== 0 ||
       form.productCategory !== "" ||
       form.productSubCategory !== "" || // ✅ Add subcategory check
       form.productForm !== "" ||
-      form.productDiscount !== 0 ||
+      form.productDiscount !== "" ||
       form.discountTiers?.length > 0 ||
       imageFile !== null ||
       imagePreview !== ""
@@ -2196,14 +1983,16 @@ function AddProduct({
       productNameEn: "",
       productDescriptionAr: "",
       productDescriptionEn: "",
-      productCode: "",
+      // productCode: "",
       productPrice: 0,
+      amount: 0,
       productCategory: "",
       productSubCategory: "", // ✅ Reset subcategory
       productImage: "",
       productStatus: true,
+      productMoreSale: false,
       productForm: "",
-      productDiscount: 0,
+      productDiscount: "",
       discountTiers: [],
     });
     setImageFile(null);
@@ -2226,39 +2015,8 @@ function AddProduct({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit || isLoading) return;
-
-    // Validate discount tiers have the same code
-    const validTiers = form.discountTiers.every(
-      (tier) => tier.code === form.productCode
-    );
-
-    if (!validTiers) {
-      toast.error(
-        intl.formatMessage({ id: "products.validation.discount_tiers_code" })
-      );
-      return;
-    }
-
-    // Check if product code exists
-    setCheckingCode(true);
-    try {
-      const codeExists = await checkProductCode(form.productCode);
-      if (codeExists) {
-        toast.error(
-          intl.formatMessage({ id: "products.validation.code_exists" })
-        );
-        setCheckingCode(false);
-        return;
-      }
-    } catch (error) {
-      toast.error(
-        intl.formatMessage({ id: "products.validation.code_check_failed" })
-      );
-      setCheckingCode(false);
-      return;
-    }
-    setCheckingCode(false);
+    if ( isLoading) return;
+  
 
     // Clean up form data - remove empty strings and filter valid tiers
     const cleanForm = {
@@ -2297,14 +2055,16 @@ function AddProduct({
           productNameEn: "",
           productDescriptionAr: "",
           productDescriptionEn: "",
-          productCode: "",
+          // productCode: "",
           productPrice: 0,
+          amount: 0,
           productCategory: "",
           productSubCategory: "", // ✅ Reset subcategory
           productImage: "",
           productStatus: true,
+          productMoreSale: false,
           productForm: "",
-          productDiscount: 0,
+          productDiscount: "",
           discountTiers: [],
         });
         setImageFile(null);
@@ -2414,7 +2174,7 @@ function AddProduct({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
+              {/* <FormField
                 id="productCode"
                 label={intl.formatMessage({ id: "products.form.code" })}
                 value={form.productCode}
@@ -2429,7 +2189,7 @@ function AddProduct({
                   }))
                 }
                 required
-              />
+              /> */}
 
               <FormField
                 id="productNameAr"
@@ -2538,9 +2298,24 @@ function AddProduct({
                 }
                 required
               />
+              <FormField
+                id="amount"
+                label={intl.formatMessage({ id: "products.form.amount" })}
+                type="number"
+                step="1"
+                min="0"
+                value={form.amount}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    amount: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                required
+              />
 
               {/* Form Selector */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="productForm">
                   {intl.formatMessage({ id: "products.form.form" })}{" "}
                  
@@ -2569,23 +2344,17 @@ function AddProduct({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
-              <FormField
+             <FormField
                 id="productDiscount"
-                label={intl.formatMessage({
-                  id: "products.form.general_discount_percent",
-                })}
-                type="number"
-                min="0"
-                max="100"
+                label={intl.formatMessage({ id: "products.form.general_discount_percent" })}
                 value={form.productDiscount}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    productDiscount: parseFloat(e.target.value) || 0,
-                  }))
+                  setForm((f) => ({ ...f, productDiscount: e.target.value }))
                 }
+                required
+                dir="ltr"
               />
             </div>
 
@@ -2627,135 +2396,24 @@ function AddProduct({
               />
             </div>
 
-            {/* Discount Tiers Section */}
-            <div className="col-span-full space-y-2">
-              <Label className="text-sm font-medium">
-                {intl.formatMessage({
-                  id: "products.form.tiered_discounts_optional",
-                })}
-              </Label>
-              <div className="border rounded-md p-4 space-y-3">
-                {form.discountTiers?.map((tier, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-12 gap-2 items-end"
-                  >
-                    {/* Quantity */}
-                    <div className="col-span-5 space-y-1">
-                      <Label
-                        htmlFor={`quantity-${index}`}
-                        className="text-xs font-medium text-gray-700"
-                      >
-                        {intl.formatMessage({ id: "products.form.quantity" })}
-                      </Label>
-                      <Input
-                        id={`quantity-${index}`}
-                        type="number"
-                        placeholder={intl.formatMessage({
-                          id: "products.form.quantity",
-                        })}
-                        min="1"
-                        value={tier.quantity}
-                        onChange={(e) => {
-                          const newTiers = [...form.discountTiers];
-                          newTiers[index] = {
-                            ...newTiers[index],
-                            quantity: parseInt(e.target.value) || 0,
-                          };
-                          setForm((f) => ({ ...f, discountTiers: newTiers }));
-                        }}
-                      />
-                    </div>
-
-                    {/* Discount */}
-                    <div className="col-span-5 space-y-1">
-                      <Label
-                        htmlFor={`discount-${index}`}
-                        className="text-xs font-medium text-gray-700"
-                      >
-                        {intl.formatMessage({
-                          id: "products.form.discount_percent",
-                        })}
-                      </Label>
-                      <Input
-                        id={`discount-${index}`}
-                        type="number"
-                        placeholder={intl.formatMessage({
-                          id: "products.form.discount_percent",
-                        })}
-                        min="0"
-                        max="100"
-                        value={tier.discount}
-                        onChange={(e) => {
-                          const newTiers = [...form.discountTiers];
-                          newTiers[index] = {
-                            ...newTiers[index],
-                            discount: parseFloat(e.target.value) || 0,
-                          };
-                          setForm((f) => ({ ...f, discountTiers: newTiers }));
-                        }}
-                      />
-                    </div>
-
-                    {/* Remove button */}
-                    <div className="col-span-2 flex justify-end">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          const newTiers = form.discountTiers.filter(
-                            (_, i) => i !== index
-                          );
-                          setForm((f) => ({ ...f, discountTiers: newTiers }));
-                        }}
-                      >
-                        <X className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add new tier */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setForm((f) => ({
-                      ...f,
-                      discountTiers: [
-                        ...f.discountTiers,
-                        { quantity: 0, discount: 0, code: f.productCode },
-                      ],
-                    }));
-                  }}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {intl.formatMessage({
-                    id: "products.form.add_discount_tier",
-                  })}
-                </Button>
-              </div>
-            </div>
+      
 
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
-                <Label htmlFor="productStatus">
-                  {intl.formatMessage({ id: "products.form.stock_status" })}
+                <Label htmlFor="productSale">
+                  {intl.formatMessage({ id: "products.form.more_sale" })}
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                {/* <p className="text-sm text-muted-foreground">
                   {intl.formatMessage({
                     id: "products.form.stock_status_description",
                   })}
-                </p>
+                </p> */}
               </div>
               <Switch
-                id="productStatus"
-                checked={form.productStatus}
+                id="productSale"
+                checked={form.productMoreSale}
                 onCheckedChange={(checked) =>
-                  setForm((f) => ({ ...f, productStatus: checked }))
+                  setForm((f) => ({ ...f, productMoreSale: checked }))
                 }
               />
             </div>
@@ -2769,7 +2427,7 @@ function AddProduct({
               <Button
                 type="submit"
                 className="text-white"
-                disabled={!canSubmit || checkingCode || isLoading}
+                disabled={ checkingCode || isLoading}
               >
                 {checkingCode ? (
                   <>

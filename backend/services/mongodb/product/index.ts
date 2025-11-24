@@ -21,11 +21,10 @@ export default class ProductService extends MongooseFeatures {
       "productCategory",
       "productSubCategory", // ✅ إضافة SubCategory
       "productImage",
-      "productStatus",
-      "productForm",
-      "productDiscount",
-      "productCode",
-      "discountTiers"
+      "productMoreSale",
+      "amount",
+      "productDiscount"
+     
     ];
   }
 
@@ -114,24 +113,23 @@ export default class ProductService extends MongooseFeatures {
 
   // 🟢 Add new product
   public async AddProduct(body: any) {
+    console.log(body);
+    
     try {
       if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
-          !body.productDescriptionEn || !body.productPrice || !body.productCategory || 
-          !body.productSubCategory || !body.productCode) { // ✅ إضافة التحقق من SubCategory
+          !body.productDescriptionEn || !body.productPrice || !body.productCategory 
+          ) { // ✅ إضافة التحقق من SubCategory
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productCode', 'productPrice', 'productCategory', 'productSubCategory' are required"
+          "Fields 'productNameAr', 'productNameEn', 'productDescriptionAr', 'productDescriptionEn', 'productPrice', 'productCategory',are required"
         );
       }
       
       // Check if productCode exists
-      const existingProduct = await ProductModel.findOne({ productCode: body.productCode });
-      if (existingProduct) {
-        throw new ApiError("CONFLICT", "Product with the same code already exists");
-      }
+    
       
       // ✅ التحقق من صحة Category و SubCategory
-      await this.validateSubCategory(body.productCategory, body.productSubCategory);
+      // await this.validateSubCategory(body.productCategory, body.productSubCategory);
 
       const newProduct = pick(body, this.keys);
       const product = await super.addDocument(ProductModel, newProduct);
@@ -144,6 +142,7 @@ export default class ProductService extends MongooseFeatures {
       
       return product;
     } catch (error) {
+      console.log(error)
       throw error;
     }
   }
@@ -162,9 +161,9 @@ export default class ProductService extends MongooseFeatures {
         }
 
         const categoryId = body.productCategory || currentProduct.productCategory;
-        const subCategoryId = body.productSubCategory || currentProduct.productSubCategory;
+     
         
-        await this.validateSubCategory(categoryId, subCategoryId);
+        // await this.validateSubCategory(categoryId);
       }
 
       const updateData = pick(body, this.keys);

@@ -166,16 +166,16 @@ export default class ProductController extends BaseApi {
       let productData = { ...req.body };
 
       // Parse discountTiers if it's a JSON string
-      if (
-        productData.discountTiers &&
-        typeof productData.discountTiers === "string"
-      ) {
-        try {
-          productData.discountTiers = JSON.parse(productData.discountTiers);
-        } catch (error) {
-          console.error("Error parsing discountTiers:", error);
-        }
-      }
+      // if (
+      //   productData.discountTiers &&
+      //   typeof productData.discountTiers === "string"
+      // ) {
+      //   try {
+      //     productData.discountTiers = JSON.parse(productData.discountTiers);
+      //   } catch (error) {
+      //     console.error("Error parsing discountTiers:", error);
+      //   }
+      // }
 
       // Handle base64 image upload if present
       if (productData.productImageBase64) {

@@ -46,7 +46,7 @@
   "products.table.name": "Product Name",
   "products.table.category": "Category",
   "products.table.purity": "Purity",
-  "products.table.price": "Price/kg",
+  "products.table.price": "Price/carton",
   "products.table.grade": "Grade",
   "products.table.form": "Form",
   "products.table.status": "Status",
@@ -66,6 +66,12 @@
   "products.form.gas": "Gas",
   "products.form.powder": "Powder",
   "products.form.granular": "Granular",
+"products.form.amount": "Product Quantity",
+
+
+"products.form.discount_text": "Discount Percentage",
+
+
 
   "products.view.title": "Product Details",
   "products.view.description": "View detailed information about the selected product",
@@ -87,6 +93,7 @@
   "products.create_product": "Create Product",
 
   "products.form.image": "Product Image",
+  
   "products.form.code": "Product Code",
   "products.form.name": "Product Name",
   "products.form.category": "Category",
@@ -107,6 +114,7 @@
   "products.form.discount_percent": "Discount %",
   "products.form.add_discount_tier": "Add Discount Tier",
   "products.form.stock_status": "Stock Status",
+  "products.form.more_sale": "More Sale",
   "products.form.stock_status_description": "Toggle to mark product as in stock or out of stock",
   "products.form.status": "Status",
 

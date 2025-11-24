@@ -67,7 +67,8 @@
   "products.form.gas": "غاز",
   "products.form.powder": "مسحوق",
   "products.form.granular": "حبيبي",
-
+"products.form.amount":"كمية المنتج",
+"products.form.discount_text":"نسبة الخصم",
   "products.view.title": "تفاصيل المنتج",
   "products.view.description": "عرض معلومات مفصلة عن المنتج المحدد",
   "products.view.created_at": "تاريخ الإنشاء",
