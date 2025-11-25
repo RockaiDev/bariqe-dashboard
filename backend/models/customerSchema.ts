@@ -4,7 +4,7 @@ const customerSchema = new Schema(
   {
     customerName: {
       type: String,
-      required: true,
+      required: false,
     },
     customerEmail: {
       type: String,
@@ -12,20 +12,21 @@ const customerSchema = new Schema(
     },
     customerPhone: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
       match: [/^\+?[1-9]\d{1,14}$/, "Please fill a valid phone number"],
     },
     customerAddress: {
       type: String,
-      required: true, // ✅ أصبح مطلوب
+        required: false
+, // ✅ أصبح مطلوب
     },
     customerNotes: {
       type: String,
     },
     customerSource: {
       type: String,
-      required: true,
+      required: false,
       enum: ["order", "consultation", "material_request","contact", "other"],
     },
     customerLocation:{

@@ -139,7 +139,7 @@ export default class ConsultationRequestsController extends BaseApi {
         { header: "Client Name", key: "requestName", width: 25 },
         { header: "Email", key: "email", width: 30 },
         { header: "Phone", key: "phone", width: 20 },
-        { header: "Customer Address", key: "customerAddress", width: 30 },
+        // { header: "Customer Address", key: "customerAddress", width: 30 },
         { header: "Consultation Area", key: "area", width: 25 },
         { header: "Message", key: "message", width: 50 },
         { header: "Status", key: "status", width: 15 },
@@ -383,7 +383,7 @@ export default class ConsultationRequestsController extends BaseApi {
               const requestName = String(row.getCell(1).value || "").trim();
               const email = String(row.getCell(2).value || "").trim();
               const phone = String(row.getCell(3).value || "").trim();
-              const customerAddress = String(row.getCell(4).value || "").trim();
+              // const customerAddress = String(row.getCell(4).value || "").trim();
               const area = String(row.getCell(5).value || "").trim();
               const message = String(row.getCell(6).value || "").trim();
               const status = String(row.getCell(7).value || "").trim() || "new";
@@ -408,7 +408,7 @@ export default class ConsultationRequestsController extends BaseApi {
                 requestName,
                 email,
                 phone,
-                customerAddress,
+                // customerAddress,
                 area,
                 message,
                 status,

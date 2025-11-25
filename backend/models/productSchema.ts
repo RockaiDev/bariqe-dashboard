@@ -62,9 +62,13 @@ const productSchema = new Schema(
       required: true,
     },
 
-    productPrice: {
+    productOldPrice: {
       type: Number,
       required: true,
+    },
+    productNewPrice: {
+      type: Number,
+      required: false,
     },
 
     productCategory: {

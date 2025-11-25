@@ -11,13 +11,13 @@ export default class ConsultationRequestsService extends MongooseFeatures {
   constructor() {
     super();
     this.keys = [
-      "ConsultationRequestsName",
-      "ConsultationRequestsEmail",
-      "ConsultationRequestsPhone",
-      "ConsultationRequestsMessage",
-      "ConsultationRequestsStatus",
-      "consultationRequestsArea",
-      "customers",
+      "ParntersRequestsName",
+      "ParntersRequestsEmail",
+      "ParntersRequestsPhone",
+      "ParntersRequestsMessage",
+      // "ConsultationRequestsStatus",
+      // "consultationRequestsArea",
+      // "customers",
     ];
   }
 
@@ -47,7 +47,7 @@ export default class ConsultationRequestsService extends MongooseFeatures {
     try {
       const reqDoc = await super.getDocument(ConsultationRequestsModel, id);
       if (!reqDoc)
-        throw new ApiError("NOT_FOUND", "Consultation Request not found");
+        throw new ApiError("NOT_FOUND", "Parnters Request not found");
       return reqDoc;
     } catch (error) {
       throw error;
@@ -58,9 +58,9 @@ export default class ConsultationRequestsService extends MongooseFeatures {
   public async AddConsultationRequest(body: any) {
     try {
       if (
-        !body.ConsultationRequestsName ||
-        !body.ConsultationRequestsPhone ||
-        !body.ConsultationRequestsMessage
+        !body.ParntersRequestsName ||
+        !body.ParntersRequestsPhone ||
+        !body.ParntersRequestsMessage
       ) {
         throw new ApiError(
           "BAD_REQUEST",
@@ -85,16 +85,16 @@ export default class ConsultationRequestsService extends MongooseFeatures {
         // 🔍 البحث عن عميل موجود بنفس الهاتف أو الإيميل
         const searchQuery: any = {
           $or: [
-            { customerPhone: body.ConsultationRequestsPhone }
+            { customerPhone: body.ParntersRequestsPhone }
           ]
         };
 
         // إضافة البحث بالإيميل فقط إذا كان موجود
-        if (body.ConsultationRequestsEmail) {
-          searchQuery.$or.push({ customerEmail: body.ConsultationRequestsEmail });
+        if (body.ParntersRequestsEmail) {
+          searchQuery.$or.push({ customerEmail: body.ParntersRequestsEmail });
         }
 
-        existingCustomer = await CustomerModel.findOne(searchQuery);
+        // existingCustomer = await CustomerModel.findOne(searchQuery);
 
         if (existingCustomer) {
           // ✅ استخدام الكاستمر الموجود
@@ -103,68 +103,65 @@ export default class ConsultationRequestsService extends MongooseFeatures {
         } else {
           // 🆕 إنشاء كاستمر جديد
           const customerData :any= {
-            customerName: body.ConsultationRequestsName,
-            customerPhone: body.ConsultationRequestsPhone,
-            customerAddress: body.customerAddress || "",
+            customerName: body.ParntersRequestsName,
+            customerPhone: body.ParntersRequestsPhone,
+          
             customerSource: "consultation",
             customerNotes: `Created from consultation request${body.consultationRequestsArea ? `: ${body.consultationRequestsArea}` : ""}`,
           };
 
           // إضافة الإيميل فقط إذا كان موجود
-          if (body.ConsultationRequestsEmail) {
-            customerData.customerEmail = body.ConsultationRequestsEmail;
+          if (body.ParntersRequestsEmail) {
+            customerData.customerEmail = body.ParntersRequestsEmail;
           }
 
           // إضافة الرسالة إذا كانت موجودة
-          if (body.ConsultationRequestsMessage) {
-            customerData.customerMessage = body.ConsultationRequestsMessage;
+          if (body.ParntersRequestsMessage) {
+            customerData.customerMessage = body.ParntersRequestsMessage;
           }
 
-          const newCustomer = await super.addDocument(CustomerModel, customerData);
+          // const newCustomer = await super.addDocument(CustomerModel, customerData);
 
-          if (!newCustomer) {
-            throw new ApiError("INTERNAL_SERVER_ERROR", "Failed to create customer");
-          }
+          // if (!newCustomer) {
+          //   throw new ApiError("INTERNAL_SERVER_ERROR", "Failed to create customer");
+          // }
 
-          customerId = newCustomer._id;
-          existingCustomer = newCustomer;
-          isNewCustomer = true;
-          console.log(`Created new customer: ${customerId}`);
+         
         }
       }
 
       // 📝 تحضير بيانات الconsultation request
       const consultationRequestData: any = {
-        ConsultationRequestsName: body.ConsultationRequestsName,
-        ConsultationRequestsPhone: body.ConsultationRequestsPhone,
-        ConsultationRequestsMessage: body.ConsultationRequestsMessage,
-        ConsultationRequestsStatus: body.ConsultationRequestsStatus || "new",
-        customers: customerId,
+        ParntersRequestsName: body.ParntersRequestsName,
+        ParntersRequestsPhone: body.ParntersRequestsPhone,
+        ParntersRequestsMessage: body.ParntersRequestsMessage,
+        ParntersRequestsEmail: body.ParntersRequestsEmail,
+   
       };
 
       // إضافة الحقول الاختيارية فقط إذا كانت موجودة
-      if (body.ConsultationRequestsEmail) {
-        consultationRequestData.ConsultationRequestsEmail = body.ConsultationRequestsEmail;
+      if (body.ParntersRequestsEmail) {
+        consultationRequestData.ParntersRequestsEmail = body.ParntersRequestsEmail;
       }
 
-      if (body.consultationRequestsArea) {
-        consultationRequestData.consultationRequestsArea = body.consultationRequestsArea;
-      }
+      // if (body.consultationRequestsArea) {
+      //   consultationRequestData.consultationRequestsArea = body.consultationRequestsArea;
+      // }
 
       // ✅ إنشاء الconsultation request
-      const consultationRequest = await super.addDocument(
+      const ParntersRequests = await super.addDocument(
         ConsultationRequestsModel,
         consultationRequestData
       );
 
       // 📤 إرجاع البيانات مع الكاستمر
       return {
-        consultationRequest,
-        customer: existingCustomer,
+        ParntersRequests,
+        // customer: existingCustomer,
         isNewCustomer,
         message: isNewCustomer 
-          ? "Consultation request created and new customer added successfully"
-          : "Consultation request created with existing customer successfully"
+          ? "Parnters request created and new customer added successfully"
+          : "ConsuParntersltation request created with existing customer successfully"
       };
 
     } catch (error) {

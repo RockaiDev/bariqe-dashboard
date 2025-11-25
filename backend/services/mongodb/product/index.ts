@@ -16,7 +16,8 @@ export default class ProductService extends MongooseFeatures {
       "productNameEn",
       "productDescriptionAr",
       "productDescriptionEn",
-      "productPrice",
+      "productOldPrice",
+      "productNewPrice",
       "productCategory", 
       "productImage",
       "productImagePublicId",
@@ -75,7 +76,7 @@ export default class ProductService extends MongooseFeatures {
     try {
       // التحقق من الحقول الأساسية
       if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
-          !body.productDescriptionEn || !body.productPrice || !body.productCategory) {
+          !body.productDescriptionEn || !body.productOldPrice || !body.productCategory) {
         throw new ApiError(
           "BAD_REQUEST",
           "Required fields missing: Name, Description, Price, or Category."
