@@ -78,8 +78,7 @@ categorySchema.virtual("categoryDescription").get(function () {
 });
 
 
-categorySchema.index({ categoryNameAr: 1 });
-categorySchema.index({ categoryNameEn: 1 });
+// Note: categoryNameAr and categoryNameEn indexes are automatically created by unique: true
 categorySchema.index({ categoryStatus: 1 });
 categorySchema.index({ "subCategories.subCategoryNameAr": 1 });
 categorySchema.index({ "subCategories.subCategoryNameEn": 1 });
