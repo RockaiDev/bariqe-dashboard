@@ -22,9 +22,46 @@ const port = parseInt(PORT as string, 10) || 8080;
 
 // Configure CORS for production and development
 const corsOptions = {
-  origin: NODE_ENV === "production" 
-    ? [DEV_ORIGIN, "https://*.vercel.app","http://localhost:3000", 'https://www.alexchemy.com', 'https://alexchemy.com'] 
-    : [DEV_ORIGIN, "http://localhost:3000"],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = NODE_ENV === "production"
+      ? [
+          DEV_ORIGIN,
+          "http://localhost:3000",
+          "https://www.alexchemy.com",
+          "https://alexchemy.com",
+          "https://attractive-happiness-production-a8a5.up.railway.app",
+          "https://attractive-happiness-production-4918.up.railway.app",
+          // Allow all Vercel preview deployments
+          /^https:\/\/.*\.vercel\.app$/,
+          // Allow all Railway deployments
+          /^https:\/\/.*\.railway\.app$/,
+        ]
+      : [
+          DEV_ORIGIN,
+          "http://localhost:3000",
+          "https://attractive-happiness-production-a8a5.up.railway.app",
+          "https://attractive-happiness-production-4918.up.railway.app",
+        ];
+
+    // Check if origin matches any allowed origin (string or regex)
+    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+      if (typeof allowedOrigin === "string") {
+        return origin === allowedOrigin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200 
 };
