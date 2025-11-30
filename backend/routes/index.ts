@@ -26,9 +26,11 @@ router.patch('/auth/me', authentication, upload.single('avatar'), auth.me.bind(a
 router.patch('/auth/profile', authentication, auth.updateProfile.bind(auth));
 
 // ✅ Public routes (accessible without authentication)
-router.use("/public", publicRouter);
+router.use("/api/public", publicRouter);
+router.use("/public", publicRouter); // Keep for backward compatibility
 
 // ✅ Protected routes require token
-router.use("/", authentication, protectedRouter);
+router.use("/api", authentication, protectedRouter);
+router.use("/", authentication, protectedRouter); // Keep for backward compatibility
 
 export default router;
