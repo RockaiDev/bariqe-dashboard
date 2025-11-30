@@ -254,7 +254,7 @@ export default function ProductsPage() {
   });
 
   // ✅ State for edit subcategories
-  const [editSubCategories, setEditSubCategories] = useState<SubCategory[]>([]);
+  const [, setEditSubCategories] = useState<SubCategory[]>([]);
 
   // Image upload states
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -401,20 +401,20 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
     return category || intl.formatMessage({ id: "products.unknown_category" });
   };
 
-  // ✅ Helper function to get subcategory name
-  const getSubCategoryName = (product: Product) => {
-    if (!product.productSubCategory) return "-";
-    
-    if (typeof product.productCategory === "object" && product.productCategory.subCategories) {
-      const subCategory = product.productCategory.subCategories.find(
-        sub => sub._id === product.productSubCategory
-      );
-      if (subCategory) {
-        return isRTL ? subCategory.subCategoryNameAr : subCategory.subCategoryNameEn;
-      }
-    }
-    return product.productSubCategory;
-  };
+  // ✅ Helper function to get subcategory name (currently unused but kept for future use)
+  // const getSubCategoryName = (product: Product) => {
+  //   if (!product.productSubCategory) return "-";
+  //   
+  //   if (typeof product.productCategory === "object" && product.productCategory.subCategories) {
+  //     const subCategory = product.productCategory.subCategories.find(
+  //       sub => sub._id === product.productSubCategory
+  //     );
+  //     if (subCategory) {
+  //       return isRTL ? subCategory.subCategoryNameAr : subCategory.subCategoryNameEn;
+  //     }
+  //   }
+  //   return product.productSubCategory;
+  // };
 
   // Image upload helpers
   const handleImageFileChange = (
@@ -679,9 +679,8 @@ const handleExportProducts = async () => {
               { count: products.failed.length }
             )
           );
-          products.failed.slice(0, 5).forEach((failure: any) => {
-            
-       
+          products.failed.slice(0, 5).forEach((_failure: any) => {
+            // Failed products are logged but not displayed individually
           });
         }
 
@@ -692,10 +691,8 @@ const handleExportProducts = async () => {
               { count: errors.length }
             )
           );
-          errors.slice(0, 5).forEach((err: any) => {
-            // const row = err.row || "Unknown row";
-         
-            
+          errors.slice(0, 5).forEach((_err: any) => {
+            // Validation errors are logged but not displayed individually
           });
         }
 
@@ -1907,7 +1904,6 @@ function AddProduct({
   const [open, setOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  const [checkingCode, setCheckingCode] = useState(false);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]); // ✅ Add subcategories state
   const [form, setForm] = useState({
     productNameAr: "",
@@ -2427,14 +2423,9 @@ function AddProduct({
               <Button
                 type="submit"
                 className="text-white"
-                disabled={ checkingCode || isLoading}
+                disabled={isLoading}
               >
-                {checkingCode ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {intl.formatMessage({ id: "products.checking_code" })}
-                  </>
-                ) : isLoading ? (
+                {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {intl.formatMessage({ id: "products.creating" })}

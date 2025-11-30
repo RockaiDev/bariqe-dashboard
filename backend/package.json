@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "seed": "ts-node scripts/seeder.ts",
+    "create-admin": "ts-node scripts/create-admin.ts",
     "build": "tsc",
     "dev": "nodemon --exec ts-node app.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
