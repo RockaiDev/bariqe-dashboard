@@ -125,8 +125,8 @@ export default class ConsultationRequestsController extends BaseApi {
       }
 
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem";
-      workbook.lastModifiedBy = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz";
+      workbook.lastModifiedBy = "Bariqe El Tamioz System";
       workbook.created = new Date();
       workbook.modified = new Date();
 
@@ -221,8 +221,8 @@ export default class ConsultationRequestsController extends BaseApi {
   ) {
     try {
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem";
-      workbook.lastModifiedBy = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz";
+      workbook.lastModifiedBy = "Bariqe El Tamioz System";
       workbook.created = new Date();
       workbook.modified = new Date();
 

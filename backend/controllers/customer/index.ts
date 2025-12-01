@@ -116,8 +116,8 @@ export default class CustomerController extends BaseApi {
 
       // Create new workbook
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem";
-      workbook.lastModifiedBy = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz";
+      workbook.lastModifiedBy = "Bariqe El Tamioz System";
       workbook.created = new Date();
       workbook.modified = new Date();
 
@@ -207,8 +207,8 @@ export default class CustomerController extends BaseApi {
   ) {
     try {
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem";
-      workbook.lastModifiedBy = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz";
+      workbook.lastModifiedBy = "Bariqe El Tamioz System";
       workbook.created = new Date();
       workbook.modified = new Date();
 
@@ -516,8 +516,8 @@ export default class CustomerController extends BaseApi {
   public async exportBulkTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem";
-      workbook.lastModifiedBy = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz";
+      workbook.lastModifiedBy = "Bariqe El Tamioz System";
       workbook.created = new Date();
       workbook.modified = new Date();
 

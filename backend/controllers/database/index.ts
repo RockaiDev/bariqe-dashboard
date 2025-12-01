@@ -62,7 +62,7 @@ export default class DatabaseController extends BaseApi {
       console.log("Starting full database backup...");
 
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz System";
       workbook.created = new Date();
 
       // Get all data
@@ -118,7 +118,7 @@ export default class DatabaseController extends BaseApi {
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.setHeader("Content-Disposition", `attachment; filename=AlexChem_Full_Backup_SubCategories_${timestamp}.xlsx`);
+      res.setHeader("Content-Disposition", `attachment; filename=Bariqe El Tamioz_Full_Backup_SubCategories_${timestamp}.xlsx`);
 
       await workbook.xlsx.write(res);
       console.log("✅ Database backup completed successfully with SubCategories support");
@@ -200,7 +200,7 @@ export default class DatabaseController extends BaseApi {
   public async downloadTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "AlexChem System";
+      workbook.creator = "Bariqe El Tamioz System";
       workbook.created = new Date();
 
       // Create all template sheets
@@ -218,7 +218,7 @@ export default class DatabaseController extends BaseApi {
       this.createCompleteInstructionsSheet(workbook);
 
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.setHeader("Content-Disposition", "attachment; filename=AlexChem_Complete_Import_Template_SubCategories.xlsx");
+      res.setHeader("Content-Disposition", "attachment; filename=Bariqe El Tamioz_Complete_Import_Template_SubCategories.xlsx");
 
       await workbook.xlsx.write(res);
 
@@ -1255,7 +1255,7 @@ export default class DatabaseController extends BaseApi {
     this.styleSheetHeader(sheet, "FFFF0000");
 
     const instructions = [
-      "📋 ALEXCHEM DATABASE IMPORT TEMPLATE - COMPLETE GUIDE (UPDATED FOR SUBCATEGORIES)",
+      "📋 BARIQE EL TAMIOZ DATABASE IMPORT TEMPLATE - COMPLETE GUIDE (UPDATED FOR SUBCATEGORIES)",
       "",
       "🚨 CRITICAL: IMPORT ORDER MATTERS! 🚨",
       "You MUST import in this exact sequence:",

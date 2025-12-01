@@ -528,7 +528,7 @@ public async exportCategories(req: Request, res: Response, next: NextFunction) {
     }
 
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "AlexChem";
+    workbook.creator = "Bariqe El Tamioz";
     workbook.created = new Date();
 
     // ✅ Categories Sheet - قابل للإمبورت مباشرة
@@ -755,7 +755,7 @@ const instructionsList = [
 public async downloadTemplate(req: Request, res: Response, next: NextFunction) {
   try {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "AlexChem";
+    workbook.creator = "Bariqe El Tamioz";
     workbook.created = new Date();
 
     // ✅ Categories Template Sheet

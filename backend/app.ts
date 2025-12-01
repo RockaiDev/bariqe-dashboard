@@ -30,8 +30,6 @@ const corsOptions = {
       ? [
           DEV_ORIGIN,
           "http://localhost:3000",
-          "https://www.alexchemy.com",
-          "https://alexchemy.com",
           "https://attractive-happiness-production-a8a5.up.railway.app",
           "https://attractive-happiness-production-4918.up.railway.app",
           // Allow all Vercel preview deployments

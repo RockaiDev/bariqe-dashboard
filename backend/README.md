@@ -1,6 +1,6 @@
-# Backend - AlexChem
+# Backend - Bariqe El Tamioz
 
-This is the backend API for the AlexChem application, built with Node.js, Express, TypeScript, and MongoDB.
+This is the backend API for the Bariqe El Tamioz application, built with Node.js, Express, TypeScript, and MongoDB.
 
 ## Features
 

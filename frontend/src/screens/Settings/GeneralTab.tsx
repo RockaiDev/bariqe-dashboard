@@ -61,7 +61,7 @@ export default function GeneralTab() {
 
       // Get filename from response headers or use default
       const contentDisposition = response.headers["content-disposition"];
-      let filename = "AlexChem_Backup.xlsx";
+      let filename = "Bariqe_El_Tamioz_Backup.xlsx";
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
@@ -111,7 +111,7 @@ export default function GeneralTab() {
 
       // Get filename from response headers or use default
       const contentDisposition = response.headers["content-disposition"];
-      let filename = "AlexChem_Complete_Import_Template.xlsx";
+      let filename = "Bariqe_El_Tamioz_Complete_Import_Template.xlsx";
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
