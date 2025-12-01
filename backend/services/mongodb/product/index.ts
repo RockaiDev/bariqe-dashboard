@@ -74,6 +74,14 @@ export default class ProductService extends MongooseFeatures {
   // 🟢 Add new product
   public async AddProduct(body: any) {
     try {
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (body.productPrice && !body.productOldPrice) {
+        body.productOldPrice = typeof body.productPrice === 'string' 
+          ? parseFloat(body.productPrice) 
+          : body.productPrice;
+      }
+
       // التحقق من الحقول الأساسية
       if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
           !body.productDescriptionEn || !body.productOldPrice || !body.productCategory) {
@@ -120,6 +128,14 @@ export default class ProductService extends MongooseFeatures {
   // 🟢 Edit product
   public async EditOneProduct(id: string, body: any) {
     try {
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (body.productPrice && !body.productOldPrice) {
+        body.productOldPrice = typeof body.productPrice === 'string' 
+          ? parseFloat(body.productPrice) 
+          : body.productPrice;
+      }
+
       const updateData = pick(body, this.keys);
 
       // التحقق من القسم إذا تم إرساله

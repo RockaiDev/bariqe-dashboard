@@ -85,7 +85,9 @@ interface Product {
   productDescriptionAr: string;
   productDescriptionEn: string;
   // productCode: string;
-  productPrice: number;
+  productPrice?: number; // For backward compatibility
+  productOldPrice?: number; // Required field from backend
+  productNewPrice?: number; // Optional field from backend
   productCategory:
     | {
         _id: string;
@@ -117,6 +119,11 @@ interface Category {
 export default function ProductsPage() {
   const intl = useIntl();
   const { isRTL } = useLanguage();
+
+  // Helper function to get display price (prefer productNewPrice, then productOldPrice, then productPrice)
+  const getDisplayPrice = (product: Product): number => {
+    return product.productNewPrice ?? product.productOldPrice ?? product.productPrice ?? 0;
+  };
 
   // Grade and Form options based on schema
   const GRADE_OPTIONS = [
@@ -325,7 +332,7 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
       editForm.productDescriptionAr !== editing.productDescriptionAr ||
       editForm.productDescriptionEn !== editing.productDescriptionEn ||
       // editForm.productCode !== editing.productCode ||
-      editForm.productPrice !== editing.productPrice ||
+      editForm.productPrice !== getDisplayPrice(editing) ||
       editForm.productCategory !==
         (typeof editing.productCategory === "object"
           ? editing.productCategory._id
@@ -338,13 +345,15 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
 
   const handleEdit = async (p: Product) => {
     setEditing(p);
+    // Get the price to display in edit form (prefer productOldPrice for editing)
+    const displayPrice = p.productOldPrice ?? p.productNewPrice ?? p.productPrice ?? 0;
     setEditForm({
       productNameAr: p.productNameAr,
       productNameEn: p.productNameEn,
       productDescriptionAr: p.productDescriptionAr,
       productDescriptionEn: p.productDescriptionEn,
       // productCode: p.productCode,
-      productPrice: p.productPrice,
+      productPrice: displayPrice,
       productCategory:
         typeof p.productCategory === "object"
           ? p.productCategory._id
@@ -838,7 +847,7 @@ const handleExportProducts = async () => {
       />
 
       <SortableTH
-        sortKey="productPrice"
+        sortKey="productOldPrice"
         label={intl.formatMessage({ id: "products.table.price" })}
         sort={sort}
         onSortChange={onSortChange}
@@ -900,7 +909,7 @@ const handleExportProducts = async () => {
           </TableCell>
 
           <TableCell className="font-bold text-center">
-            {p.productPrice?.toFixed(2)} SAR
+            {getDisplayPrice(p)?.toFixed(2)} SAR
           </TableCell>
 
           {/* ⭐ عرض قيمة الخصم */}
@@ -1095,7 +1104,7 @@ const handleExportProducts = async () => {
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
                     <p className="font-bold text-lg text-green-600">
-                      {viewing.productPrice?.toFixed(2)} SAR
+                      {getDisplayPrice(viewing)?.toFixed(2)} SAR
                     </p>
                   </div>
                 </div>

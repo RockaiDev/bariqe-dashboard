@@ -117,6 +117,14 @@ export default class ProductController extends BaseApi {
     try {
       let productData = { ...req.body };
 
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (productData.productPrice && !productData.productOldPrice) {
+        productData.productOldPrice = typeof productData.productPrice === 'string' 
+          ? parseFloat(productData.productPrice) 
+          : productData.productPrice;
+      }
+
       // Parse discountTiers if it's a JSON string
       if (
         productData.discountTiers &&
@@ -165,6 +173,14 @@ export default class ProductController extends BaseApi {
     try {
       let productData = { ...req.body };
 
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (productData.productPrice && !productData.productOldPrice) {
+        productData.productOldPrice = typeof productData.productPrice === 'string' 
+          ? parseFloat(productData.productPrice) 
+          : productData.productPrice;
+      }
+
       // Parse discountTiers if it's a JSON string
       // if (
       //   productData.discountTiers &&
@@ -204,6 +220,14 @@ export default class ProductController extends BaseApi {
   public async editProduct(req: Request, res: Response, next: NextFunction) {
     try {
       let productData = { ...req.body };
+
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (productData.productPrice && !productData.productOldPrice) {
+        productData.productOldPrice = typeof productData.productPrice === 'string' 
+          ? parseFloat(productData.productPrice) 
+          : productData.productPrice;
+      }
 
       // Parse discountTiers if it's a JSON string
       if (
@@ -264,6 +288,14 @@ export default class ProductController extends BaseApi {
   ) {
     try {
       let productData = { ...req.body };
+
+      // Map productPrice to productOldPrice if productOldPrice is not provided
+      // Also convert to number if it's a string (FormData sends strings)
+      if (productData.productPrice && !productData.productOldPrice) {
+        productData.productOldPrice = typeof productData.productPrice === 'string' 
+          ? parseFloat(productData.productPrice) 
+          : productData.productPrice;
+      }
 
       // Parse discountTiers if it's a JSON string
       if (
