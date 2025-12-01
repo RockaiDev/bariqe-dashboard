@@ -1103,11 +1103,39 @@ const handleExportProducts = async () => {
                     {intl.formatMessage({ id: "products.form.price" })}
                   </Label>
                   <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="font-bold text-lg text-green-600">
-                      {getDisplayPrice(viewing)?.toFixed(2)} SAR
-                    </p>
+                    {viewing.productNewPrice && viewing.productOldPrice ? (
+                      <div className="space-y-1">
+                        <p className="font-bold text-lg text-green-600">
+                          {viewing.productNewPrice?.toFixed(2)} SAR
+                        </p>
+                        <p className="text-sm text-gray-500 line-through">
+                          {viewing.productOldPrice?.toFixed(2)} SAR
+                        </p>
+                        <p className="text-xs text-red-600 font-medium">
+                          {Math.round(((viewing.productOldPrice - viewing.productNewPrice) / viewing.productOldPrice) * 100)}% {intl.formatMessage({ id: "products.discount.off" })}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="font-bold text-lg text-green-600">
+                        {getDisplayPrice(viewing)?.toFixed(2)} SAR
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {/* Amount/Stock */}
+                {viewing.amount !== undefined && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-600">
+                      {intl.formatMessage({ id: "products.form.amount" })}
+                    </Label>
+                    <div className="p-3 bg-gray-50 rounded-md border">
+                      <p className="font-medium text-gray-800">
+                        {viewing.amount || 0}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
