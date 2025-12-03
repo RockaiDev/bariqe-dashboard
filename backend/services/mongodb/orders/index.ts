@@ -179,15 +179,15 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Add new order
   public async AddOrder(body: any) {
     try {
+      // 1. Validate Products
       if (
-        !body.customer ||
         !body.products ||
         !Array.isArray(body.products) ||
         body.products.length === 0
       ) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'customer' and 'products' array are required"
+          "Fields 'products' array is required"
         );
       }
 
@@ -201,8 +201,53 @@ export default class OrderService extends MongooseFeatures {
         }
       }
 
-      const newOrder = pick(body, this.keys);
-      const order = await super.addDocument(OrderModel, newOrder);
+      // 2. Handle Customer Logic
+      let customerId = body.customer;
+      const customerData = body.customerData;
+      // Phone can be in root or inside customerData
+      const phone = body.customerPhone || customerData?.customerPhone;
+
+      if (customerId) {
+        // CASE 1: Customer ID provided
+        // If we have new data, update the customer
+        if (customerData && Object.keys(customerData).length > 0) {
+          await CustomerModel.findByIdAndUpdate(customerId, customerData, {
+            new: true,
+          });
+        }
+        // If no data provided, we just use the ID. 
+        // Optionally verify it exists, but usually we trust the ID or let it fail at DB level if strict.
+        if (!customerData) {
+          const exists = await CustomerModel.exists({ _id: customerId });
+          if (!exists) throw new ApiError("NOT_FOUND", "Customer not found");
+        }
+      } else if (phone) {
+        // CASE 3 (& 2): Phone provided -> Upsert (Create or Update)
+        // We merge phone into data to ensure it's saved
+        const updateData = { ...customerData, customerPhone: phone };
+
+        const customer = await CustomerModel.findOneAndUpdate(
+          { customerPhone: phone },
+          updateData,
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        customerId = customer._id;
+      } else if (customerData && Object.keys(customerData).length > 0) {
+        // CASE 2: No ID, No Phone, but Customer Data provided -> Create New
+        const customer = await CustomerModel.create(customerData);
+        customerId = customer._id;
+      } else {
+        throw new ApiError(
+          "BAD_REQUEST",
+          "Customer ID, Phone, or Customer Data is required"
+        );
+      }
+
+      // 3. Create Order
+      const newOrderData = pick(body, this.keys);
+      newOrderData.customer = customerId; // Ensure resolved ID is used
+
+      const order = await super.addDocument(OrderModel, newOrderData);
 
       const populatedOrder = await OrderModel.findById(order._id)
         .populate(
@@ -213,6 +258,7 @@ export default class OrderService extends MongooseFeatures {
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
         );
+      console.log(populatedOrder);
 
       try {
         const po: any = populatedOrder as any;
@@ -226,7 +272,8 @@ export default class OrderService extends MongooseFeatures {
             name: po?.customer?.customerName || po?.customer?.name || "N/A",
             email: po?.customer?.customerEmail || po?.customer?.email || "N/A",
             phone: po?.customer?.customerPhone || po?.customer?.phone || "N/A",
-            address: po?.customer?.customerAddress || po?.customer?.address || "N/A",
+            address:
+              po?.customer?.customerAddress || po?.customer?.address || "N/A",
           },
           products: [],
           totalAmount: 0,
@@ -521,7 +568,10 @@ export default class OrderService extends MongooseFeatures {
                   po?.customer?.customerEmail || po?.customer?.email || "N/A",
                 phone:
                   po?.customer?.customerPhone || po?.customer?.phone || "N/A",
-                  address: po?.customer?.customerAddress || po?.customer?.address || "N/A",
+                address:
+                  po?.customer?.customerAddress ||
+                  po?.customer?.address ||
+                  "N/A",
               },
               products: [],
               totalAmount: 0,
