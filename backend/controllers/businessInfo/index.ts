@@ -1,12 +1,24 @@
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
 import multer from "multer";
-import type Multer from "multer";
 import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
 import BusinessInfoService from "../../services/mongodb/businessInfo/index";
 import CloudinaryService from "../../services/cloudinary/CloudinaryService";
+
+// Multer File type definition to avoid namespace issues
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  destination: string;
+  filename: string;
+  path: string;
+  buffer: Buffer;
+}
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -110,7 +122,7 @@ export default class BusinessInfoController extends BaseApi {
   public async uploadMedia(req: Request, res: Response, next: NextFunction) {
     try {
       const businessInfoId = req.params.id;
-      const files = req.files as { [fieldname: string]: Multer.File[] };
+      const files = req.files as { [fieldname: string]: MulterFile[] };
 
       const updateData: any = {};
 
@@ -176,7 +188,7 @@ export default class BusinessInfoController extends BaseApi {
 
   public async uploadImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const file = (req as any).file as Multer.File | undefined;
+      const file = (req as any).file as MulterFile | undefined;
       const folder = (req.body && (req.body.folder as string)) || "business";
       const prefix = (req.body && (req.body.prefix as string)) || "media";
 

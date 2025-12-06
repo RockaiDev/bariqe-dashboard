@@ -1,5 +1,5 @@
 // src/controllers/events/index.ts
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
 import multer from "multer";
 import path from "path";
@@ -7,6 +7,19 @@ import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
 import EventService from "../../services/mongodb/events/index";
 import CloudinaryService from "../../services/cloudinary/CloudinaryService";
+
+// Multer File type definition to avoid namespace issues
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  destination: string;
+  filename: string;
+  path: string;
+  buffer: Buffer;
+}
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -232,10 +245,10 @@ export default class EventController extends BaseApi {
   public async addEvent(req: Request, res: Response, next: NextFunction) {
     try {
       let eventData = { ...req.body };
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as { [fieldname: string]: MulterFile[] };
 
-      let documentFiles: Express.Multer.File[] = [];
-      let imageFile: Express.Multer.File | undefined;
+      let documentFiles: MulterFile[] = [];
+      let imageFile: MulterFile | undefined;
 
       // Separate image from other files
       if (files) {
@@ -303,7 +316,7 @@ export default class EventController extends BaseApi {
       super.send(res, data);
     } catch (err) {
       // Clean up uploaded files in case of error
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as { [fieldname: string]: MulterFile[] };
       if (files) {
         Object.values(files)
           .flat()
@@ -319,10 +332,10 @@ export default class EventController extends BaseApi {
   public async editEvent(req: Request, res: Response, next: NextFunction) {
     try {
       let eventData = { ...req.body };
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as { [fieldname: string]: MulterFile[] };
 
-      let documentFiles: Express.Multer.File[] = [];
-      let imageFile: Express.Multer.File | undefined;
+      let documentFiles: MulterFile[] = [];
+      let imageFile: MulterFile | undefined;
 
       // Separate image from other files
       if (files) {
@@ -403,7 +416,7 @@ export default class EventController extends BaseApi {
       super.send(res, data);
     } catch (err) {
       // Clean up uploaded files in case of error
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as { [fieldname: string]: MulterFile[] };
       if (files) {
         Object.values(files)
           .flat()
@@ -423,7 +436,7 @@ export default class EventController extends BaseApi {
   ) {
     try {
       let eventData = { ...req.body };
-      const files = req.files as Express.Multer.File[];
+      const files = req.files as MulterFile[];
 
       // Handle base64 image upload if present
       if (eventData.eventImageBase64) {
@@ -457,7 +470,7 @@ export default class EventController extends BaseApi {
   ) {
     try {
       let eventData = { ...req.body };
-      const files = req.files as Express.Multer.File[];
+      const files = req.files as MulterFile[];
 
       // Get existing event to check for old image
       const existingEvent = await eventService.GetOneEvent(req.params.id);
