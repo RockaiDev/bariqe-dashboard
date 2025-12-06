@@ -28,21 +28,23 @@ const corsOptions = {
 
     const allowedOrigins = NODE_ENV === "production"
       ? [
-          DEV_ORIGIN,
-          "http://localhost:3000",
-          "https://attractive-happiness-production-a8a5.up.railway.app",
-          "https://attractive-happiness-production-4918.up.railway.app",
-          // Allow all Vercel preview deployments
-          /^https:\/\/.*\.vercel\.app$/,
-          // Allow all Railway deployments
-          /^https:\/\/.*\.railway\.app$/,
-        ]
+        DEV_ORIGIN,
+        "http://localhost:3000",
+        "https://attractive-happiness-production-a8a5.up.railway.app",
+        "https://attractive-happiness-production-4918.up.railway.app",
+        // Allow all Vercel preview deployments
+        /^https:\/\/.*\.vercel\.app$/,
+        // Allow all Railway deployments
+        /^https:\/\/.*\.railway\.app$/,
+        // Allow all Render deployments
+        /^https:\/\/.*\.onrender\.com$/,
+      ]
       : [
-          DEV_ORIGIN,
-          "http://localhost:3000",
-          "https://attractive-happiness-production-a8a5.up.railway.app",
-          "https://attractive-happiness-production-4918.up.railway.app",
-        ];
+        DEV_ORIGIN,
+        "http://localhost:3000",
+        "https://attractive-happiness-production-a8a5.up.railway.app",
+        "https://attractive-happiness-production-4918.up.railway.app",
+      ];
 
     // Check if origin matches any allowed origin (string or regex)
     const isAllowed = allowedOrigins.some((allowedOrigin) => {
@@ -61,7 +63,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200 
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));

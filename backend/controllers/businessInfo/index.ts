@@ -224,12 +224,12 @@ export default class BusinessInfoController extends BaseApi {
   ) {
     try {
       const businessInfoId = req.params.id;
-      const { 
-        hero_image, 
-        main_title_ar, 
-        main_title_en, 
-        main_description_ar, 
-        main_description_en 
+      const {
+        hero_image,
+        main_title_ar,
+        main_title_en,
+        main_description_ar,
+        main_description_en
       } = req.body;
 
       const data = await businessInfoService.UpdateAboutSettings(

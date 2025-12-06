@@ -153,8 +153,8 @@ export default class EventController extends BaseApi {
         return res.redirect(fileInfo.downloadUrl);
       } else if (fileInfo.isCloudinary && fileInfo.path) {
         // استخدام الرابط المباشر مع flags التحميل
-        const downloadUrl = fileInfo.path.includes('fl_attachment') 
-          ? fileInfo.path 
+        const downloadUrl = fileInfo.path.includes('fl_attachment')
+          ? fileInfo.path
           : fileInfo.path.replace('/upload/', '/upload/fl_attachment/');
         return res.redirect(downloadUrl);
       } else {
@@ -264,14 +264,14 @@ export default class EventController extends BaseApi {
         for (const file of documentFiles) {
           try {
             const publicId = `event_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
+
             // Use the new PDF upload method
             const uploadResult = await CloudinaryService.uploadPdfFromPath(
               file.path,
               "events/documents",
               publicId
             );
-            
+
             uploadedFiles.push({
               filename: file.filename,
               originalName: file.originalname,
@@ -360,14 +360,14 @@ export default class EventController extends BaseApi {
         for (const file of documentFiles) {
           try {
             const publicId = `event_doc_${req.params.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
+
             // Use the new PDF upload method
             const uploadResult = await CloudinaryService.uploadPdfFromPath(
               file.path,
               "events/documents",
               publicId
             );
-            
+
             uploadedFiles.push({
               filename: file.filename,
               originalName: file.originalname,
@@ -639,7 +639,7 @@ export default class EventController extends BaseApi {
   ) {
     try {
       const { eventId, fileId } = req.params;
-      
+
       // Get the event to find the file details
       const event = await eventService.GetOneEvent(eventId);
       if (!event || !event.files) {
