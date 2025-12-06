@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
-import multer, { Multer } from "multer";
+import multer from "multer";
+import type Multer from "multer";
 import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
