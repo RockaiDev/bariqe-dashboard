@@ -1,5 +1,5 @@
 // src/controllers/events/index.ts
-import { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
 import multer from "multer";
 import path from "path";

@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
-import multer from "multer";
+import multer, { Multer } from "multer";
 import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
@@ -109,7 +109,7 @@ export default class BusinessInfoController extends BaseApi {
   public async uploadMedia(req: Request, res: Response, next: NextFunction) {
     try {
       const businessInfoId = req.params.id;
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as { [fieldname: string]: Multer.File[] };
 
       const updateData: any = {};
 
@@ -175,7 +175,7 @@ export default class BusinessInfoController extends BaseApi {
 
   public async uploadImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const file = (req as any).file as Express.Multer.File | undefined;
+      const file = (req as any).file as Multer.File | undefined;
       const folder = (req.body && (req.body.folder as string)) || "business";
       const prefix = (req.body && (req.body.prefix as string)) || "media";
 
