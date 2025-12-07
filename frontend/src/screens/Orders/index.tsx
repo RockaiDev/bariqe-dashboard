@@ -195,7 +195,7 @@ export default function OrdersPage() {
   };
 
   // ✅ Helper Functions
-console.log("viw",viewing)
+  console.log("viw", viewing)
   /**
    * حساب الخصم المناسب بناءً على الكمية والخصومات المتدرجة للمنتج
    */
@@ -275,6 +275,10 @@ console.log("viw",viewing)
   const calculateOrderTotal = (order: Order) => {
     let subtotal = 0;
     order.products.forEach((item) => {
+      // Add null/undefined check for product and productPrice
+      if (!item.product || item.product.productPrice === undefined || item.product.productPrice === null) {
+        return; // Skip this item if product or price is missing
+      }
       const itemTotal = item.quantity * item.product.productPrice;
       const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
       subtotal += afterItemDiscount;
@@ -286,6 +290,10 @@ console.log("viw",viewing)
   const calculateSubtotal = (order: Order) => {
     let subtotal = 0;
     order.products.forEach((item) => {
+      // Add null/undefined check for product and productPrice
+      if (!item.product || item.product.productPrice === undefined || item.product.productPrice === null) {
+        return; // Skip this item if product or price is missing
+      }
       const itemTotal = item.quantity * item.product.productPrice;
       const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
       subtotal += afterItemDiscount;
@@ -397,7 +405,7 @@ console.log("viw",viewing)
       setAddOpen(false);
       resetForms();
     },
-    onCancel: () => {},
+    onCancel: () => { },
   });
 
   const editConfirmDialog = useConfirmationDialog({
@@ -407,7 +415,7 @@ console.log("viw",viewing)
       setIsEditingStatus(false);
       setEditedStatus("");
     },
-    onCancel: () => {},
+    onCancel: () => { },
   });
 
   const handleAddDialogClose = (open: boolean) => {
@@ -680,9 +688,8 @@ console.log("viw",viewing)
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `orders_export_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
+      a.download = `orders_export_${new Date().toISOString().split("T")[0]
+        }.xlsx`;
       document.body.appendChild(a);
       a.click();
 
@@ -709,9 +716,9 @@ console.log("viw",viewing)
   const currentSort =
     filters.sorts.length > 0
       ? {
-          key: filters.sorts[0].field,
-          direction: filters.sorts[0].direction,
-        }
+        key: filters.sorts[0].field,
+        direction: filters.sorts[0].direction,
+      }
       : undefined;
 
   const handleSortChange = (key?: string, direction?: "asc" | "desc") => {
@@ -970,13 +977,13 @@ console.log("viw",viewing)
                   <TableCell className="text-sm text-gray-500">
                     {order.createdAt
                       ? new Date(order.createdAt).toLocaleDateString(
-                          isRTL ? "ar-EG" : "en-US",
-                          {
-                            year: "2-digit",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )
+                        isRTL ? "ar-EG" : "en-US",
+                        {
+                          year: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )
                       : "N/A"}
                   </TableCell>
                   <TableCell className="text-right">
@@ -1256,7 +1263,7 @@ console.log("viw",viewing)
                                 : product.productNameEn}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {product.productPrice.toFixed(2)} EGP
+                              {(product.productPrice ?? 0).toFixed(2)} EGP
                             </span>
                             {product.productDiscount > 0 && (
                               <span className="text-xs bg-red-100 text-red-600 px-1 rounded">
@@ -1417,11 +1424,10 @@ console.log("viw",viewing)
                               {item.itemDiscount > 0 ? (
                                 <div className="flex flex-col items-center gap-1">
                                   <span
-                                    className={`px-2 py-1 rounded text-sm font-medium ${
-                                      isAutoDiscount
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
+                                    className={`px-2 py-1 rounded text-sm font-medium ${isAutoDiscount
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                      }`}
                                   >
                                     {item.itemDiscount}%
                                   </span>
@@ -1439,7 +1445,7 @@ console.log("viw",viewing)
                               )}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-gray-600">
-                              {product.productPrice.toFixed(2)} EGP
+                              {(product.productPrice ?? 0).toFixed(2)} EGP
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
                               {item.itemDiscount > 0 && (
@@ -1684,8 +1690,8 @@ console.log("viw",viewing)
               {loading
                 ? intl.formatMessage({ id: "orders.creating" })
                 : createNewCustomer
-                ? intl.formatMessage({ id: "orders.create_customer_order" })
-                : intl.formatMessage({ id: "orders.create_order" })}
+                  ? intl.formatMessage({ id: "orders.create_customer_order" })
+                  : intl.formatMessage({ id: "orders.create_order" })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1938,7 +1944,7 @@ console.log("viw",viewing)
                                     : item.product?.productNameEn}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {item.product.productPrice.toFixed(2)} EGP ×{" "}
+                                  {(item.product.productPrice ?? 0).toFixed(2)} EGP ×{" "}
                                   {item.quantity}
                                 </p>
                               </div>
@@ -1958,7 +1964,7 @@ console.log("viw",viewing)
                               )}
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
-                              {item.product.productPrice.toFixed(2)} EGP
+                              {(item.product.productPrice ?? 0).toFixed(2)} EGP
                             </td>
                             <td className="px-4 py-3 text-right">
                               {itemSubtotal.toFixed(2)} EGP
@@ -2042,13 +2048,13 @@ console.log("viw",viewing)
                     <p className="text-sm">
                       {viewing.createdAt
                         ? new Date(viewing.createdAt).toLocaleString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "2-digit",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
+                          isRTL ? "ar-EG" : "en-US",
+                          {
+                            year: "2-digit",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
                         : intl.formatMessage({ id: "orders.not_available" })}
                     </p>
                   </div>
@@ -2063,13 +2069,13 @@ console.log("viw",viewing)
                     <p className="text-sm">
                       {viewing.updatedAt
                         ? new Date(viewing.updatedAt).toLocaleString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "2-digit",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
+                          isRTL ? "ar-EG" : "en-US",
+                          {
+                            year: "2-digit",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
                         : intl.formatMessage({ id: "orders.not_available" })}
                     </p>
                   </div>
@@ -2371,13 +2377,12 @@ function DiscountInfo({
                   return (
                     <div
                       key={idx}
-                      className={`flex items-center justify-between text-xs px-2 py-1 rounded ${
-                        isActive
-                          ? "bg-green-100 text-green-700 font-semibold"
-                          : isNext
+                      className={`flex items-center justify-between text-xs px-2 py-1 rounded ${isActive
+                        ? "bg-green-100 text-green-700 font-semibold"
+                        : isNext
                           ? "bg-yellow-50 text-yellow-700"
                           : "bg-gray-50 text-gray-500"
-                      }`}
+                        }`}
                     >
                       <span className="flex items-center gap-1">
                         {isActive && <Check className="w-3 h-3" />}
