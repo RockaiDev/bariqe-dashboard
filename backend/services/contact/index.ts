@@ -55,7 +55,7 @@ export default class ContactService extends MongooseFeatures {
 
     // ✅ Populate customer
     if (result.data && result.data.length > 0) {
-      await ContactModel.populate(result.data, { 
+      await ContactModel.populate(result.data, {
         path: 'customer',
         select: 'customerName customerEmail customerPhone customerCompany'
       });
@@ -71,7 +71,7 @@ export default class ContactService extends MongooseFeatures {
         path: 'customer',
         select: 'customerName customerEmail customerPhone customerCompany'
       });
-      
+
       if (!contact) throw new ApiError("NOT_FOUND", "Contact not found");
 
       return contact;
@@ -83,13 +83,20 @@ export default class ContactService extends MongooseFeatures {
   // 🟢 Add new contact
   public async AddContact(body: any) {
     try {
-      if (!body.contactName || !body.phoneNumber || 
-          !body.address || !body.message) {
+      // 🟢 Check if any of the required fields are missing, including both forms of data
+      if ((!body.contactName && !body.customerName) || (!body.phoneNumber && !body.customerPhone) ||
+        (!body.address && !body.customerAddress) || (!body.message && !body.customerMessage)) {
         throw new ApiError(
           "BAD_REQUEST",
           "Fields 'contactName', 'phoneNumber', 'address', 'message' are required"
         );
       }
+      // 🟢 Map both forms of data to standardized schema data
+      if (body.customerName) body.contactName = body.customerName;
+      if (body.customerEmail) body.email = body.customerEmail;
+      if (body.customerPhone) body.phoneNumber = body.customerPhone;
+      if (body.customerAddress) body.address = body.customerAddress;
+      if (body.customerMessage) body.message = body.customerMessage;
 
       // ✅ التحقق من Customer إذا تم تقديمه
       if (body.customer) {
@@ -103,13 +110,13 @@ export default class ContactService extends MongooseFeatures {
 
       const newContact = pick(body, this.keys);
       const contact = await super.addDocument(ContactModel, newContact);
-      
+
       // ✅ Populate customer before return
       await contact.populate({
         path: 'customer',
         select: 'customerName customerEmail customerPhone customerCompany'
       });
-      
+
       return contact;
     } catch (error) {
       throw error;
@@ -183,7 +190,7 @@ export default class ContactService extends MongooseFeatures {
   public async ExportContacts(query?: any) {
     try {
       console.log('Export query received:', query);
-      
+
       const keys = this.keys.sort();
       const {
         perPage = 999999,
@@ -206,7 +213,7 @@ export default class ContactService extends MongooseFeatures {
 
       // ✅ Populate customer
       if (result.data && result.data.length > 0) {
-        await ContactModel.populate(result.data, { 
+        await ContactModel.populate(result.data, {
           path: 'customer',
           select: 'customerName customerEmail customerPhone customerCompany'
         });
@@ -219,7 +226,7 @@ export default class ContactService extends MongooseFeatures {
         let customerPhone = '';
         let customerCompany = '';
         let customerId = '';
-        
+
         if (contact.customer && typeof contact.customer === 'object') {
           customerName = contact.customer.customerName || '';
           customerEmail = contact.customer.customerEmail || '';
@@ -250,7 +257,7 @@ export default class ContactService extends MongooseFeatures {
           status: contact.status || false,
           createdAt: contact.createdAt || null,
           updatedAt: contact.updatedAt || null
-        }; 
+        };
       });
 
       return exportData;
@@ -264,7 +271,7 @@ export default class ContactService extends MongooseFeatures {
   public async ExportContactStatistics(query?: any) {
     try {
       console.log('Export statistics query received:', query);
-      
+
       const {
         perPage = 999999,
         page = 1,
@@ -326,23 +333,23 @@ export default class ContactService extends MongooseFeatures {
       for (const contactData of contactsData) {
         try {
           // Check if contact exists by email
-          const existingContact = await ContactModel.findOne({ 
-            email: contactData.email 
+          const existingContact = await ContactModel.findOne({
+            email: contactData.email
           });
 
           // ✅ Get customer if provided
           let customerId = null;
-          
+
           if (contactData.customerEmail) {
-            const customer = await CustomerModel.findOne({ 
-              customerEmail: contactData.customerEmail 
+            const customer = await CustomerModel.findOne({
+              customerEmail: contactData.customerEmail
             });
-            
+
             if (customer) {
               customerId = customer._id;
             } else if (contactData.customerName) {
-              const customerByName = await CustomerModel.findOne({ 
-                customerName: contactData.customerName 
+              const customerByName = await CustomerModel.findOne({
+                customerName: contactData.customerName
               });
               if (customerByName) {
                 customerId = customerByName._id;
