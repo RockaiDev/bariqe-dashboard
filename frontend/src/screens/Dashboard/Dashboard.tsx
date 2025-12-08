@@ -335,7 +335,7 @@ export default function Dashboard() {
           </div>
           
           {/* Recent Requests Table */}
-          <div>
+          {/* <div>
             
             <DataTable
             filterAble={false}
@@ -381,7 +381,7 @@ export default function Dashboard() {
 
             />
 
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

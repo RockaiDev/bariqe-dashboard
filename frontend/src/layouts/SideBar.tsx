@@ -17,8 +17,8 @@ import {
 import {
   Home,
   Package,
-  FileText,
-  MessageSquare,
+  // FileText,
+  // MessageSquare,
   Users,
   BarChart2,
   Settings,
@@ -66,21 +66,21 @@ export default function AppSidebar() {
       label: intl.formatMessage({ id: "nav_category" }),
       href: "/category",
     },
-    {
-      icon: FileText,
-      label: intl.formatMessage({ id: "nav_material_request" }),
-      href: "/material-requests",
-    },
+    // {
+    //   icon: FileText,
+    //   label: intl.formatMessage({ id: "nav_material_request" }),
+    //   href: "/material-requests",
+    // },
     {
       icon: Truck,
       label: intl.formatMessage({ id: "nav_orders" }),
       href: "/orders",
     },
-    {
-      icon: MessageSquare,
-      label: intl.formatMessage({ id: "nav_consultations" }),
-      href: "/consultations",
-    },
+    // {
+    //   icon: MessageSquare,
+    //   label: intl.formatMessage({ id: "nav_consultations" }),
+    //   href: "/consultations",
+    // },
     {
       icon: Users,
       label: intl.formatMessage({ id: "nav_customers" }),
