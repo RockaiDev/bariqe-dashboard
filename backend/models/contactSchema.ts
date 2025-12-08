@@ -25,7 +25,6 @@ const contactSchema = new Schema({
     },
     address:{
         type: String,
-        required: true,
         trim: true
     },
     services: [{

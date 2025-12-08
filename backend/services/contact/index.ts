@@ -84,18 +84,16 @@ export default class ContactService extends MongooseFeatures {
   public async AddContact(body: any) {
     try {
       // 🟢 Check if any of the required fields are missing, including both forms of data
-      if ((!body.contactName && !body.customerName) || (!body.phoneNumber && !body.customerPhone) ||
-        (!body.address && !body.customerAddress) || (!body.message && !body.customerMessage)) {
+      if ((!body.contactName && !body.customerName) || (!body.phoneNumber && !body.customerPhone) || (!body.email && !body.customerEmail) || (!body.message && !body.customerMessage)) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'contactName', 'phoneNumber', 'address', 'message' are required"
+          "Fields 'contactName', 'phoneNumber', 'email', 'message' are required"
         );
       }
       // 🟢 Map both forms of data to standardized schema data
       if (body.customerName) body.contactName = body.customerName;
       if (body.customerEmail) body.email = body.customerEmail;
       if (body.customerPhone) body.phoneNumber = body.customerPhone;
-      if (body.customerAddress) body.address = body.customerAddress;
       if (body.customerMessage) body.message = body.customerMessage;
 
       // ✅ التحقق من Customer إذا تم تقديمه
