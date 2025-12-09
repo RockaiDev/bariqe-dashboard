@@ -87,7 +87,7 @@ export default function Login() {
             {intl.formatMessage({ id: "Welcome back! Log in to pick up where you left off" })}
           </h1>
           <p className="text-white/70 text-sm lg:text-base xl:text-lg leading-relaxed">
-            {intl.formatMessage({ id: "Sign in to continue managing the full AlexChem ecosystem — from updating product details and processing orders to tracking consultations and material requests, all in one secure place." })}
+            {intl.formatMessage({ id: "login_signin_description" })}
           </p>
         </div>
       </div>
