@@ -244,7 +244,7 @@
   "Refresh": "Refresh",
 
   "Welcome back! Log in to pick up where you left off": "Welcome back! Log in to pick up where you left off",
-  "Sign in to continue managing the full AlexChem ecosystem — from\n            updating product details and processing orders to tracking\n            consultations and material requests, all in one secure place.": "Sign in to continue managing the full Bariqe El Tamioz ecosystem — from updating product details and processing orders to tracking consultations and material requests, all in one secure place.",
+  "login_signin_description": "Sign in to continue managing the full Bariqe El Tamioz ecosystem — from updating product details and processing orders to tracking consultations, all in one secure place.",
   "Welcome back!": "Welcome back!",
   "Sign In to Get Started": "Sign In to Get Started",
   "Email Address": "Email Address",
