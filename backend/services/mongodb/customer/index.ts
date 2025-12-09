@@ -56,15 +56,15 @@ export default class CustomerService extends MongooseFeatures {
   public async AddCustomer(body: any) {
     try {
       // التحقق من الحقول المطلوبة الجديدة
-      if (!body.customerName || !body.customerPhone || !body.customerSource || !body.customerAddress) {
+      if (!body.customerName || !body.customerPhone || !body.customerSource) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'customerName', 'customerPhone', 'customerSource' and 'customerAddress' are required"
+          "Fields 'customerName', 'customerPhone', 'customerSource' are required"
         );
       }
 
- 
-      const duplicateConditions : any= [
+
+      const duplicateConditions: any = [
         { customerName: body.customerName },
         { customerPhone: body.customerPhone }
       ];
@@ -86,13 +86,13 @@ export default class CustomerService extends MongooseFeatures {
         } else if (existingCustomer.customerEmail === body.customerEmail) {
           duplicateField = "email";
         }
-        
+
         throw new ApiError(
           "BAD_REQUEST",
           `A customer with the same ${duplicateField} already exists`
         );
       }
-      
+
       const newCustomer = pick(body, this.keys);
       const customer = await super.addDocument(CustomerModel, newCustomer);
       return customer;
@@ -105,11 +105,11 @@ export default class CustomerService extends MongooseFeatures {
   public async EditOneCustomer(id: string, body: any) {
     try {
       const updateData = pick(body, this.keys);
-      
+
       // التحقق من عدم تكرار الاسم أو الرقم أو الإيميل
       if (body.customerName || body.customerPhone || body.customerEmail) {
         const duplicateConditions = [];
-        
+
         if (body.customerName) {
           duplicateConditions.push({ customerName: body.customerName });
         }
@@ -119,12 +119,12 @@ export default class CustomerService extends MongooseFeatures {
         if (body.customerEmail) {
           duplicateConditions.push({ customerEmail: body.customerEmail });
         }
-        
+
         const existingCustomer = await CustomerModel.findOne({
           _id: { $ne: id },
           $or: duplicateConditions,
         });
-        
+
         if (existingCustomer) {
           let duplicateField = "";
           if (existingCustomer.customerName === body.customerName) {
@@ -134,14 +134,14 @@ export default class CustomerService extends MongooseFeatures {
           } else if (existingCustomer.customerEmail === body.customerEmail) {
             duplicateField = "email";
           }
-          
+
           throw new ApiError(
             "BAD_REQUEST",
             `A customer with the same ${duplicateField} already exists`
           );
         }
       }
-      
+
       const updatedCustomer = await super.editDocument(
         CustomerModel,
         id,
@@ -204,8 +204,8 @@ export default class CustomerService extends MongooseFeatures {
       for (const customerData of customersData) {
         try {
           // التحقق من الحقول المطلوبة الجديدة
-          if (!customerData.customerName || !customerData.customerPhone || 
-              !customerData.customerSource || !customerData.customerAddress) {
+          if (!customerData.customerName || !customerData.customerPhone ||
+            !customerData.customerSource || !customerData.customerAddress) {
             results.failed.push({
               customerPhone: customerData.customerPhone || 'N/A',
               customerName: customerData.customerName || 'N/A',
@@ -214,8 +214,8 @@ export default class CustomerService extends MongooseFeatures {
             continue;
           }
 
-    
-          const duplicateConditions :any = [
+
+          const duplicateConditions: any = [
             { customerName: customerData.customerName },
             { customerPhone: customerData.customerPhone }
           ];
@@ -231,7 +231,7 @@ export default class CustomerService extends MongooseFeatures {
           if (existingCustomer) {
             // تحديث العميل الموجود
             const customerToSave = pick(customerData, this.keys);
-            
+
             try {
               await CustomerModel.findByIdAndUpdate(
                 existingCustomer._id,
@@ -282,7 +282,7 @@ export default class CustomerService extends MongooseFeatures {
       for (const customerData of customersData) {
         try {
           const { customerPhone, ...updateData } = customerData;
-          
+
           if (!customerPhone) {
             results.failed.push({
               customerPhone: 'N/A',
@@ -294,7 +294,7 @@ export default class CustomerService extends MongooseFeatures {
           // التحقق من عدم تكرار البيانات عند التحديث
           if (updateData.customerName || updateData.customerPhone || updateData.customerEmail) {
             const duplicateConditions = [];
-            
+
             if (updateData.customerName) {
               duplicateConditions.push({ customerName: updateData.customerName });
             }
@@ -304,12 +304,12 @@ export default class CustomerService extends MongooseFeatures {
             if (updateData.customerEmail) {
               duplicateConditions.push({ customerEmail: updateData.customerEmail });
             }
-            
+
             const existingCustomer = await CustomerModel.findOne({
               customerPhone: { $ne: customerPhone },
               $or: duplicateConditions,
             });
-            
+
             if (existingCustomer) {
               let duplicateField = "";
               if (existingCustomer.customerName === updateData.customerName) {
@@ -319,7 +319,7 @@ export default class CustomerService extends MongooseFeatures {
               } else if (existingCustomer.customerEmail === updateData.customerEmail) {
                 duplicateField = "email";
               }
-              
+
               results.failed.push({
                 customerPhone,
                 error: `A customer with the same ${duplicateField} already exists`
