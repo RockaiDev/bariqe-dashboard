@@ -149,7 +149,7 @@ export default class OrderService extends MongooseFeatures {
       {
         path: "products.product",
         select:
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers",
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers",
       },
     ]);
 
@@ -166,7 +166,7 @@ export default class OrderService extends MongooseFeatures {
         )
         .populate(
           "products.product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         );
 
       if (!order) throw new ApiError("NOT_FOUND", "Order not found");
@@ -256,7 +256,7 @@ export default class OrderService extends MongooseFeatures {
         )
         .populate(
           "products.product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         );
       console.log(populatedOrder);
 
@@ -283,7 +283,7 @@ export default class OrderService extends MongooseFeatures {
         if (Array.isArray(po?.products)) {
           for (const item of po.products) {
             const prod: any = item.product || {};
-            const unitPrice = prod.productPrice || 0;
+            const unitPrice = prod.productNewPrice || prod.productOldPrice || 0;
             const qty = item.quantity || 0;
             const itemDiscount = item.itemDiscount || 0;
             const subtotal = unitPrice * qty;
@@ -338,7 +338,7 @@ export default class OrderService extends MongooseFeatures {
         )
         .populate(
           "products.product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         );
 
       if (!updatedOrder) {
@@ -373,7 +373,7 @@ export default class OrderService extends MongooseFeatures {
         )
         .populate(
           "products.product",
-          "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode discountTiers"
+          "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         )
         .sort({ createdAt: -1 });
 
@@ -382,7 +382,7 @@ export default class OrderService extends MongooseFeatures {
 
       orders.forEach((order: any) => {
         order.products.forEach((item: any, index: number) => {
-          const productPrice = item.product?.productPrice || 0;
+          const productPrice = item.product?.productNewPrice || item.product?.productOldPrice || 0;
           const quantity = item.quantity || 0;
           const itemDiscount = item.itemDiscount || 0;
           const orderDiscount = order.orderDiscount || 0;
@@ -537,7 +537,7 @@ export default class OrderService extends MongooseFeatures {
             )
             .populate(
               "products.product",
-              "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+              "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode"
             );
 
           results.updated.push(updatedOrder);
@@ -551,7 +551,7 @@ export default class OrderService extends MongooseFeatures {
             )
             .populate(
               "products.product",
-              "productNameAr productNameEn productDescriptionAr productDescriptionEn productPrice productImage productCode"
+              "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode"
             );
 
           // Send notification email for imported-created order (non-blocking)
@@ -581,7 +581,7 @@ export default class OrderService extends MongooseFeatures {
             if (Array.isArray(po?.products)) {
               for (const item of po.products) {
                 const prod: any = item.product || {};
-                const unitPrice = prod.productPrice || 0;
+                const unitPrice = prod.productNewPrice || prod.productOldPrice || 0;
                 const qty = item.quantity || 0;
                 const itemDiscount = item.itemDiscount || 0;
                 const subtotal = unitPrice * qty;

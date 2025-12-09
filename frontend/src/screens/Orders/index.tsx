@@ -59,7 +59,8 @@ interface OrderProduct {
     _id: string;
     productNameAr: string;
     productNameEn: string;
-    productPrice: number;
+    productOldPrice: number;
+    productNewPrice?: number;
     productCode?: string;
   };
   quantity: number;
@@ -275,11 +276,12 @@ export default function OrdersPage() {
   const calculateOrderTotal = (order: Order) => {
     let subtotal = 0;
     order.products.forEach((item) => {
-      // Add null/undefined check for product and productPrice
-      if (!item.product || item.product.productPrice === undefined || item.product.productPrice === null) {
+      // Add null/undefined check for product and price fields
+      if (!item.product || (item.product.productOldPrice === undefined && item.product.productNewPrice === undefined)) {
         return; // Skip this item if product or price is missing
       }
-      const itemTotal = item.quantity * item.product.productPrice;
+      const productPrice = item.product.productNewPrice ?? item.product.productOldPrice;
+      const itemTotal = item.quantity * productPrice;
       const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
       subtotal += afterItemDiscount;
     });
@@ -290,11 +292,12 @@ export default function OrdersPage() {
   const calculateSubtotal = (order: Order) => {
     let subtotal = 0;
     order.products.forEach((item) => {
-      // Add null/undefined check for product and productPrice
-      if (!item.product || item.product.productPrice === undefined || item.product.productPrice === null) {
+      // Add null/undefined check for product and price fields
+      if (!item.product || (item.product.productOldPrice === undefined && item.product.productNewPrice === undefined)) {
         return; // Skip this item if product or price is missing
       }
-      const itemTotal = item.quantity * item.product.productPrice;
+      const productPrice = item.product.productNewPrice ?? item.product.productOldPrice;
+      const itemTotal = item.quantity * productPrice;
       const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
       subtotal += afterItemDiscount;
     });
@@ -1386,7 +1389,7 @@ export default function OrdersPage() {
                         if (!product) return null;
 
                         const itemSubtotal =
-                          product.productPrice * item.quantity;
+                          (product.productNewPrice ?? product.productOldPrice) * item.quantity;
                         const discountAmount =
                           (itemSubtotal * item.itemDiscount) / 100;
                         const afterDiscount = itemSubtotal - discountAmount;
@@ -1445,7 +1448,7 @@ export default function OrdersPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-gray-600">
-                              {(product.productPrice ?? 0).toFixed(2)} EGP
+                              {(product.productNewPrice ?? product.productOldPrice ?? 0).toFixed(2)} EGP
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
                               {item.itemDiscount > 0 && (
@@ -1927,7 +1930,7 @@ export default function OrdersPage() {
                     <tbody>
                       {viewing.products.map((item, index) => {
                         const itemSubtotal =
-                          item.product.productPrice * item.quantity;
+                          (item.product.productNewPrice ?? item.product.productOldPrice) * item.quantity;
                         const itemTotal =
                           itemSubtotal * (1 - item.itemDiscount / 100);
 
@@ -1944,7 +1947,7 @@ export default function OrdersPage() {
                                     : item.product?.productNameEn}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {(item.product.productPrice ?? 0).toFixed(2)} EGP ×{" "}
+                                  {(item.product.productNewPrice ?? item.product.productOldPrice ?? 0).toFixed(2)} EGP ×{" "}
                                   {item.quantity}
                                 </p>
                               </div>
@@ -1964,7 +1967,7 @@ export default function OrdersPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
-                              {(item.product.productPrice ?? 0).toFixed(2)} EGP
+                              {(item.product.productNewPrice ?? item.product.productOldPrice ?? 0).toFixed(2)} EGP
                             </td>
                             <td className="px-4 py-3 text-right">
                               {itemSubtotal.toFixed(2)} EGP
