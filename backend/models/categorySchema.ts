@@ -44,7 +44,7 @@ const categorySchema = new Schema(
     },
     categoryImage: {
       type: String,
-      default: "https://res.cloudinary.com/dh6z6gsjk/image/upload/v1760606981/d-koi-5nI9N2wNcBU-unsplash_1_iofavw.jpg",
+      default: "https://res.cloudinary.com/db152mwtg/image/upload/v1764588788/products/product_1764588788281_1764588788281.jpg",
     },
     categoryPublicId: {
       type: String,
@@ -84,7 +84,7 @@ categorySchema.index({ "subCategories.subCategoryNameAr": 1 });
 categorySchema.index({ "subCategories.subCategoryNameEn": 1 });
 
 
-categorySchema.pre('save', function(next) {
+categorySchema.pre('save', function (next) {
   if (this.categoryNameAr) this.categoryNameAr = this.categoryNameAr.trim();
   if (this.categoryNameEn) this.categoryNameEn = this.categoryNameEn.trim();
   if (this.categoryDescriptionAr) this.categoryDescriptionAr = this.categoryDescriptionAr.trim();
