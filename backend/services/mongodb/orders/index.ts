@@ -29,12 +29,21 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Get all orders
   public async GetOrders(query: any) {
     const keys = this.keys.sort();
-    const {
+    let {
       perPage,
       page,
       sorts = [],
       queries = [],
     } = pick(query, ["perPage", "page", "sorts", "queries"]);
+
+    // Default sort by createdAt desc if no sort provided
+    if (
+      !sorts ||
+      sorts === "[]" ||
+      (Array.isArray(sorts) && sorts.length === 0)
+    ) {
+      sorts = [["createdAt", "desc"]];
+    }
 
     const preprocessQueries = async (rawQueries: any) => {
       let qs: any = rawQueries;

@@ -106,7 +106,10 @@ export default function OrdersPage() {
   const [filters, setFilters] = useState({
     page: 1,
     perPage: 15,
-    sorts: [] as Array<{ field: string; direction: "asc" | "desc" }>,
+    sorts: [{ field: "createdAt", direction: "desc" }] as Array<{
+      field: string;
+      direction: "asc" | "desc";
+    }>,
     queries: [],
     search: "",
   });

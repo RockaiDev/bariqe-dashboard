@@ -18,24 +18,33 @@ export default class ProductService extends MongooseFeatures {
       "productDescriptionEn",
       "productOldPrice",
       "productNewPrice",
-      "productCategory", 
+      "productCategory",
       "productImage",
       "productImagePublicId",
-      "productMoreSale", 
-      "amount",          
-      "productDiscount", 
-      "productOptions"   
+      "productMoreSale",
+      "amount",
+      "productDiscount",
+      "productOptions"
     ];
   }
 
   // 🟢 Get all products with pagination & sorting
   public async GetProducts(query: any) {
-    const {
+    let {
       perPage,
       page,
       sorts = [],
       queries = [],
     } = pick(query, ["perPage", "page", "sorts", "queries"]);
+
+    // Default sort by createdAt desc if no sort provided
+    if (
+      !sorts ||
+      sorts === "[]" ||
+      (Array.isArray(sorts) && sorts.length === 0)
+    ) {
+      sorts = [["createdAt", "desc"]];
+    }
 
     const result = await super.PaginateHandler(
       ProductModel,
@@ -46,7 +55,7 @@ export default class ProductService extends MongooseFeatures {
     );
 
     if (result.data && result.data.length > 0) {
-      await ProductModel.populate(result.data, { 
+      await ProductModel.populate(result.data, {
         path: 'productCategory',
         select: 'categoryNameAr categoryNameEn categoryStatus'
       });
@@ -62,7 +71,7 @@ export default class ProductService extends MongooseFeatures {
         path: 'productCategory',
         select: 'categoryNameAr categoryNameEn categoryStatus'
       });
-      
+
       if (!product) throw new ApiError("NOT_FOUND", "Product not found");
 
       return product;
@@ -77,14 +86,14 @@ export default class ProductService extends MongooseFeatures {
       // Map productPrice to productOldPrice if productOldPrice is not provided
       // Also convert to number if it's a string (FormData sends strings)
       if (body.productPrice && !body.productOldPrice) {
-        body.productOldPrice = typeof body.productPrice === 'string' 
-          ? parseFloat(body.productPrice) 
+        body.productOldPrice = typeof body.productPrice === 'string'
+          ? parseFloat(body.productPrice)
           : body.productPrice;
       }
 
       // التحقق من الحقول الأساسية
-      if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr || 
-          !body.productDescriptionEn || !body.productOldPrice || !body.productCategory) {
+      if (!body.productNameAr || !body.productNameEn || !body.productDescriptionAr ||
+        !body.productDescriptionEn || !body.productOldPrice || !body.productCategory) {
         throw new ApiError(
           "BAD_REQUEST",
           "Required fields missing: Name, Description, Price, or Category."
@@ -109,12 +118,12 @@ export default class ProductService extends MongooseFeatures {
       }
 
       const product = await super.addDocument(ProductModel, newProductData);
-      
+
       await product.populate({
         path: 'productCategory',
         select: 'categoryNameAr categoryNameEn categoryStatus'
       });
-      
+
       return product;
     } catch (error: any) {
       if (error instanceof ApiError) throw error;
@@ -131,8 +140,8 @@ export default class ProductService extends MongooseFeatures {
       // Map productPrice to productOldPrice if productOldPrice is not provided
       // Also convert to number if it's a string (FormData sends strings)
       if (body.productPrice && !body.productOldPrice) {
-        body.productOldPrice = typeof body.productPrice === 'string' 
-          ? parseFloat(body.productPrice) 
+        body.productOldPrice = typeof body.productPrice === 'string'
+          ? parseFloat(body.productPrice)
           : body.productPrice;
       }
 
@@ -142,7 +151,7 @@ export default class ProductService extends MongooseFeatures {
       if (updateData.productCategory) {
         const categoryExists = await CategoryModel.findById(updateData.productCategory);
         if (!categoryExists) {
-           throw new ApiError("BAD_REQUEST", "Invalid Category ID");
+          throw new ApiError("BAD_REQUEST", "Invalid Category ID");
         }
       }
 
@@ -158,7 +167,7 @@ export default class ProductService extends MongooseFeatures {
       const updatedProduct = await ProductModel.findByIdAndUpdate(
         id,
         updateData,
-        { new: true, runValidators: true } 
+        { new: true, runValidators: true }
       ).populate({
         path: 'productCategory',
         select: 'categoryNameAr categoryNameEn categoryStatus'
@@ -173,10 +182,10 @@ export default class ProductService extends MongooseFeatures {
     } catch (error: any) {
       if (error instanceof ApiError) throw error;
       if (error.name === 'CastError') {
-         throw new ApiError("BAD_REQUEST", `Invalid Product ID format`);
+        throw new ApiError("BAD_REQUEST", `Invalid Product ID format`);
       }
       if (error.name === 'ValidationError') {
-         throw new ApiError("BAD_REQUEST", `Validation Error: ${error.message}`);
+        throw new ApiError("BAD_REQUEST", `Validation Error: ${error.message}`);
       }
       console.error("EditOneProduct Error:", error);
       throw new ApiError("INTERNAL_SERVER_ERROR", "Error updating product");
@@ -188,7 +197,7 @@ export default class ProductService extends MongooseFeatures {
     try {
       const result = await super.deleteDocument(ProductModel, id);
       if (!result) {
-         throw new ApiError("NOT_FOUND", `Product with id ${id} not found`);
+        throw new ApiError("NOT_FOUND", `Product with id ${id} not found`);
       }
       return result;
     } catch (error: any) {
@@ -229,7 +238,7 @@ export default class ProductService extends MongooseFeatures {
       );
 
       if (result.data && result.data.length > 0) {
-        await ProductModel.populate(result.data, { 
+        await ProductModel.populate(result.data, {
           path: 'productCategory',
           select: 'categoryNameAr categoryNameEn'
         });
@@ -238,7 +247,7 @@ export default class ProductService extends MongooseFeatures {
       const exportData = result.data.map((product: any) => {
         let categoryNameEn = '';
         let categoryNameAr = '';
-        
+
         if (product.productCategory && typeof product.productCategory === 'object') {
           categoryNameEn = product.productCategory.categoryNameEn || '';
           categoryNameAr = product.productCategory.categoryNameAr || '';
@@ -246,7 +255,7 @@ export default class ProductService extends MongooseFeatures {
 
         let optionsText = '';
         if (product.productOptions && product.productOptions.length > 0) {
-          optionsText = product.productOptions.map((opt: any) => 
+          optionsText = product.productOptions.map((opt: any) =>
             `${opt.name} (${opt.price} SAR)`
           ).join('; ');
         }
@@ -264,7 +273,7 @@ export default class ProductService extends MongooseFeatures {
           Discount: product.productDiscount || "",
           Options: optionsText,
           CreatedAt: product.createdAt ? new Date(product.createdAt).toISOString().split('T')[0] : ""
-        }; 
+        };
       });
 
       return exportData;
@@ -316,11 +325,11 @@ export default class ProductService extends MongooseFeatures {
             productCategory: categoryId,
             productMoreSale: productData.productMoreSale === 'Yes' || productData.productMoreSale === true,
             productDiscount: productData.productDiscount || "Offer 20%",
-            productOptions: [] 
+            productOptions: []
           };
 
-          const existingProduct = await ProductModel.findOne({ 
-            productNameEn: productToSave.productNameEn 
+          const existingProduct = await ProductModel.findOne({
+            productNameEn: productToSave.productNameEn
           });
 
           if (existingProduct) {
