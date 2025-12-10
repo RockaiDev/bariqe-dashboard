@@ -32,6 +32,12 @@ const corsOptions = {
         "http://localhost:3000",
         "https://attractive-happiness-production-a8a5.up.railway.app",
         "https://attractive-happiness-production-4918.up.railway.app",
+        "https://bariqealtamyoz.com",
+        "https://www.bariqealtamyoz.com",
+        "https://dashboard.bariqealtamyoz.com",
+        "https://bariqeeltamioz.com",
+        "https://www.bariqeeltamioz.com",
+        "https://dashboard.bariqeeltamioz.com",
         // Allow all Vercel preview deployments
         /^https:\/\/.*\.vercel\.app$/,
         // Allow all Railway deployments
@@ -44,6 +50,12 @@ const corsOptions = {
         "http://localhost:3000",
         "https://attractive-happiness-production-a8a5.up.railway.app",
         "https://attractive-happiness-production-4918.up.railway.app",
+        "https://bariqealtamyoz.com",
+        "https://www.bariqealtamyoz.com",
+        "https://dashboard.bariqealtamyoz.com",
+        "https://bariqeeltamioz.com",
+        "https://www.bariqeeltamioz.com",
+        "https://dashboard.bariqeeltamioz.com",
       ];
 
     // Check if origin matches any allowed origin (string or regex)
