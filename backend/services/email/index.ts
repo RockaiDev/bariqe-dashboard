@@ -620,7 +620,7 @@ export const sendNewOrderEmail = async (order: any) => {
         name: "Order Management System",
         address: process.env.EMAIL_USERNAME || "",
       },
-      to: "alexandriaforchemicals@outlook.com",
+      to: "hassanrageh.236@gmail.com",
       subject: `🎉 New Order #${String(order._id || "")
         .slice(-8)
         .toUpperCase()} - ${
