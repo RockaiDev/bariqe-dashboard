@@ -53,56 +53,52 @@ export default function useAuth() {
     isLoading: queryLoading,
     isError,
     error,
+    isFetched,
     refetch,
   } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: fetchAdminData,
-    enabled: !isAuthenticated && isInitialized, // Only fetch if not authenticated and initialized
+    enabled: !isInitialized, // Only run the initial check on startup
     retry: (failureCount, error: any) => {
-      // Don't retry on 401/403 errors
+      // Don't retry on auth errors
       const errorStatus = error?.response?.status || error?.result?.status || error?.status;
-      if (errorStatus === 401 || errorStatus === 403) {
-        return false;
-      }
-      return failureCount < 1; // تقليل عدد المحاولات
+      if (errorStatus === 401 || errorStatus === 403) return false;
+      return failureCount < 1;
     },
-    refetchOnWindowFocus: false, // منع الـ refetch عند focus
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity, // Keep the check result valid for the session
   });
 
-  // Initialize auth state on app start
+  // Handle initialization and auth state sync
   useEffect(() => {
-    if (!isInitialized) {
-      setInitialized(true);
-    }
-  }, [isInitialized, setInitialized]);
+    if (isFetched) {
+      if (data && !isError) {
+        setAuth(data.admin, data.token);
+      } else if (isError) {
+        // Only clear if we were previously authenticated but now failed
+        if (isAuthenticated) {
+          clearAuth();
+        }
+      }
 
-  // Update store when query succeeds
-  useEffect(() => {
-    if (data && !isError) {
-      setAuth(data.admin, data.token);
+      // Mark as initialized regardless of success/failure
+      if (!isInitialized) {
+        setInitialized(true);
+      }
     }
-  }, [data, isError, setAuth]);
+  }, [isFetched, data, isError, isAuthenticated, isInitialized, setAuth, clearAuth, setInitialized]);
 
-  // Handle authentication errors
+  // Handle redirection on error (only for non-initial check or if specifically needed)
   useEffect(() => {
-    if (isError && error) {
+    if (isError && isInitialized && !isAuthenticated) {
       const errorData = error as any;
       const errorStatus = errorData?.response?.status || errorData?.result?.status || errorData?.status;
 
-      if (errorStatus === 401 || errorStatus === 403) {
-        // Silence these errors as they are expected when not logged in
-        clearAuth();
-        queryClient.clear();
-        if (!window.location.pathname.includes('/login')) {
-          navigate("/login", { replace: true });
-        }
-      } else {
-        console.error('Authentication error:', error);
+      if ((errorStatus === 401 || errorStatus === 403) && !window.location.pathname.includes('/login')) {
+        navigate("/login", { replace: true });
       }
     }
-  }, [isError, error, clearAuth, queryClient, navigate]);
+  }, [isError, isInitialized, isAuthenticated, error, navigate]);
 
   // Combined loading state
   const loading = storeLoading || (queryLoading && !isAuthenticated);
