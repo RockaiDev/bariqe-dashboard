@@ -199,22 +199,31 @@ export default class AuthController extends BaseApi {
   public async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const adminId = (req as any).user?.id;
-      if (!adminId) throw new ApiError('UNAUTHORIZED', 'No user id in token');
 
       if (req.method === 'GET') {
-        // Return current admin data
-        const existingAdmin = await adminModel.findById(adminId).select('-password');
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-        if (!existingAdmin) throw new ApiError('NOT_FOUND', 'Admin not found');
+        // Return null if no adminId (optional auth case)
+        if (!adminId) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+          super.send(res, { admin: null, token: null });
+        } else {
+          // Return current admin data
+          const existingAdmin = await adminModel.findById(adminId).select('-password');
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
-        // Get current token to send back so frontend can store it if needed
-        let token = req.cookies?.accessToken;
-        if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-          token = req.headers.authorization.split(" ")[1];
+          if (!existingAdmin) {
+            super.send(res, { admin: null, token: null });
+          } else {
+            // Get current token to send back so frontend can store it if needed
+            let token = req.cookies?.accessToken;
+            if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+              token = req.headers.authorization.split(" ")[1];
+            }
+
+            super.send(res, { admin: existingAdmin, token });
+          }
         }
-
-        super.send(res, { admin: existingAdmin, token });
       } else if (req.method === 'PATCH') {
+        if (!adminId) throw new ApiError('UNAUTHORIZED', 'No user id in token');
         // Update admin profile with avatar support
         await this.updateProfileWithAvatar(req, res, next);
       }

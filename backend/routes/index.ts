@@ -3,6 +3,7 @@ import AuthController from "../controllers/auth";
 import protectedRouter from "./protected";
 import publicRouter from "./public";
 import { authentication } from "../middlewares/authentication";
+import { optionalAuthentication } from "../middlewares/optionalAuthentication";
 
 const router = Router();
 const auth = new AuthController();
@@ -18,8 +19,8 @@ import { upload } from '../controllers/auth';
 router.post('/auth/cover-image', authentication, upload.single('coverImage'), auth.changeCoverImage.bind(auth));
 router.delete('/auth/cover-image', authentication, auth.removeCoverImage.bind(auth));
 
-// 🟢 UPDATED: Support both GET and PATCH for /auth/me with avatar upload
-router.get('/auth/me', authentication, auth.me.bind(auth));
+// 🟢 UPDATED: Use optionalAuthentication for a "silent" session check
+router.get('/auth/me', optionalAuthentication, auth.me.bind(auth));
 router.patch('/auth/me', authentication, upload.single('avatar'), auth.me.bind(auth));
 
 // Keep old profile endpoint for backward compatibility

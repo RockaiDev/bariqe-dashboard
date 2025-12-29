@@ -21,7 +21,7 @@ const fetchAdminData = async () => {
     const token = apiBody?.token ?? apiBody?.result?.token ?? null;
 
     if (!adminData) {
-      throw new Error('No admin data found');
+      return null;
     }
 
     return { admin: adminData, token };
@@ -73,9 +73,10 @@ export default function useAuth() {
   useEffect(() => {
     if (isFetched) {
       if (data && !isError) {
+        // Logged in successfully
         setAuth(data.admin, data.token);
-      } else if (isError) {
-        // Only clear if we were previously authenticated but now failed
+      } else {
+        // Not logged in or error
         if (isAuthenticated) {
           clearAuth();
         }
