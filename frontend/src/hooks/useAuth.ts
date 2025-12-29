@@ -25,8 +25,11 @@ const fetchAdminData = async () => {
     }
 
     return { admin: adminData, token };
-  } catch (error) {
-    console.error('Auth fetch error:', error);
+  } catch (error: any) {
+    const errorStatus = error?.response?.status || error?.result?.status || error?.status;
+    if (errorStatus !== 401 && errorStatus !== 403) {
+      console.error('Auth fetch error:', error);
+    }
     throw error;
   }
 };
@@ -57,7 +60,8 @@ export default function useAuth() {
     enabled: !isAuthenticated && isInitialized, // Only fetch if not authenticated and initialized
     retry: (failureCount, error: any) => {
       // Don't retry on 401/403 errors
-      if (error?.response?.status === 401 || error?.response?.status === 403) {
+      const errorStatus = error?.response?.status || error?.result?.status || error?.status;
+      if (errorStatus === 401 || errorStatus === 403) {
         return false;
       }
       return failureCount < 1; // تقليل عدد المحاولات
@@ -84,13 +88,18 @@ export default function useAuth() {
   // Handle authentication errors
   useEffect(() => {
     if (isError && error) {
-      console.error('Authentication error:', error);
+      const errorData = error as any;
+      const errorStatus = errorData?.response?.status || errorData?.result?.status || errorData?.status;
 
-      const errorStatus = (error as any)?.response?.status;
       if (errorStatus === 401 || errorStatus === 403) {
+        // Silence these errors as they are expected when not logged in
         clearAuth();
         queryClient.clear();
-        navigate("/login", { replace: true });
+        if (!window.location.pathname.includes('/login')) {
+          navigate("/login", { replace: true });
+        }
+      } else {
+        console.error('Authentication error:', error);
       }
     }
   }, [isError, error, clearAuth, queryClient, navigate]);
