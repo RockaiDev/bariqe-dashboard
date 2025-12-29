@@ -5,9 +5,10 @@ import { persist } from 'zustand/middleware';
 interface AuthState {
   isAuthenticated: boolean;
   admin: any | null;
+  token: string | null;
   isLoading: boolean;
   isInitialized: boolean;
-  setAuth: (admin: any) => void;
+  setAuth: (admin: any, token?: string) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
@@ -18,30 +19,34 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       admin: null,
+      token: null,
       isLoading: false,
       isInitialized: false,
-      setAuth: (admin) => 
-        set({ 
-          isAuthenticated: true, 
-          admin, 
+      setAuth: (admin, token) =>
+        set((state) => ({
+          isAuthenticated: true,
+          admin,
+          token: token || state.token,
           isLoading: false,
-          isInitialized: true 
-        }),
-      clearAuth: () => 
-        set({ 
-          isAuthenticated: false, 
-          admin: null, 
+          isInitialized: true
+        })),
+      clearAuth: () =>
+        set({
+          isAuthenticated: false,
+          admin: null,
+          token: null,
           isLoading: false,
-          isInitialized: true 
+          isInitialized: true
         }),
       setLoading: (isLoading) => set({ isLoading }),
       setInitialized: (isInitialized) => set({ isInitialized }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
-        admin: state.admin 
+        admin: state.admin,
+        token: state.token
       }),
     }
   )

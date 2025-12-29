@@ -11,9 +11,9 @@ export function useLogin(options?: UseMutationOptions<any, any, LoginPayload>) {
   return useMutation({
     mutationFn: (payload: LoginPayload) => loginRequest(payload),
     onSuccess: (data) => {
-     
+
       if (data?.admin) {
-        setAuth(data.admin);
+        setAuth(data.admin, data.token);
         navigate('/dashboard', { replace: true });
       }
     },

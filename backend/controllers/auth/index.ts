@@ -53,10 +53,10 @@ export default class AuthController extends BaseApi {
   // 🟢 SIGN UP
   public async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = await authService.SignUp(req.body);
+      const { token, admin } = await authService.SignUp(req.body);
       res.cookie("accessToken", token, COOKIE_OPTIONS);
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-      super.send(res, { message: "Admin created successfully" });
+      super.send(res, { token, admin, message: "Admin created successfully" });
     } catch (error) {
       next(error);
     }
@@ -68,7 +68,7 @@ export default class AuthController extends BaseApi {
       const { token, admin } = await authService.SignIn(req.body);
       res.cookie("accessToken", token, COOKIE_OPTIONS);
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-      super.send(res, { admin, message: "Sign in successful" });
+      super.send(res, { token, admin, message: "Sign in successful" });
     } catch (error) {
       next(error);
     }
@@ -89,7 +89,13 @@ export default class AuthController extends BaseApi {
   // 🟢 VERIFY TOKEN
   public async verifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = req.cookies?.accessToken;
+      let token = req.cookies?.accessToken;
+
+      // Also check Authorization header
+      if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+        token = req.headers.authorization.split(" ")[1];
+      }
+
       if (!token) {
         throw new ApiError("UNAUTHORIZED", "No token provided");
       }
@@ -200,7 +206,11 @@ export default class AuthController extends BaseApi {
         const existingAdmin = await adminModel.findById(adminId).select('-password');
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         if (!existingAdmin) throw new ApiError('NOT_FOUND', 'Admin not found');
-        super.send(res, { admin: existingAdmin });
+
+        // Get current token to send back so frontend can store it if needed
+        const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+
+        super.send(res, { admin: existingAdmin, token });
       } else if (req.method === 'PATCH') {
         // Update admin profile with avatar support
         await this.updateProfileWithAvatar(req, res, next);
@@ -238,13 +248,13 @@ export default class AuthController extends BaseApi {
         const oldAvatarUrl = existingAdmin.avatar || existingAdmin.profilePicture || null;
         const publicId = `admin_avatar_${adminId}_${Date.now()}`;
         const newAvatarUrl = await CloudinaryService.uploadFromPath((req as any).file.path, 'admins/avatars', publicId);
-        
+
         updateData.avatar = newAvatarUrl;
         updateData.profilePicture = newAvatarUrl; // Support both field names
-        
+
         // Clean up temp file
         this.cleanupFile((req as any).file.path);
-        
+
         // Delete old avatar if exists
         if (oldAvatarUrl) {
           await CloudinaryService.deleteImage(oldAvatarUrl);

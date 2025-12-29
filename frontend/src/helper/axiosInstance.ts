@@ -27,6 +27,10 @@ export const setNavigate = (navigate: (path: string) => void) => {
 // 🟢 Request Interceptor
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig<AxiosRequestConfig>) => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      request.headers["Authorization"] = `Bearer ${token}`;
+    }
     request.headers["lang"] = "en";
     return request;
   },
@@ -38,12 +42,12 @@ axiosInstance.interceptors.response.use(
   (response) => {
     // Reset redirect flag on successful response
     isRedirecting = false;
-    
+
     // Skip transforming blob responses
     if (response.config.responseType === 'blob') {
       return response;
     }
-    
+
     const result = response.data.result?.result || response.data.result;
     return result;
   },
@@ -52,23 +56,23 @@ axiosInstance.interceptors.response.use(
       // Authentication errors
       if (error.response.status === 401 && !isRedirecting) {
         isRedirecting = true;
-        
+
         // Clear auth state immediately
         useAuthStore.getState().clearAuth();
-        
+
         // Navigate to login
         if (navigateFunction && !window.location.pathname.includes('/login')) {
           navigateFunction('/login');
         } else if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
-        
+
         // Reset redirect flag after a delay
         setTimeout(() => {
           isRedirecting = false;
         }, 1000);
       }
-      
+
       return Promise.reject(error.response.data);
     }
     return Promise.reject(error.message);

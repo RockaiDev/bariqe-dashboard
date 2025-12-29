@@ -4,7 +4,7 @@ import ApiError from "../../../utils/errors/ApiError";
 
 export default class AuthService extends AuthFeatures {
   // SIGN UP
-  public async SignUp(body: any): Promise<string> {
+  public async SignUp(body: any): Promise<any> {
     try {
       // Check if admin already exists with the same email
       const existingAdmin = await admin.findOne({ email: body.email });
@@ -21,14 +21,18 @@ export default class AuthService extends AuthFeatures {
         password: hashedPassword,
       });
 
-      // Generate token for the new admin
       const token = this.GenerateToken({
         id: newAdmin._id,
         email: newAdmin.email,
         role: newAdmin.role || "admin",
       });
 
-      return token;
+      const { password, ...adminData } = newAdmin.toObject();
+
+      return {
+        token,
+        admin: adminData
+      };
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -39,41 +43,41 @@ export default class AuthService extends AuthFeatures {
   }
 
   // SIGN IN
-public async SignIn(body: any): Promise<any> {
-  try {
-    if (!body.email || !body.password) {
-      throw new ApiError("BAD_REQUEST", "Email and password are required");
+  public async SignIn(body: any): Promise<any> {
+    try {
+      if (!body.email || !body.password) {
+        throw new ApiError("BAD_REQUEST", "Email and password are required");
+      }
+
+      const adminUser = await admin.findOne({ email: body.email });
+      if (!adminUser) {
+        throw new ApiError("UNAUTHORIZED", "Invalid credentials");
+      }
+
+      const isPasswordValid = this.CompareHash(body.password, adminUser.password);
+      if (!isPasswordValid) {
+        throw new ApiError("UNAUTHORIZED", "Invalid credentials");
+      }
+
+      const token = this.GenerateToken({
+        id: adminUser._id,
+        email: adminUser.email,
+        role: adminUser.role || "admin",
+      });
+
+      const { password, ...adminData } = adminUser.toObject();
+
+      return {
+        token,
+        admin: adminData
+      };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError("INTERNAL_SERVER_ERROR", "Error signing in");
     }
-
-    const adminUser = await admin.findOne({ email: body.email });
-    if (!adminUser) {
-      throw new ApiError("UNAUTHORIZED", "Invalid credentials");
-    }
-
-    const isPasswordValid = this.CompareHash(body.password, adminUser.password);
-    if (!isPasswordValid) {
-      throw new ApiError("UNAUTHORIZED", "Invalid credentials");
-    }
-
-    const token = this.GenerateToken({
-      id: adminUser._id,
-      email: adminUser.email,
-      role: adminUser.role || "admin",
-    });
-
-    const { password, ...adminData } = adminUser.toObject();
-
-    return {
-      token,
-      admin: adminData
-    };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError("INTERNAL_SERVER_ERROR", "Error signing in");
   }
-}
 
   // verify Token
   public async VerifyToken(token: string): Promise<any> {

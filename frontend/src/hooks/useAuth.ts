@@ -11,19 +11,20 @@ export const AUTH_QUERY_KEY = ['auth', 'me'] as const;
 // API function for fetching admin data
 const fetchAdminData = async () => {
   try {
-    const response = await axios.get("/auth/me", { 
-      withCredentials: true, 
-      headers: { 'Cache-Control': 'no-store' } 
+    const response = await axios.get("/auth/me", {
+      withCredentials: true,
+      headers: { 'Cache-Control': 'no-store' }
     });
-    
+
     const apiBody = response as any;
-    const adminData = apiBody?.result?.admin ?? apiBody?.admin ?? null;
-    
+    const adminData = apiBody?.admin ?? apiBody?.result?.admin ?? null;
+    const token = apiBody?.token ?? apiBody?.result?.token ?? null;
+
     if (!adminData) {
       throw new Error('No admin data found');
     }
-    
-    return adminData;
+
+    return { admin: adminData, token };
   } catch (error) {
     console.error('Auth fetch error:', error);
     throw error;
@@ -33,19 +34,19 @@ const fetchAdminData = async () => {
 export default function useAuth() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { 
-    isAuthenticated, 
-    admin, 
-    isLoading: storeLoading, 
+  const {
+    isAuthenticated,
+    admin,
+    isLoading: storeLoading,
     isInitialized,
-    setAuth, 
-    clearAuth, 
+    setAuth,
+    clearAuth,
     setLoading,
-    setInitialized 
+    setInitialized
   } = useAuthStore();
 
   const {
-    data: fetchedAdmin,
+    data,
     isLoading: queryLoading,
     isError,
     error,
@@ -75,16 +76,16 @@ export default function useAuth() {
 
   // Update store when query succeeds
   useEffect(() => {
-    if (fetchedAdmin && !isError) {
-      setAuth(fetchedAdmin);
+    if (data && !isError) {
+      setAuth(data.admin, data.token);
     }
-  }, [fetchedAdmin, isError, setAuth]);
+  }, [data, isError, setAuth]);
 
   // Handle authentication errors
   useEffect(() => {
     if (isError && error) {
       console.error('Authentication error:', error);
-      
+
       const errorStatus = (error as any)?.response?.status;
       if (errorStatus === 401 || errorStatus === 403) {
         clearAuth();
@@ -103,7 +104,7 @@ export default function useAuth() {
     try {
       const result = await refetch();
       if (result.data) {
-        setAuth(result.data);
+        setAuth(result.data.admin, result.data.token);
       }
     } catch (error) {
       console.error('Refresh failed:', error);
@@ -120,13 +121,14 @@ export default function useAuth() {
   // Update cache function
   const updateAdminCache = (updatedAdmin: any) => {
     setAuth(updatedAdmin);
-    queryClient.setQueryData(AUTH_QUERY_KEY, updatedAdmin);
+    const existing = queryClient.getQueryData<any>(AUTH_QUERY_KEY);
+    queryClient.setQueryData(AUTH_QUERY_KEY, { ...existing, admin: updatedAdmin });
   };
 
   // Logout function
   const logout = async () => {
     try {
-      await axios.post('/auth/logout');
+      await axios.post('/auth/signout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -136,9 +138,9 @@ export default function useAuth() {
     }
   };
 
-  return { 
-    loading, 
-    authenticated: isAuthenticated, 
+  return {
+    loading,
+    authenticated: isAuthenticated,
     admin: admin || null,
     isError,
     error,
