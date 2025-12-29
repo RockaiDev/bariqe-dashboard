@@ -3,10 +3,11 @@ import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIntl } from "react-intl";
 
-export function ConfirmLogoutDialog({ open, setOpen, onConfirm }: {
+export function ConfirmLogoutDialog({ open, setOpen, onConfirm, isLoading }: {
   open: boolean;
   setOpen: (val: boolean) => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }) {
   const intl = useIntl();
 
@@ -21,8 +22,23 @@ export function ConfirmLogoutDialog({ open, setOpen, onConfirm }: {
           <p className="text-sm text-muted-foreground">{intl.formatMessage({ id: 'logout.confirm.description' })}</p>
         </div>
         <div className="mt-4 flex gap-2 justify-center items-center w-full">
-          <Button type="button" className="cursor-pointer" variant="outline" onClick={() => setOpen(false)}>{intl.formatMessage({ id: 'common.cancel' })}</Button>
-          <Button variant="destructive" className="text-white cursor-pointer" onClick={onConfirm}>{intl.formatMessage({ id: 'logout.confirm.confirmButton' })}</Button>
+          <Button
+            type="button"
+            className="cursor-pointer"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isLoading}
+          >
+            {intl.formatMessage({ id: 'common.cancel' })}
+          </Button>
+          <Button
+            variant="destructive"
+            className="text-white cursor-pointer"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? "..." : intl.formatMessage({ id: 'logout.confirm.confirmButton' })}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

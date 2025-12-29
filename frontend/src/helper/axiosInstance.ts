@@ -27,10 +27,25 @@ export const setNavigate = (navigate: (path: string) => void) => {
 // 🟢 Request Interceptor
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig<AxiosRequestConfig>) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      request.headers["Authorization"] = `Bearer ${token}`;
+    let token = useAuthStore.getState().token;
+
+    // Fallback: Check localStorage directly if store isn't ready or hydrated
+    if (!token) {
+      try {
+        const stored = localStorage.getItem('auth-storage');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          token = parsed?.state?.token;
+        }
+      } catch (err) {
+        console.warn("Failed to parse auth-storage from localStorage", err);
+      }
     }
+
+    if (token) {
+      request.headers.Authorization = `Bearer ${token}`;
+    }
+
     request.headers["lang"] = "en";
     return request;
   },
@@ -53,8 +68,10 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
+      const isAuthCheck = error.config?.url?.includes('/auth/me') || error.config?.url?.includes('/auth/signin');
+
       // Authentication errors
-      if (error.response.status === 401 && !isRedirecting) {
+      if (error.response.status === 401 && !isRedirecting && !isAuthCheck) {
         isRedirecting = true;
 
         // Clear auth state immediately
@@ -70,7 +87,7 @@ axiosInstance.interceptors.response.use(
         // Reset redirect flag after a delay
         setTimeout(() => {
           isRedirecting = false;
-        }, 1000);
+        }, 3000); // Increased delay
       }
 
       return Promise.reject(error.response.data);

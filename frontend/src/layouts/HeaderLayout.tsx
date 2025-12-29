@@ -67,7 +67,7 @@ export default function HeaderLayout({
 
               {/* Avatar */}
               <AvatarArea />
-            </div> 
+            </div>
           </header>
 
           {/* Main content */}
@@ -329,7 +329,10 @@ function AvatarArea() {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            onClick={handleLogout}
+            onSelect={(e) => {
+              e.preventDefault();
+              handleLogout();
+            }}
             className="cursor-pointer text-red-600 focus:text-red-600"
           >
             {intl.formatMessage({
@@ -343,8 +346,8 @@ function AvatarArea() {
       <ConfirmLogoutDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
+        isLoading={logout.isPending}
         onConfirm={() => {
-          setConfirmOpen(false);
           logout.mutate();
         }}
       />

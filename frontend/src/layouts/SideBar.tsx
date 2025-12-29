@@ -90,11 +90,11 @@ export default function AppSidebar() {
       icon: BarChart2,
       label: intl.formatMessage({ id: "nav_reports" }),
       href: "/reports",
-    },{
-        icon: Contact,
-        label: intl.formatMessage({ id: "nav_contact" }),
-        href: "/contact",
-      },
+    }, {
+      icon: Contact,
+      label: intl.formatMessage({ id: "nav_contact" }),
+      href: "/contact",
+    },
     {
       icon: Settings,
       label: intl.formatMessage({ id: "nav_settings" }),
@@ -105,7 +105,7 @@ export default function AppSidebar() {
       label: intl.formatMessage({ id: "nav_business_info" }),
       href: "/business-info",
     },
-      
+
   ];
 
   // دالة للتنقل مع التمرير إلى الأعلى
@@ -124,9 +124,8 @@ export default function AppSidebar() {
       {/* Header */}
       <SidebarHeader className="mb-3 lg:mb-5">
         <div
-          className={`flex items-center gap-2 relative group ${
-            isRTL ? "flex-row-reverse" : ""
-          }`}
+          className={`flex items-center gap-2 relative group ${isRTL ? "flex-row-reverse" : ""
+            }`}
         >
           <div className="relative h-8 w-8 lg:h-10 lg:w-10">
             <img
@@ -136,9 +135,8 @@ export default function AppSidebar() {
             />
             {state === "collapsed" && (
               <SidebarTrigger
-                className={`group-hover:!bg-black/60 !text-white absolute top-[50%] ${
-                  isRTL ? "left-0" : "right-0"
-                } -translate-y-1/2 hidden group-hover:flex p-3 lg:p-5 rounded-md items-center justify-center cursor-pointer`}
+                className={`group-hover:!bg-black/60 !text-white absolute top-[50%] ${isRTL ? "left-0" : "right-0"
+                  } -translate-y-1/2 hidden group-hover:flex p-3 lg:p-5 rounded-md items-center justify-center cursor-pointer`}
               />
             )}
           </div>
@@ -150,9 +148,8 @@ export default function AppSidebar() {
                   intl.formatMessage({ id: "sidebar_admin" })}
               </span>
               <div
-                className={`flex items-center gap-1 text-xs text-gray-500 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-center gap-1 text-xs text-gray-500 ${isRTL ? "flex-row-reverse" : ""
+                  }`}
               >
                 <span className="truncate text-xs">
                   {admin?.email || "admin@demo.com"}
@@ -181,13 +178,11 @@ export default function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <button
                         onClick={() => handleNavigation(item.href)}
-                        className={`flex items-center gap-2 w-full rounded-md px-2 py-2 transition cursor-pointer ${
-                          isRTL ? "flex-row-reverse text-right" : "text-left"
-                        } ${
-                          isActive
+                        className={`flex items-center gap-2 w-full rounded-md px-2 py-2 transition cursor-pointer ${isRTL ? "flex-row-reverse text-right" : "text-left"
+                          } ${isActive
                             ? "bg-[#E5EDFF] text-primary pointer-events-none"
                             : "hover:bg-gray-100"
-                        }`}
+                          }`}
                         dir={isRTL ? "rtl" : "ltr"}
                       >
                         <item.icon className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
@@ -213,9 +208,8 @@ export default function AppSidebar() {
               onClick={() => setConfirmOpen(true)}
             >
               <div
-                className={`flex items-center gap-2 w-full ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-center gap-2 w-full ${isRTL ? "flex-row-reverse" : ""
+                  }`}
               >
                 <LogOut className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
                 {state === "expanded" && (
@@ -233,7 +227,10 @@ export default function AppSidebar() {
       <ConfirmLogoutDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        onConfirm={() => logout.mutate()}
+        isLoading={logout.isPending}
+        onConfirm={() => {
+          logout.mutate();
+        }}
       />
 
       <SidebarRail />

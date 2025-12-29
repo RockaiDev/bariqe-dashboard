@@ -208,7 +208,10 @@ export default class AuthController extends BaseApi {
         if (!existingAdmin) throw new ApiError('NOT_FOUND', 'Admin not found');
 
         // Get current token to send back so frontend can store it if needed
-        const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+        let token = req.cookies?.accessToken;
+        if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+          token = req.headers.authorization.split(" ")[1];
+        }
 
         super.send(res, { admin: existingAdmin, token });
       } else if (req.method === 'PATCH') {

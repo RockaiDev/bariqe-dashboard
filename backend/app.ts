@@ -26,40 +26,26 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = NODE_ENV === "production"
-      ? [
-        DEV_ORIGIN,
-        "http://localhost:3000",
-        "https://attractive-happiness-production-a8a5.up.railway.app",
-        "https://attractive-happiness-production-4918.up.railway.app",
-        "https://bariqealtamyoz.com",
-        "https://www.bariqealtamyoz.com",
-        "https://dashboard.bariqealtamyoz.com",
-        "https://bariqeeltamioz.com",
-        "https://www.bariqeeltamioz.com",
-        "https://dashboard.bariqeeltamioz.com",
-        // Allow all Vercel preview deployments
-        /^https:\/\/.*\.vercel\.app$/,
-        // Allow all Railway deployments
-        /^https:\/\/.*\.railway\.app$/,
-        // Allow all Render deployments
-        /^https:\/\/.*\.onrender\.com$/,
-      ]
-      : [
-        DEV_ORIGIN,
-        "http://localhost:3000",
-        "https://attractive-happiness-production-a8a5.up.railway.app",
-        "https://attractive-happiness-production-4918.up.railway.app",
-        "https://bariqealtamyoz.com",
-        "https://www.bariqealtamyoz.com",
-        "https://dashboard.bariqealtamyoz.com",
-        "https://bariqeeltamioz.com",
-        "https://www.bariqeeltamioz.com",
-        "https://dashboard.bariqeeltamioz.com",
-      ];
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://bariqealtamyoz.com",
+      "https://www.bariqealtamyoz.com",
+      "https://dashboard.bariqealtamyoz.com",
+      "https://bariqeeltamioz.com",
+      "https://www.bariqeeltamioz.com",
+      "https://dashboard.bariqeeltamioz.com",
+      "https://attractive-happiness-production-a8a5.up.railway.app",
+      "https://attractive-happiness-production-4918.up.railway.app",
+      "https://bariqe-dashboard-production.up.railway.app",
+      // Regex for preview environments
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*\.railway\.app$/,
+      /^https:\/\/.*\.onrender\.com$/,
+    ];
 
     // Check if origin matches any allowed origin (string or regex)
-    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+    const isAllowed = !origin || origin.includes('localhost') || allowedOrigins.some((allowedOrigin) => {
       if (typeof allowedOrigin === "string") {
         return origin === allowedOrigin;
       } else if (allowedOrigin instanceof RegExp) {
@@ -75,11 +61,17 @@ const corsOptions = {
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "lang", "Accept", "Cache-Control"],
+  exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(logger("dev"));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
