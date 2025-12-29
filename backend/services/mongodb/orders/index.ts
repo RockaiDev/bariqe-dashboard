@@ -292,13 +292,14 @@ export default class OrderService extends MongooseFeatures {
         if (Array.isArray(po?.products)) {
           for (const item of po.products) {
             const prod: any = item.product || {};
-            const unitPrice = prod.productNewPrice || prod.productOldPrice || 0;
-            const qty = item.quantity || 0;
             const itemDiscount = item.itemDiscount || 0;
-            const subtotal = unitPrice * qty;
-            const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
-            const finalAmount =
-              afterItemDiscount * (1 - orderLevelDiscount / 100);
+            // Use productOldPrice as base if a manual discount percentage is set
+            const originalPrice = prod.productOldPrice || 0;
+            const qty = item.quantity || 0;
+            const subtotal = originalPrice * qty;
+            const effectiveDiscount = Math.max(itemDiscount, orderLevelDiscount);
+            const finalAmount = subtotal * (1 - effectiveDiscount / 100);
+            const afterItemDiscount = subtotal * (1 - itemDiscount / 100); // For display in email if needed
             mailOrder.products.push({
               product: {
                 name:
@@ -309,7 +310,7 @@ export default class OrderService extends MongooseFeatures {
                   "N/A",
               },
               quantity: qty,
-              price: unitPrice,
+              price: originalPrice,
               itemDiscount,
               subtotal,
               afterItemDiscount,
@@ -391,14 +392,14 @@ export default class OrderService extends MongooseFeatures {
 
       orders.forEach((order: any) => {
         order.products.forEach((item: any, index: number) => {
-          const productPrice = item.product?.productNewPrice || item.product?.productOldPrice || 0;
+          const originalPrice = item.product?.productOldPrice || 0;
           const quantity = item.quantity || 0;
           const itemDiscount = item.itemDiscount || 0;
           const orderDiscount = order.orderDiscount || 0;
 
-          const subtotal = productPrice * quantity;
-          const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
-          const finalAmount = afterItemDiscount * (1 - orderDiscount / 100);
+          const subtotal = originalPrice * quantity;
+          const effectiveDiscount = Math.max(itemDiscount, orderDiscount);
+          const finalAmount = subtotal * (1 - effectiveDiscount / 100);
 
           formattedOrders.push({
             orderNumber: order._id.toString(),
@@ -410,12 +411,12 @@ export default class OrderService extends MongooseFeatures {
             productCode: item.product?.productCode || "N/A",
             productNameAr: item.product?.productNameAr || "N/A",
             productNameEn: item.product?.productNameEn || "N/A",
-            productPrice: productPrice,
+            productPrice: originalPrice,
             quantity: quantity,
             itemDiscount: itemDiscount,
             orderDiscount: orderDiscount,
             subtotal: subtotal,
-            afterItemDiscount: afterItemDiscount,
+            afterItemDiscount: subtotal * (1 - itemDiscount / 100),
             finalAmount: finalAmount,
             orderQuantity: order.orderQuantity || "",
             orderStatus: order.orderStatus || "pending",
@@ -590,9 +591,10 @@ export default class OrderService extends MongooseFeatures {
             if (Array.isArray(po?.products)) {
               for (const item of po.products) {
                 const prod: any = item.product || {};
-                const unitPrice = prod.productNewPrice || prod.productOldPrice || 0;
-                const qty = item.quantity || 0;
                 const itemDiscount = item.itemDiscount || 0;
+                // Use productOldPrice as base if a manual discount percentage is set
+                const unitPrice = itemDiscount > 0 ? (prod.productOldPrice || 0) : (prod.productNewPrice || prod.productOldPrice || 0);
+                const qty = item.quantity || 0;
                 const subtotal = unitPrice * qty;
                 const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
                 const finalAmount =

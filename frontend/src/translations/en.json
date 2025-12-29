@@ -21,7 +21,6 @@
   "sidebar_admin": "Admin",
   "sidebar_search_placeholder": "Search...",
   "sidebar_logout": "Logout",
-
   "customers.title": "Customers & Leads Database",
   "customers.subtitle": "A centralized database of all customers and leads",
   "customers.new": "New Customer",
@@ -31,7 +30,6 @@
   "customers.source": "Source",
   "customers.notes": "Notes",
   "customers.address": "Address",
-
   "products.title": "Products",
   "products.subtitle": "Manage your product inventory and details",
   "products.management_title": "Product Management",
@@ -40,7 +38,6 @@
   "products.import": "Import Products",
   "products.search_placeholder": "Search products (name, code, category, grade, form)...",
   "products.unknown_category": "Unknown Category",
-
   "products.table.image": "Image",
   "products.table.code": "Product Code",
   "products.table.name": "Product Name",
@@ -51,49 +48,37 @@
   "products.table.form": "Form",
   "products.table.status": "Status",
   "products.table.date": "Date",
-
   "products.status.in_stock": "In Stock",
   "products.status.out_of_stock": "Out Of Stock",
-
   "products.grade.technical": "Technical",
   "products.grade.analytical": "Analytical",
   "products.grade.usp": "USP",
   "products.grade.fcc": "FCC",
   "products.grade.cosmetic": "Cosmetic Grade",
-
   "products.form.solid": "Solid",
   "products.form.liquid": "Liquid",
   "products.form.gas": "Gas",
   "products.form.powder": "Powder",
   "products.form.granular": "Granular",
-"products.form.amount": "Product Quantity",
-
-
-"products.form.discount_text": "Discount Percentage",
-
-
-
+  "products.form.amount": "Product Quantity",
+  "products.form.discount_text": "Discount Percentage",
   "products.view.title": "Product Details",
   "products.view.description": "View detailed information about the selected product",
   "products.view.created_at": "Created At",
   "products.view.last_updated": "Last Updated",
   "products.view.not_available": "Not available",
   "products.view.product_id": "Product ID",
-
   "products.edit.title": "Edit Product",
   "products.edit.description": "Update product information. All fields marked with * are required",
   "products.edit.success": "Product updated successfully!",
   "products.edit.failed": "Failed to update product",
   "products.edit_product": "Edit Product",
-
   "products.create.title": "New Product",
   "products.create.description": "Add a new product to your inventory. All fields marked with * are required",
   "products.create.success": "Product created successfully!",
   "products.create.failed": "Failed to create product",
   "products.create_product": "Create Product",
-
   "products.form.image": "Product Image",
-  
   "products.form.code": "Product Code",
   "products.form.name": "Product Name",
   "products.form.category": "Category",
@@ -117,7 +102,6 @@
   "products.form.more_sale": "More Sale",
   "products.form.stock_status_description": "Toggle to mark product as in stock or out of stock",
   "products.form.status": "Status",
-
   "products.upload_image": "Upload Image",
   "products.change_image": "Change Image",
   "products.remove_image": "Remove Image",
@@ -128,14 +112,12 @@
   "products.image_removed_success": "Product image removed successfully!",
   "products.upload_image_failed": "Failed to upload image",
   "products.remove_image_failed": "Failed to remove image",
-
   "products.exporting": "Exporting products...",
   "products.export_success": "Products exported successfully!",
   "products.export_failed": "Failed to export products",
   "products.downloading_template": "Downloading template...",
   "products.template_downloaded": "Template downloaded successfully!",
   "products.template_download_failed": "Failed to download template",
-
   "products.importing": "Importing products...",
   "products.import_failed": "Failed to import products",
   "products.import_button": "Import Products",
@@ -145,7 +127,6 @@
   "products.import_failed_count": "Failed to import {count} products",
   "products.import_validation_errors": "{count} rows had validation errors",
   "products.import_summary": "Summary: {success} success, {updated} updated, {failed} failed",
-
   "products.import.title": "Import Products from Excel",
   "products.import.description": "Import product data from an Excel file using our template format",
   "products.import.download_template": "Download Import Template",
@@ -164,12 +145,10 @@
   "products.form.description_ar": "Product Description (Arabic)",
   "products.discount.off": "OFF",
   "products.discount.buy_units": "Buy {quantity}+ units",
-
   "products.validation.required_fields": "Please fill in all required fields",
   "products.validation.discount_tiers_code": "All discount tier codes must match the product code",
   "products.validation.code_exists": "Product code already exists. Please choose a different code",
   "products.validation.code_check_failed": "Failed to validate product code. Please try again",
-
   "products.checking_code": "Checking Code...",
   "products.updating": "Updating...",
   "products.creating": "Creating...",
@@ -186,7 +165,6 @@
   "common.loading": "Loading...",
   "common.actions": "Actions",
   "common.close": "Close",
-
   "common.confirm": "Confirm",
   "common.are_you_sure": "Are you sure?",
   "common.confirm_close": "Confirm Close",
@@ -199,7 +177,6 @@
   "common.continue_editing": "Continue Editing",
   "common.delete_warning": "Once deleted, this cannot be undone.",
   "common.delete_question": "Are you sure you want to delete this item?",
-
   "common.confirm_delete_title": "Delete {item}?",
   "common.confirm_delete_description": "Are you sure you want to delete {item}? This action cannot be undone.",
   "common.deleting": "Deleting...",
@@ -207,15 +184,12 @@
   "message.success.updated": "Updated successfully!",
   "message.success.deleted": "Deleted successfully!",
   "message.error.generic": "Something went wrong!",
-
   "language.select": "Language",
   "header.profile": "Profile",
   "header.logout": "Logout",
-
   "logout.confirm.title": "Are you sure you want to log out?",
   "logout.confirm.description": "You will be signed out of the current session.",
   "logout.confirm.confirmButton": "Confirm Logout",
-
   "delete.confirm.title": "Are you sure you want to delete {item}?",
   "delete.confirm.description": "Once deleted, this cannot be undone.",
   "Loading dashboard data...": "Loading dashboard data...",
@@ -242,7 +216,6 @@
   "Failed to load live data. Showing sample data.": "Failed to load live data. Showing sample data.",
   "Using cached data.": "Using cached data.",
   "Refresh": "Refresh",
-
   "Welcome back! Log in to pick up where you left off": "Welcome back! Log in to pick up where you left off",
   "login_signin_description": "Sign in to continue managing the full Bariqe El Tamioz ecosystem — from updating product details and processing orders to tracking consultations, all in one secure place.",
   "Welcome back!": "Welcome back!",
@@ -253,12 +226,10 @@
   "Invalid credentials": "Invalid credentials",
   "Logging in...": "Logging in...",
   "Login": "Login",
-
   "Export Customers": "Export Customers",
   "Exporting customers...": "Exporting customers...",
   "Customers exported successfully!": "Customers exported successfully!",
   "Export failed": "Export failed",
-
   "dashboard.loading": "Loading dashboard data...",
   "dashboard.overview": "Overview",
   "dashboard.orders": "Orders",
@@ -283,9 +254,7 @@
   "dashboard.failed_load_data": "Failed to load live data. Showing sample data.",
   "dashboard.using_cached_data": "Using cached data.",
   "dashboard.refresh": "Refresh",
-
   "optional": "Optional",
-
   "categories.all_categories": "All Categories",
   "categories.name": "Name",
   "categories.description": "Description",
@@ -294,11 +263,9 @@
   "categories.updated": "Updated",
   "categories.actions": "Actions",
   "categories.image": "Image",
-
   "categories.active": "Active",
   "categories.inactive": "Inactive",
   "categories.search_placeholder": "Search categories (name, description, status:active/inactive)...",
-
   "categories.new_category": "New Category",
   "categories.edit_category": "Edit Category",
   "categories.category_details": "Category Details",
@@ -309,7 +276,6 @@
   "categories.created_at": "Created At",
   "categories.last_updated": "Last Updated",
   "categories.not_available": "Not available",
-
   "categories.toggle_status": "Toggle to activate/deactivate this category.",
   "categories.save_changes": "Save Changes",
   "categories.cancel": "Cancel",
@@ -317,7 +283,6 @@
   "categories.edit": "Edit",
   "categories.saving": "Saving...",
   "categories.create": "Create",
-
   "categories.select_file": "Select Excel File",
   "categories.selected": "Selected",
   "categories.import_categories": "Import Categories",
@@ -331,10 +296,8 @@
   "categories.subcategory.name_en": "Subcategory Name (English)",
   "categories.subcategory.description_ar": "Subcategory Description (Arabic)",
   "categories.subcategory.description_en": "Subcategory Description (English)",
-
   "categories.delete": "Delete",
   "categories.save": "Save",
-
   "categories.import.title": "Import Categories from Excel",
   "categories.import.description": "Import category data from an Excel file using our template format",
   "categories.import.download_template": "Download Import Template",
@@ -345,40 +308,33 @@
   "categories.import.instruction_4": "Status should be either 'Active' or 'Inactive'",
   "categories.import.instruction_5": "Save the file as .xlsx or .xls format",
   "categories.import.instruction_6": "Upload the file using the button below",
-
   "categories.view.description": "View detailed information about the selected category",
   "categories.edit.description": "Update category information. All fields marked with * are required",
   "categories.create.description": "Add a new category to your database. All fields marked with * are required",
-
   "categories.validation.required_fields": "Please fill in all required fields",
-
   "categories.edit_success": "Category updated successfully!",
   "categories.edit_failed": "Failed to update category",
   "categories.create.success": "Category created successfully!",
   "categories.create.failed": "Failed to create category",
   "categories.delete.success": "Category deleted successfully!",
   "categories.delete.failed": "Failed to delete category",
-
   "categories.exporting": "Exporting categories...",
   "categories.export_success": "Categories exported successfully!",
   "categories.export_failed": "Failed to export categories",
   "categories.downloading_template": "Downloading template...",
   "categories.template_downloaded": "Template downloaded successfully!",
   "categories.template_download_failed": "Failed to download template",
-
   "categories.import_failed": "Failed to import categories",
   "categories.select_file_error": "Please select a file to import",
   "categories.import_success_count": "Successfully imported {count} categories",
   "categories.import_updated_count": "Updated {count} existing categories",
   "categories.import_failed_count": "Failed to import {count} categories",
   "categories.import_summary": "Summary: {total} total, {success} success, {updated} updated, {failed} failed",
-
   "categories.form.name_ar": "Category Name (Arabic)",
   "categories.form.name_en": "Category Name (English)",
   "categories.form.description_ar": "Category Description (Arabic)",
   "categories.form.description_en": "Category Description (English)",
   "categories.form.image": "Category Image",
-
   "categories.upload_image": "Upload Image",
   "categories.change_image": "Change Image",
   "categories.remove_image": "Remove Image",
@@ -387,18 +343,15 @@
   "categories.no_image": "No Image",
   "categories.select_image": "Select Image",
   "categories.image_upload_hint": "Choose an image to represent this category (optional)",
-
   "categories.uploading_image": "Uploading image...",
   "categories.removing_image": "Removing image...",
   "categories.image_updated_success": "Image updated successfully",
   "categories.image_removed_success": "Image removed successfully",
   "categories.upload_image_failed": "Failed to upload image",
   "categories.remove_image_failed": "Failed to remove image",
-
   "categories.image_too_large": "Image size is too large (maximum 5MB)",
   "categories.invalid_image_type": "Unsupported image type (only JPEG, PNG, WebP allowed)",
   "categories.selected_file": "Selected file",
-
   "categories.importing": "Importing categories...",
   "material_requests.title": "Material Requests",
   "material_requests.subtitle": "Manage material requests and their approval status",
@@ -439,18 +392,14 @@
   "material_requests.export_failed": "Export failed",
   "material_requests.status_updated_success": "Status updated successfully!",
   "material_requests.failed_to_update_status": "Failed to update status",
-
   "material_requests.created_at": "Created At",
-
   "material_requests.customer_selection": "Customer Selection",
   "material_requests.select_existing_customer": "Select Existing Customer",
   "material_requests.notes": "Material Notes ",
   "material_requests.customer_location": "Customer Location",
   "material_requests.material_location": "Material Location",
-
   "material_requests.request_created_success": "Request created successfully",
   "material_requests.request_creation_failed": "Failed to create request",
-
   "material_requests.create_new_customer": "Create New Customer",
   "material_requests.customer_name_required": "Customer Name (Required)",
   "material_requests.enter_customer_name": "Enter customer name",
@@ -467,7 +416,6 @@
   "material_requests.failed_customer_creation": "Failed to create customer",
   "material_requests.create_customer_request": "Create Customer & Request",
   "material_requests.fill_required_fields": "Please fill all required fields",
-
   "material_requests.location": "Location",
   "material_requests.country": "Country",
   "material_requests.state": "State",
@@ -487,14 +435,12 @@
   "material_requests.location_unavailable": "Location unavailable",
   "material_requests.location_timeout": "Location request timeout",
   "material_requests.not_provided": "Not Provided",
-
   "orders.title": "Orders",
   "orders.subtitle": "View and manage customer orders",
   "orders.export_orders": "Export Orders",
   "orders.add_order": "Add Order",
   "orders.all_orders": "All Orders",
   "orders.search_placeholder": "Search orders (customer:name, product:name, status:pending, email:, phone:, quantity:5, total:100)...",
-
   "orders.hash": "#",
   "orders.order_id": "Order ID",
   "orders.order_number": "Order Number",
@@ -507,17 +453,14 @@
   "orders.status": "Status",
   "orders.date": "Date",
   "orders.actions": "Actions",
-
   "orders.pending": "Pending",
   "orders.processing": "Processing",
   "orders.shipped": "Shipped",
   "orders.delivered": "Delivered",
   "orders.cancelled": "Cancelled",
-
   "orders.add_new_order": "Add New Order",
   "orders.add_order_description": "Add a new order with customer details and product information",
   "orders.create_new_customer": "Create New Customer",
-
   "orders.customer_name_required": "Customer Name *",
   "orders.enter_customer_name": "Enter customer name",
   "orders.email_required": "Email *",
@@ -533,11 +476,9 @@
   "orders.customer_address": "Customer Address",
   "orders.notes": "Notes",
   "orders.additional_notes": "Additional Notes",
-
   "orders.customer_notes": "Customer Notes",
   "orders.select_customer_required": "Select Customer *",
   "orders.choose_customer": "Choose Customer",
-
   "orders.order_products": "Order Products",
   "orders.products_count": "{count} product",
   "orders.products_count_plural": "{count} products",
@@ -546,7 +487,6 @@
   "orders.select_product": "Select Product",
   "orders.item_discount": "Item Discount",
   "orders.item_discount_percent": "Item Discount %",
-
   "orders.order_discount": "Order Discount",
   "orders.order_discount_percent": "Order Discount %",
   "orders.discount_amount": "Discount Amount",
@@ -554,7 +494,6 @@
   "orders.order_quantity": "Order Quantity",
   "orders.order_quantity_description": "Order Quantity Description",
   "orders.order_quantity_placeholder": "e.g., 20 units",
-
   "orders.order_summary": "Order Summary",
   "orders.subtotal": "Subtotal",
   "orders.item_subtotal": "Item Subtotal",
@@ -567,19 +506,16 @@
   "orders.total_products": "Total Products",
   "orders.item_number": "Item Number",
   "orders.total_price": "Total Price",
-
   "orders.cancel": "Cancel",
   "orders.creating": "Creating...",
   "orders.create_customer_order": "Create Customer & Order",
   "orders.create_order": "Create Order",
-
   "orders.order_details": "Order Details",
   "orders.order_date": "Order Date",
   "orders.not_available": "Not Available",
   "orders.customer_information": "Customer Information",
   "orders.name": "Name",
   "orders.customer_id": "Customer ID",
-
   "orders.order_items": "Order Items",
   "orders.order_item": "Order Item",
   "orders.product_details": "Product Details",
@@ -587,18 +523,14 @@
   "orders.product_name": "Product Name",
   "orders.product_price": "Product Price",
   "orders.unit_price": "Unit Price",
-
   "orders.created_at": "Created At",
   "orders.last_updated": "Last Updated",
   "orders.close": "Close",
-
   "orders.exporting_orders": "Exporting orders...",
   "orders.orders_exported_success": "Orders exported successfully!",
   "orders.export_failed": "Export Failed",
-
   "orders.status_updated_success": "Status updated successfully!",
   "orders.failed_to_update_status": "Failed to update status",
-
   "orders.fill_required_fields": "Please fill all required customer fields",
   "orders.failed_customer_creation": "Failed to create customer ID",
   "orders.customer_created_success": "Customer created successfully!",
@@ -606,20 +538,17 @@
   "orders.add_at_least_one_product": "Please add at least one product",
   "orders.order_created_success": "Order created successfully!",
   "orders.order_creation_failed": "Failed to create order",
-
   "orders.confirm_close": "Confirm Close",
   "orders.unsaved_data_warning": "You have unsaved data that will be lost if you close now.",
   "orders.unsaved_changes_question": "You have unsaved changes. Are you sure you want to close without saving?",
   "orders.continue_adding": "Continue Adding",
   "orders.close_without_saving": "Close Without Saving",
   "orders.continue_editing": "Continue Editing",
-
   "orders.product_added": "Product added",
   "orders.product_removed": "Product removed",
   "orders.quantity_must_be_positive": "Quantity must be greater than zero",
   "orders.product_exists_update_quantity": "This product already exists. Do you want to increase the quantity?",
   "orders.product_quantity_updated": "Product quantity and discount updated",
-
   "orders.auto_calculated": "Auto Calculated",
   "orders.tiered_discounts": "Tiered Discounts",
   "orders.units": "units",
@@ -632,7 +561,6 @@
   "orders.auto": "Auto",
   "orders.manual": "Manual",
   "orders.subtotal_after_item_discounts": "Subtotal After Item Discounts",
-
   "orders.location": "Location",
   "orders.country": "Country",
   "orders.state": "State/Province",
@@ -642,7 +570,6 @@
   "orders.select_city": "Select City",
   "orders.selected_location": "Selected Location",
   "orders.location_code": "Location Code",
-
   "consultation_requests.title": "Consultation Requests",
   "consultation_requests.subtitle": "Manage consultation requests from clients (Auto-creates customers)",
   "consultation_requests.export": "Export",
@@ -726,9 +653,7 @@
   "customers.all_customers_leads": "All Customers & leads",
   "customers.search_placeholder": "Search customers (source:website, name:John, email:john@example.com, phone:123, address:street, notes:important)...",
   "customers.hash": "#",
-
   "customers.created_date": "Created Date",
-
   "customers.actions": "Actions",
   "customers.source_order": "Order",
   "customers.source_consultation": "Consultation",
@@ -738,7 +663,6 @@
   "customers.view_detailed_information": "View detailed information about the selected customer.",
   "customers.customer_name": "Customer Name",
   "customers.not_provided": "Not provided",
-
   "customers.location": "Location",
   "customers.enter_location": "Enter location",
   "customers.address_required": "Address (Required)",
@@ -759,7 +683,6 @@
   "customers.location_unavailable": "Location information is unavailable",
   "customers.location_timeout": "Location request timed out",
   "customers.location_access_denied": "Location access denied",
-
   "customers.no_notes_available": "No notes available",
   "customers.created_at": "Created At",
   "customers.not_available": "Not available",
@@ -806,7 +729,6 @@
   "system_settings.welcome_message": "Welcome back, {name}! Configure global system preferences",
   "system_settings.admin": "Admin",
   "system_settings.logged_in_as": "Logged in as",
-
   "general.cover_image": "Cover Image",
   "general.no_cover_image": "No cover image",
   "general.choose_cover_image": "Choose Cover Image",
@@ -846,13 +768,10 @@
   "general.confirm_reset_database": "Are you sure you want to reset the database? This action cannot be undone.",
   "general.reset_database_not_implemented": "Database reset functionality is not implemented yet",
   "events.preview": "Preview",
-
   "events.open_in_new_tab": "Open in New Tab",
   "events.download": "Download",
   "events.files": "Files",
-
   "events.preview_file": "Preview File",
-
   "events.opening_download_link": "Opening download link...",
   "events.opening_file": "Opening file...",
   "events.opening_preview": "Opening preview...",
@@ -999,7 +918,6 @@
   "events.saving": "Saving...",
   "events.save_changes": "Save Changes",
   "events.no_date": "No date",
-
   "general.creating_backup": "Creating backup...",
   "general.backup_created_success": "Backup created successfully",
   "general.backup_failed": "Failed to create backup",
@@ -1026,7 +944,6 @@
   "general.restore_warning_message": "This operation will overwrite all existing data with data from the backup file. Make sure you have a current backup before proceeding.",
   "general.continue": "Continue",
   "general.close": "Close",
-
   "general.instructions_title": "Import Instructions",
   "general.instruction_1": "Download the template file by clicking the button above",
   "general.instruction_2": "Fill in your data in the Excel template following the column headers exactly",
@@ -1041,7 +958,6 @@
   "general.confirm_restore": "Confirm Restore",
   "categories.exporting_categories": "Exporting categories...",
   "categories.categories_exported_success": "Categories exported successfully!",
-
   "categories.template_downloaded_success": "Template downloaded successfully!",
   "filters.category": "Category",
   "filters.status": "Status",
@@ -1075,9 +991,9 @@
   "filters.low_quantity": "Low (≤5)",
   "filters.medium_quantity": "Medium (6-20)",
   "filters.high_quantity": "High (>20)",
-  "filters.low_price": "Low (≤$100)",
-  "filters.medium_price": "Medium ($101-$500)",
-  "filters.high_price": "High (>$500)",
+  "filters.low_price": "Low (≤100 SAR)",
+  "filters.medium_price": "Medium (101-500 SAR)",
+  "filters.high_price": "High (>500 SAR)",
   "filters.low_quantity_range": "Low (≤100)",
   "filters.medium_quantity_range": "Medium (101-1000)",
   "filters.high_quantity_range": "High (>1000)",
@@ -1142,7 +1058,6 @@
   "profile.admin": "Admin",
   "profile.user": "User",
   "profile.guest": "Guest",
-
   "auth.logout": "Logout",
   "auth.logout_confirm": "Are you sure you want to logout?",
   "auth.logout_success": "Logged out successfully",
@@ -1150,20 +1065,17 @@
   "auth.login": "Login",
   "auth.login_success": "Logged in successfully",
   "auth.login_failed": "Failed to login",
-
   "avatar.default_alt": "User Avatar",
   "avatar.admin_alt": "Admin Avatar",
   "avatar.change_avatar": "Change Avatar",
   "avatar.upload_avatar": "Upload Avatar",
   "avatar.remove_avatar": "Remove Avatar",
-
   "contacts.title": "Contact Requests",
   "contacts.subtitle": "Manage customer contact requests and inquiries",
   "contacts.export_contacts": "Export Contacts",
   "contacts.new_contact": "New Contact",
   "contacts.contact_requests": "Contact Requests",
   "contacts.search_placeholder": "Search by name, email, phone, address, or message...",
-
   "contacts.contact_name": "Contact Name",
   "contacts.contact_info": "Contact Info",
   "contacts.email": "Email",
@@ -1175,13 +1087,11 @@
   "contacts.status": "Status",
   "contacts.created": "Created",
   "contacts.actions": "Actions",
-
   "contacts.active": "Active",
   "contacts.inactive": "Inactive",
   "contacts.with_customer": "With Customer",
   "contacts.without_customer": "Without Customer",
   "contacts.customer_status": "Customer Status",
-
   "contacts.contact_details": "Contact Details",
   "contacts.view_contact_description": "View detailed information about this contact request",
   "contacts.customer_info": "Customer Information",
@@ -1191,7 +1101,6 @@
   "contacts.contact_id": "Contact ID",
   "contacts.not_available": "Not Available",
   "contacts.close": "Close",
-
   "contacts.new_contact_request": "New Contact Request",
   "contacts.create_contact_description": "Fill in the contact information below",
   "contacts.customer_selection": "Customer Selection",
@@ -1209,11 +1118,9 @@
   "contacts.customer_location": "Customer Location",
   "contacts.notes": "Notes",
   "contacts.additional_notes": "Additional notes",
-
   "contacts.enter_contact_name": "Enter contact name",
   "contacts.select_services": "Select Services (Optional)",
   "contacts.mark_as_active": "Mark as active/resolved",
-
   "contacts.service_technical_training": "Technical Training & Consultation",
   "contacts.service_equipment_sales": "Equipment Sales & Solutions",
   "contacts.service_quality_assurance": "Quality Assurance & Validation",
@@ -1222,7 +1129,6 @@
   "contacts.service_regulatory": "Regulatory Compliance & Documentation",
   "contacts.service_maintenance": "Maintenance & After-Sales Support",
   "contacts.service_research": "Research & Development Solutions",
-
   "contacts.country": "Country",
   "contacts.state": "State",
   "contacts.city": "City",
@@ -1231,21 +1137,20 @@
   "contacts.select_city": "Select City",
   "contacts.selected_location": "Selected Location",
   "contacts.location_code": "Location Code",
-
   "contacts.cancel": "Cancel",
   "contacts.creating": "Creating...",
   "contacts.create_customer_contact": "Create Customer & Contact",
   "contacts.create_contact": "Create Contact",
-
   "contacts.fill_required_fields": "Please fill all required fields",
   "contacts.failed_customer_creation": "Failed to create customer",
   "contacts.customer_created_success": "Customer created successfully",
   "contacts.contact_created_success": "Contact created successfully",
   "contacts.contact_creation_failed": "Failed to create contact",
-
+  "contacts.deleted_success": "Contact request deleted successfully",
+  "contacts.delete_failed": "Failed to delete contact request",
+  "contacts.delete_request": "Delete Request",
   "contacts.status_updated_success": "Status updated successfully",
   "contacts.failed_to_update_status": "Failed to update status",
-
   "contacts.exporting_contacts": "Exporting contacts...",
   "contacts.contacts_exported_success": "Contacts exported successfully",
   "contacts.export_failed": "Export failed",
@@ -1398,17 +1303,13 @@
   "business_info.main_description": "Main Description",
   "business_info.main_description_ar": "Main Description (Arabic)",
   "business_info.main_description_en": "Main Description (English)",
-
   "business_info.upload_logo": "Upload Logo",
   "business_info.or_paste_image_url": "Or paste image URL",
   "business_info.no_image": "No Image",
-
   "business_info.star": "Star",
   "business_info.stars": "Stars",
-
   "business_info.reviews_main_settings": "Reviews Page Main Settings",
   "business_info.reviews_main_settings_desc": "Main title and hero image settings for Client Reviews page",
-
   "business_info.importing": "Importing...",
   "business_info.import_success_summary": "Import completed: {success} added, {updated} updated, {failed} failed",
   "business_info.import_failed": "Import failed",

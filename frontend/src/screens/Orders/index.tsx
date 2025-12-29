@@ -178,9 +178,7 @@ export default function OrdersPage() {
   // Data
   const orders: Order[] = list.data?.data || [];
   const allCustomers: any = customersList.data?.data || [];
-  const customers = allCustomers.filter(
-    (customer: any) => customer.customerSource === "order"
-  );
+  const customers = allCustomers;
   const products = productsList?.data?.data || [];
 
   const paginationData = list.data?.pagination ?? {
@@ -198,38 +196,16 @@ export default function OrdersPage() {
     lastPage: paginationData.totalPages,
   };
 
-  
+
   // ✅ Helper Functions
   console.log("viw", viewing)
-  /**
-   * حساب الخصم المناسب بناءً على الكمية والخصومات المتدرجة للمنتج
-   */
-  const getDiscountForQuantity = (product: any, quantity: number): number => {
+  const getDiscountForQuantity = (product: any, _quantity: number): number => {
     if (!product) return 0;
-
-    // إذا لم يكن هناك خصومات متدرجة، ارجع الخصم العام
-    if (!product.discountTiers || product.discountTiers.length === 0) {
-      return product.productDiscount || 0;
-    }
-
-    // ترتيب الخصومات حسب الكمية تصاعدياً
-    const sortedTiers = [...product.discountTiers].sort(
-      (a: any, b: any) => a.quantity - b.quantity
-    );
-
-    // ابدأ بالخصم العام
-    let applicableDiscount = product.productDiscount || 0;
-
-    // ابحث عن أعلى خصم ينطبق على الكمية المطلوبة
-    for (const tier of sortedTiers) {
-      if (quantity >= tier.quantity) {
-        applicableDiscount = tier.discount;
-      } else {
-        break;
-      }
-    }
-
-    return applicableDiscount;
+    // Return numerical discount if possible, otherwise 0
+    // Backend productDiscount is a string like "Offer 20%"
+    const discountStr = product.productDiscount || "0";
+    const match = discountStr.match(/(\d+(\.\d+)?)/);
+    return match ? parseFloat(match[0]) : 0;
   };
 
   // ✅ تحديث الخصم تلقائياً عند تغيير المنتج أو الكمية
@@ -284,13 +260,16 @@ export default function OrdersPage() {
       if (!item.product || (item.product.productOldPrice === undefined && item.product.productNewPrice === undefined)) {
         return; // Skip this item if product or price is missing
       }
-      const productPrice = item.product.productNewPrice ?? item.product.productOldPrice;
-      const itemTotal = item.quantity * productPrice;
-      const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
-      subtotal += afterItemDiscount;
+      const basePrice = (item.itemDiscount > 0)
+        ? (item.product.productOldPrice || 0)
+        : (item.product.productNewPrice ?? item.product.productOldPrice ?? 0);
+      const itemTotal = item.quantity * basePrice;
+      // Use non-compounding logic: apply the higher of item or order discount
+      const effectiveDiscount = Math.max(item.itemDiscount || 0, order.orderDiscount || 0);
+      const afterDiscount = itemTotal * (1 - effectiveDiscount / 100);
+      subtotal += afterDiscount;
     });
-    const finalTotal = subtotal * (1 - order.orderDiscount / 100);
-    return finalTotal;
+    return subtotal;
   };
 
   const calculateSubtotal = (order: Order) => {
@@ -300,10 +279,13 @@ export default function OrdersPage() {
       if (!item.product || (item.product.productOldPrice === undefined && item.product.productNewPrice === undefined)) {
         return; // Skip this item if product or price is missing
       }
-      const productPrice = item.product.productNewPrice ?? item.product.productOldPrice;
-      const itemTotal = item.quantity * productPrice;
-      const afterItemDiscount = itemTotal * (1 - item.itemDiscount / 100);
-      subtotal += afterItemDiscount;
+      const basePrice = (item.itemDiscount > 0)
+        ? (item.product.productOldPrice || 0)
+        : (item.product.productNewPrice ?? item.product.productOldPrice ?? 0);
+      const itemTotal = item.quantity * basePrice;
+      const effectiveDiscount = Math.max(item.itemDiscount || 0, order.orderDiscount || 0);
+      const afterDiscount = itemTotal * (1 - effectiveDiscount / 100);
+      subtotal += afterDiscount;
     });
     return subtotal;
   };
@@ -915,7 +897,7 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell className="font-medium">{totalItems}</TableCell>
                   <TableCell className="font-medium">
-                    {calculateOrderTotal(order).toFixed(2)} EGP
+                    {calculateOrderTotal(order).toFixed(2)} SAR
                   </TableCell>
                   <TableCell>{order.orderDiscount}%</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -1270,7 +1252,7 @@ export default function OrdersPage() {
                                 : product.productNameEn}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {(product.productPrice ?? 0).toFixed(2)} EGP
+                              {(product.productNewPrice ?? product.productOldPrice ?? 0).toFixed(2)} SAR
                             </span>
                             {product.productDiscount > 0 && (
                               <span className="text-xs bg-red-100 text-red-600 px-1 rounded">
@@ -1392,10 +1374,11 @@ export default function OrdersPage() {
                         const product = getProductById(item.productId);
                         if (!product) return null;
 
-                        const itemSubtotal =
-                          (product.productNewPrice ?? product.productOldPrice) * item.quantity;
-                        const discountAmount =
-                          (itemSubtotal * item.itemDiscount) / 100;
+                        const basePrice = (item.itemDiscount > 0)
+                          ? (product.productOldPrice || 0)
+                          : (product.productNewPrice ?? product.productOldPrice ?? 0);
+                        const itemSubtotal = basePrice * item.quantity;
+                        const discountAmount = (itemSubtotal * item.itemDiscount) / 100;
                         const afterDiscount = itemSubtotal - discountAmount;
 
                         const autoDiscount = getDiscountForQuantity(
@@ -1452,21 +1435,21 @@ export default function OrdersPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-gray-600">
-                              {(product.productNewPrice ?? product.productOldPrice ?? 0).toFixed(2)} EGP
+                              {(product.productOldPrice ?? 0).toFixed(2)} SAR
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
                               {item.itemDiscount > 0 && (
                                 <div className="text-xs text-gray-500 line-through">
-                                  {itemSubtotal.toFixed(2)} EGP
+                                  {itemSubtotal.toFixed(2)} SAR
                                 </div>
                               )}
-                              <div>{itemSubtotal.toFixed(2)} EGP</div>
+                              <div>{itemSubtotal.toFixed(2)} SAR</div>
                             </td>
                             <td className="px-4 py-3 text-right font-bold text-green-600">
-                              {afterDiscount.toFixed(2)} EGP
+                              {afterDiscount.toFixed(2)} SAR
                               {item.itemDiscount > 0 && (
                                 <div className="text-xs text-red-600">
-                                  (-{discountAmount.toFixed(2)} EGP)
+                                  (-{discountAmount.toFixed(2)} SAR)
                                 </div>
                               )}
                             </td>
@@ -1573,7 +1556,8 @@ export default function OrdersPage() {
                     const product = getProductById(item.productId);
                     if (!product) return null;
 
-                    const itemTotal = product.productPrice * item.quantity;
+                    const basePrice = product.productOldPrice ?? 0;
+                    const itemTotal = basePrice * item.quantity;
                     const afterItemDiscount =
                       itemTotal * (1 - item.itemDiscount / 100);
 
@@ -1593,7 +1577,7 @@ export default function OrdersPage() {
                             </span>
                           )}
                         </span>
-                        <span>{afterItemDiscount.toFixed(2)} EGP</span>
+                        <span>{afterItemDiscount.toFixed(2)} SAR</span>
                       </div>
                     );
                   })}
@@ -1611,59 +1595,49 @@ export default function OrdersPage() {
                         .reduce((sum, item) => {
                           const product = getProductById(item.productId);
                           if (!product) return sum;
-                          const itemTotal =
-                            product.productPrice * item.quantity;
-                          const afterItemDiscount =
-                            itemTotal * (1 - item.itemDiscount / 100);
-                          return sum + afterItemDiscount;
+                          return sum + (product.productOldPrice || 0) * item.quantity;
                         }, 0)
                         .toFixed(2)}{" "}
-                      EGP
+                      SAR
                     </span>
                   </div>
 
-                  {orderForm.orderDiscount > 0 && (
-                    <div className="flex justify-between text-red-600">
-                      <span>
-                        {intl.formatMessage({ id: "orders.order_discount" })}:
-                      </span>
-                      <span>
-                        -
-                        {(
-                          orderForm.products.reduce((sum, item) => {
-                            const product = getProductById(item.productId);
-                            if (!product) return sum;
-                            const itemTotal =
-                              product.productPrice * item.quantity;
-                            const afterItemDiscount =
-                              itemTotal * (1 - item.itemDiscount / 100);
-                            return sum + afterItemDiscount;
-                          }, 0) *
-                          (orderForm.orderDiscount / 100)
-                        ).toFixed(2)}{" "}
-                        EGP
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-red-600">
+                    <span>
+                      {intl.formatMessage({ id: "orders.total_discounts" })}:
+                    </span>
+                    <span>
+                      -
+                      {orderForm.products
+                        .reduce((sum, item) => {
+                          const product = getProductById(item.productId);
+                          if (!product) return sum;
+                          const base = product.productOldPrice || 0;
+                          const originalTotal = base * item.quantity;
+                          const effectiveDiscount = Math.max(item.itemDiscount || 0, orderForm.orderDiscount || 0);
+                          return sum + (originalTotal * effectiveDiscount) / 100;
+                        }, 0)
+                        .toFixed(2)}{" "}
+                      SAR
+                    </span>
+                  </div>
 
                   <hr className="my-2" />
 
                   <div className="flex justify-between font-bold text-lg">
                     <span>{intl.formatMessage({ id: "orders.total" })}:</span>
                     <span className="text-green-600">
-                      {(
-                        orderForm.products.reduce((sum, item) => {
+                      {orderForm.products
+                        .reduce((sum, item) => {
                           const product = getProductById(item.productId);
                           if (!product) return sum;
-                          const itemTotal =
-                            product.productPrice * item.quantity;
-                          const afterItemDiscount =
-                            itemTotal * (1 - item.itemDiscount / 100);
-                          return sum + afterItemDiscount;
-                        }, 0) *
-                        (1 - orderForm.orderDiscount / 100)
-                      ).toFixed(2)}{" "}
-                      EGP
+                          const base = product.productOldPrice || 0;
+                          const originalTotal = base * item.quantity;
+                          const effectiveDiscount = Math.max(item.itemDiscount || 0, orderForm.orderDiscount || 0);
+                          return sum + (originalTotal * (1 - effectiveDiscount / 100));
+                        }, 0)
+                        .toFixed(2)}{" "}
+                      SAR
                     </span>
                   </div>
 
@@ -1672,10 +1646,7 @@ export default function OrdersPage() {
                       {intl.formatMessage({ id: "orders.total_items" })}:
                     </span>
                     <span className="font-medium">
-                      {orderForm.products.reduce(
-                        (sum, p) => sum + p.quantity,
-                        0
-                      )}
+                      {orderForm.products.reduce((sum, p) => sum + p.quantity, 0)}
                     </span>
                   </div>
                 </div>
@@ -1933,10 +1904,11 @@ export default function OrdersPage() {
                     </thead>
                     <tbody>
                       {viewing.products.map((item, index) => {
-                        const itemSubtotal =
-                          (item.product.productNewPrice ?? item.product.productOldPrice) * item.quantity;
-                        const itemTotal =
-                          itemSubtotal * (1 - item.itemDiscount / 100);
+                        const product = item.product;
+                        const basePrice = product?.productOldPrice || 0;
+                        const effectiveDiscount = Math.max(item.itemDiscount || 0, viewing.orderDiscount || 0);
+                        const itemSubtotal = basePrice * item.quantity;
+                        const itemTotal = itemSubtotal * (1 - effectiveDiscount / 100);
 
                         return (
                           <tr key={index} className="hover:bg-gray-50 border-t">
@@ -1951,7 +1923,7 @@ export default function OrdersPage() {
                                     : item.product?.productNameEn}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {(item.product.productNewPrice ?? item.product.productOldPrice ?? 0).toFixed(2)} EGP ×{" "}
+                                  {(item.product.productOldPrice ?? 0).toFixed(2)} SAR ×{" "}
                                   {item.quantity}
                                 </p>
                               </div>
@@ -1971,13 +1943,13 @@ export default function OrdersPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-right font-medium">
-                              {(item.product.productNewPrice ?? item.product.productOldPrice ?? 0).toFixed(2)} EGP
+                              {(item.product.productNewPrice ?? item.product.productOldPrice ?? 0).toFixed(2)} SAR
                             </td>
                             <td className="px-4 py-3 text-right">
-                              {itemSubtotal.toFixed(2)} EGP
+                              {itemSubtotal.toFixed(2)} SAR
                             </td>
                             <td className="px-4 py-3 text-right font-medium text-green-600">
-                              {itemTotal.toFixed(2)} EGP
+                              {itemTotal.toFixed(2)} SAR
                             </td>
                           </tr>
                         );
@@ -2001,7 +1973,7 @@ export default function OrdersPage() {
                       :
                     </span>
                     <span className="font-medium">
-                      {calculateSubtotal(viewing).toFixed(2)} EGP
+                      {calculateSubtotal(viewing).toFixed(2)} SAR
                     </span>
                   </div>
                   {viewing.orderDiscount > 0 && (
@@ -2016,7 +1988,7 @@ export default function OrdersPage() {
                           calculateSubtotal(viewing) *
                           (viewing.orderDiscount / 100)
                         ).toFixed(2)}{" "}
-                        EGP
+                        SAR
                       </span>
                     </div>
                   )}
@@ -2024,7 +1996,7 @@ export default function OrdersPage() {
                   <div className="flex justify-between text-lg font-bold">
                     <span>{intl.formatMessage({ id: "orders.total" })}:</span>
                     <span className="text-green-600">
-                      {calculateOrderTotal(viewing).toFixed(2)} EGP
+                      {calculateOrderTotal(viewing).toFixed(2)} SAR
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600 pt-2 border-t">
@@ -2329,7 +2301,8 @@ function DiscountInfo({
 }) {
   if (!product) return null;
 
-  const originalPrice = product.productPrice * quantity;
+  const basePrice = product.productOldPrice ?? 0;
+  const originalPrice = basePrice * quantity;
   const discountAmount = (originalPrice * appliedDiscount) / 100;
   const finalPrice = originalPrice - discountAmount;
 
@@ -2346,7 +2319,7 @@ function DiscountInfo({
           <span className="text-gray-600">
             {intl.formatMessage({ id: "orders.original_price" })}:
           </span>
-          <span className="font-medium">{originalPrice.toFixed(2)} EGP</span>
+          <span className="font-medium">{originalPrice.toFixed(2)} SAR</span>
         </div>
 
         {appliedDiscount > 0 && (
@@ -2357,7 +2330,7 @@ function DiscountInfo({
                 {appliedDiscount}%):
               </span>
               <span className="font-medium">
-                -{discountAmount.toFixed(2)} EGP
+                -{discountAmount.toFixed(2)} SAR
               </span>
             </div>
             <hr className="my-1" />
@@ -2366,69 +2339,8 @@ function DiscountInfo({
 
         <div className="flex justify-between font-bold text-green-600">
           <span>{intl.formatMessage({ id: "orders.final_price" })}:</span>
-          <span>{finalPrice.toFixed(2)} EGP</span>
+          <span>{finalPrice.toFixed(2)} SAR</span>
         </div>
-
-        {product.discountTiers && product.discountTiers.length > 0 && (
-          <div className="mt-3 pt-2 border-t">
-            <p className="text-xs font-semibold text-gray-700 mb-2">
-              {intl.formatMessage({ id: "orders.available_discounts" })}:
-            </p>
-            <div className="space-y-1">
-              {product.discountTiers
-                .sort((a: any, b: any) => a.quantity - b.quantity)
-                .map((tier: any, idx: number) => {
-                  const isActive = quantity >= tier.quantity;
-                  const isNext = !isActive && quantity < tier.quantity;
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex items-center justify-between text-xs px-2 py-1 rounded ${isActive
-                        ? "bg-green-100 text-green-700 font-semibold"
-                        : isNext
-                          ? "bg-yellow-50 text-yellow-700"
-                          : "bg-gray-50 text-gray-500"
-                        }`}
-                    >
-                      <span className="flex items-center gap-1">
-                        {isActive && <Check className="w-3 h-3" />}
-                        {intl.formatMessage(
-                          { id: "orders.buy_quantity_or_more" },
-                          { quantity: tier.quantity }
-                        )}
-                      </span>
-                      <span className="font-semibold">
-                        {tier.discount}% OFF
-                      </span>
-                    </div>
-                  );
-                })}
-            </div>
-
-            {(() => {
-              const nextTier = product.discountTiers
-                .sort((a: any, b: any) => a.quantity - b.quantity)
-                .find((tier: any) => tier.quantity > quantity);
-
-              if (nextTier) {
-                const needed = nextTier.quantity - quantity;
-                return (
-                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                    <p className="text-yellow-800">
-                      💡{" "}
-                      {intl.formatMessage(
-                        { id: "orders.add_more_for_discount" },
-                        { quantity: needed, discount: nextTier.discount }
-                      )}
-                    </p>
-                  </div>
-                );
-              }
-              return null;
-            })()}
-          </div>
-        )}
       </div>
     </div>
   );

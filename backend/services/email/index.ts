@@ -135,11 +135,10 @@ const getEmailTemplate = (order: any) => {
                                 Order ID
                               </p>
                               <p style="margin: 0; font-size: 18px; color: #1f2937; font-weight: 700; font-family: 'Courier New', monospace;">
-                                #${
-                                  String(order._id || "")
-                                    .slice(-8)
-                                    .toUpperCase() || "N/A"
-                                }
+                                #${String(order._id || "")
+      .slice(-8)
+      .toUpperCase() || "N/A"
+    }
                               </p>
                             </td>
                             <td align="right">
@@ -221,8 +220,8 @@ const getEmailTemplate = (order: any) => {
                             <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
                               <span style="color: #1f2937; font-size: 14px; font-weight: 600;">
                                 ${formatDate(
-                                  order.createdAt || new Date().toString()
-                                )}
+      order.createdAt || new Date().toString()
+    )}
                               </span>
                             </td>
                           </tr>
@@ -234,13 +233,12 @@ const getEmailTemplate = (order: any) => {
                             </td>
                             <td style="padding: 10px 0; text-align: right;">
                               <span style="color: #059669; font-size: 18px; font-weight: 700;">
-                                ${
-                                  typeof order.totalAmount === "number"
-                                    ? order.totalAmount.toFixed(2)
-                                    : order.totalAmount
-                                    ? String(order.totalAmount)
-                                    : "0.00"
-                                } EGP
+                                ${typeof order.totalAmount === "number"
+      ? order.totalAmount.toFixed(2)
+      : order.totalAmount
+        ? String(order.totalAmount)
+        : "0.00"
+    } SAR
                               </span>
                             </td>
                           </tr>
@@ -336,10 +334,10 @@ const getEmailTemplate = (order: any) => {
                           </tr>
                           <!-- Products -->
                           ${order.products
-                            ?.map((product: any, index: number) => {
-                              const hasItemDiscount =
-                                (product.itemDiscount || 0) > 0;
-                              return `
+      ?.map((product: any, index: number) => {
+        const hasItemDiscount =
+          (product.itemDiscount || 0) > 0;
+        return `
                             <tr style="border-bottom: 1px solid #f3f4f6;">
                               <td style="padding: 15px; color: #1f2937; font-size: 13px; font-weight: 500;">
                                 ${product.product?.name || "N/A"}
@@ -359,18 +357,16 @@ const getEmailTemplate = (order: any) => {
                               </td>
                               <td style="padding: 15px; text-align: right; color: #1f2937; font-weight: 500; font-size: 13px;">
                                 ${(product.price || 0).toFixed(2)}
-                                ${
-                                  hasItemDiscount
-                                    ? `<br/><span style="color: #9ca3af; font-size: 11px; text-decoration: line-through;">${(
-                                        product.subtotal || 0
-                                      ).toFixed(2)}</span>`
-                                    : ""
-                                }
+                                ${hasItemDiscount
+            ? `<br/><span style="color: #9ca3af; font-size: 11px; text-decoration: line-through;">${(
+              product.subtotal || 0
+            ).toFixed(2)}</span>`
+            : ""
+          }
                               </td>
                               <td style="padding: 15px; text-align: center;">
-                                ${
-                                  hasItemDiscount
-                                    ? `
+                                ${hasItemDiscount
+            ? `
                                   <span style="
                                     display: inline-block;
                                     padding: 3px 10px;
@@ -383,32 +379,31 @@ const getEmailTemplate = (order: any) => {
                                     -${product.itemDiscount}%
                                   </span>
                                 `
-                                    : `<span style="color: #9ca3af; font-size: 12px;">—</span>`
-                                }
+            : `<span style="color: #9ca3af; font-size: 12px;">—</span>`
+          }
                               </td>
                               <td style="padding: 15px; text-align: right;">
                                 <div style="font-weight: 600; font-size: 14px; color: #059669;">
                                   ${(product.afterItemDiscount || 0).toFixed(
-                                    2
-                                  )} EGP
+            2
+          )} SAR
                                 </div>
-                                ${
-                                  hasItemDiscount
-                                    ? `
+                                ${hasItemDiscount
+            ? `
                                   <div style="font-size: 10px; color: #10b981; margin-top: 2px;">
                                     Saved ${(
-                                      (product.subtotal || 0) -
-                                      (product.afterItemDiscount || 0)
-                                    ).toFixed(2)} EGP
+              (product.subtotal || 0) -
+              (product.afterItemDiscount || 0)
+            ).toFixed(2)} SAR
                                   </div>
                                 `
-                                    : ""
-                                }
+            : ""
+          }
                               </td>
                             </tr>
                           `;
-                            })
-                            .join("")}
+      })
+      .join("")}
                         </table>
                       </td>
                     </tr>
@@ -430,13 +425,12 @@ const getEmailTemplate = (order: any) => {
                               Subtotal (before discounts):
                             </td>
                             <td style="padding: 8px 0; text-align: right; color: #1f2937; font-size: 14px; font-weight: 500;">
-                              ${subtotalBeforeDiscounts.toFixed(2)} EGP
+                              ${subtotalBeforeDiscounts.toFixed(2)} SAR
                             </td>
                           </tr>
                           
-                          ${
-                            totalItemDiscounts > 0
-                              ? `
+                          ${totalItemDiscounts > 0
+      ? `
                           <!-- Item Discounts -->
                           <tr>
                             <td style="padding: 8px 0; color: #059669; font-size: 13px;">
@@ -445,7 +439,7 @@ const getEmailTemplate = (order: any) => {
                               </span>
                             </td>
                             <td style="padding: 8px 0; text-align: right; color: #059669; font-size: 13px; font-weight: 600;">
-                              -${totalItemDiscounts.toFixed(2)} EGP
+                              -${totalItemDiscounts.toFixed(2)} SAR
                             </td>
                           </tr>
                           
@@ -455,16 +449,15 @@ const getEmailTemplate = (order: any) => {
                               Subtotal after item discounts:
                             </td>
                             <td style="padding: 8px 0 12px 0; text-align: right; color: #1f2937; font-size: 14px; font-weight: 500;">
-                              ${totalAfterItemDiscounts.toFixed(2)} EGP
+                              ${totalAfterItemDiscounts.toFixed(2)} SAR
                             </td>
                           </tr>
                           `
-                              : ""
-                          }
+      : ""
+    }
                           
-                          ${
-                            orderDiscountAmount > 0
-                              ? `
+                          ${orderDiscountAmount > 0
+      ? `
                           <!-- Order Discount -->
                           <tr>
                             <td style="padding: 12px 0 8px 0; color: #059669; font-size: 13px;">
@@ -473,16 +466,15 @@ const getEmailTemplate = (order: any) => {
                               </span>
                             </td>
                             <td style="padding: 12px 0 8px 0; text-align: right; color: #059669; font-size: 13px; font-weight: 600;">
-                              -${orderDiscountAmount.toFixed(2)} EGP
+                              -${orderDiscountAmount.toFixed(2)} SAR
                             </td>
                           </tr>
                           `
-                              : ""
-                          }
+      : ""
+    }
                           
-                          ${
-                            hasDiscounts
-                              ? `
+                          ${hasDiscounts
+      ? `
                           <!-- Total Savings -->
                           <tr style="background-color: #d1fae5; border-radius: 8px;">
                             <td style="padding: 12px; color: #065f46; font-size: 14px; font-weight: 600;">
@@ -490,15 +482,15 @@ const getEmailTemplate = (order: any) => {
                             </td>
                             <td style="padding: 12px; text-align: right; color: #065f46; font-size: 16px; font-weight: 700;">
                               ${(
-                                totalItemDiscounts + orderDiscountAmount
-                              ).toFixed(2)} EGP
+        totalItemDiscounts + orderDiscountAmount
+      ).toFixed(2)} SAR
                             </td>
                           </tr>
                           
                           <tr style="height: 10px;"></tr>
                           `
-                              : ""
-                          }
+      : ""
+    }
                           
                           <!-- Final Total -->
                           <tr style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 8px; border: 2px solid #10b981;">
@@ -506,7 +498,7 @@ const getEmailTemplate = (order: any) => {
                               🎯 Final Total:
                             </td>
                             <td style="padding: 15px; text-align: right; color: #059669; font-size: 20px; font-weight: 700;">
-                              ${(order.totalAmount || 0).toFixed(2)} EGP
+                              ${(order.totalAmount || 0).toFixed(2)} SAR
                             </td>
                           </tr>
                         </table>
@@ -515,9 +507,8 @@ const getEmailTemplate = (order: any) => {
                   </table>
 
                   <!-- Notes Section -->
-                  ${
-                    order.notes
-                      ? `
+                  ${order.notes
+      ? `
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
                       <tr>
                         <td style="
@@ -536,16 +527,15 @@ const getEmailTemplate = (order: any) => {
                       </tr>
                     </table>
                   `
-                      : ""
-                  }
+      : ""
+    }
 
                   <!-- Action Button -->
                   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 30px;">
                     <tr>
                       <td align="center">
-                        <a href="${
-                          process.env.DASHBOARD_URL || "#"
-                        }/orders" style="
+                        <a href="${process.env.DASHBOARD_URL || "#"
+    }/orders" style="
                           display: inline-block;
                           padding: 14px 40px;
                           background: linear-gradient(135deg, #021031 0%, #1e3a8a 100%);
@@ -623,15 +613,13 @@ export const sendNewOrderEmail = async (order: any) => {
       to: "hassanrageh.236@gmail.com",
       subject: `🎉 New Order #${String(order._id || "")
         .slice(-8)
-        .toUpperCase()} - ${
-        typeof order.totalAmount === "number"
+        .toUpperCase()} - ${typeof order.totalAmount === "number"
           ? order.totalAmount.toFixed(2)
           : order.totalAmount
-          ? String(order.totalAmount)
-          : "0.00"
-      } EGP${
-        totalSavings > 0 ? ` (Saved ${totalSavings.toFixed(2)} EGP)` : ""
-      }`,
+            ? String(order.totalAmount)
+            : "0.00"
+        } SAR${totalSavings > 0 ? ` (Saved ${totalSavings.toFixed(2)} SAR)` : ""
+        }`,
       html: getEmailTemplate(order),
 
       text: `
@@ -647,30 +635,29 @@ Created At: ${order.createdAt}
 
 Products:
 ${order.products
-  ?.map(
-    (product: any) =>
-      `- ${product.product?.name || "N/A"}
+          ?.map(
+            (product: any) =>
+              `- ${product.product?.name || "N/A"}
    Quantity: ${product.quantity}
-   Unit Price: ${product.price} EGP
-   Subtotal: ${product.subtotal?.toFixed(2)} EGP
-   ${
-     product.itemDiscount > 0
-       ? `Item Discount: -${product.itemDiscount}% (${(
-           (product.subtotal || 0) - (product.afterItemDiscount || 0)
-         ).toFixed(2)} EGP)`
-       : ""
-   }
-   After Discount: ${product.afterItemDiscount?.toFixed(2)} EGP
-   Final Amount: ${product.finalAmount?.toFixed(2)} EGP`
-  )
-  .join("\n\n")}
+   Unit Price: ${product.price} SAR
+   Subtotal: ${product.subtotal?.toFixed(2)} SAR
+   ${product.itemDiscount > 0
+                ? `Item Discount: -${product.itemDiscount}% (${(
+                  (product.subtotal || 0) - (product.afterItemDiscount || 0)
+                ).toFixed(2)} SAR)`
+                : ""
+              }
+   After Discount: ${product.afterItemDiscount?.toFixed(2)} SAR
+   Final Amount: ${product.finalAmount?.toFixed(2)} SAR`
+          )
+          .join("\n\n")}
 
 Order Summary:
 Subtotal: ${order.products
-        ?.reduce((sum: number, p: any) => sum + (p.subtotal || 0), 0)
-        .toFixed(2)} EGP
-${totalSavings > 0 ? `Total Savings: -${totalSavings.toFixed(2)} EGP` : ""}
-Final Total: ${order.totalAmount} EGP
+          ?.reduce((sum: number, p: any) => sum + (p.subtotal || 0), 0)
+          .toFixed(2)} SAR
+${totalSavings > 0 ? `Total Savings: -${totalSavings.toFixed(2)} SAR` : ""}
+Final Total: ${order.totalAmount} SAR
 
 Notes: ${order.notes || "No notes"}
       `,

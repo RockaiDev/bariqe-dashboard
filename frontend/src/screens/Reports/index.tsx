@@ -61,7 +61,7 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-6 py-6">
- 
+
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">Reports & Analytics</h1>
@@ -77,7 +77,7 @@ export default function ReportsPage() {
                 <CardDescription>Last 12 Months +15%</CardDescription>
               </div>
               <div className="text-right">
-                <div className="text-xl font-semibold text-blue-600">$250K</div>
+                <div className="text-xl font-semibold text-blue-600">250K SAR</div>
               </div>
             </CardHeader>
             <CardContent>

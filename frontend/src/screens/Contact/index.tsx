@@ -24,6 +24,7 @@ import {
   MapPin,
   User,
   Contact,
+  Trash2,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -97,7 +98,7 @@ const SERVICES_OPTIONS = [
 
 export default function ContactPage() {
   const intl = useIntl();
-   const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     page: 1,
     perPage: 10,
@@ -106,7 +107,7 @@ export default function ContactPage() {
     search: "",
   });
 
-  const { list, create, update } = useCrud("contacts", filters);
+  const { list, create, update, del: remove } = useCrud("contacts", filters);
   const { list: customersList, create: createCustomer } = useCrud("customers");
 
   // Table Edit Status State
@@ -147,24 +148,47 @@ export default function ContactPage() {
   const [viewOpen, setViewOpen] = useState(false);
   const [viewing, setViewing] = useState<Contact | null>(null);
 
-const handleView = async (contact: Contact) => {
-  setViewing(contact);
-  setViewOpen(true);
+  const handleView = async (contact: Contact) => {
+    setViewing(contact);
+    setViewOpen(true);
 
-  // ✅ Mark as read if not already
-  if (!contact.status) {
-    try {
-      await update.mutateAsync({
-        id: contact._id,
-        payload: { status: true },
-      });
-      list.refetch();
-    } catch (error) {
-      console.error("Failed to mark as read:", error);
+    // ✅ Mark as read if not already
+    if (!contact.status) {
+      try {
+        await update.mutateAsync({
+          id: contact._id,
+          payload: { status: true },
+        });
+        list.refetch();
+      } catch (error) {
+        console.error("Failed to mark as read:", error);
+      }
     }
-  }
-};
-useEffect(() => {
+  };
+
+  const deleteConfirmDialog = useConfirmationDialog({
+    onConfirm: async () => {
+      if (viewing) {
+        try {
+          await remove.mutateAsync(viewing._id);
+          setViewOpen(false);
+          setViewing(null);
+          list.refetch();
+          toast.success(intl.formatMessage({ id: "contacts.deleted_success" }));
+        } catch (error: any) {
+          toast.error(intl.formatMessage({ id: "contacts.delete_failed" }));
+        }
+      }
+    },
+    onCancel: () => { },
+  });
+
+  const handleDelete = (e: React.MouseEvent, contact: Contact) => {
+    e.stopPropagation();
+    setViewing(contact);
+    deleteConfirmDialog.showDialog();
+  };
+  useEffect(() => {
     const viewId = searchParams.get("view");
     if (viewId && contacts.length > 0) {
       const contact = contacts.find((c) => c._id === viewId);
@@ -251,9 +275,8 @@ useEffect(() => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `contacts_export_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
+      a.download = `contacts_export_${new Date().toISOString().split("T")[0]
+        }.xlsx`;
       document.body.appendChild(a);
       a.click();
 
@@ -274,9 +297,9 @@ useEffect(() => {
   const currentSort =
     filters.sorts.length > 0
       ? {
-          key: filters.sorts[0].field,
-          direction: filters.sorts[0].direction,
-        }
+        key: filters.sorts[0].field,
+        direction: filters.sorts[0].direction,
+      }
       : undefined;
 
   const handleSortChange = (key?: string, direction?: "asc" | "desc") => {
@@ -334,7 +357,7 @@ useEffect(() => {
           placeholder: intl.formatMessage({ id: "contacts.search_placeholder" }),
           onKeyDown: createContactSearchHandler(ChangeFilter),
         }}
-        filterGroups={createContactFilterGroups( (key: string) => intl.formatMessage({ id: key }))}
+        filterGroups={createContactFilterGroups((key: string) => intl.formatMessage({ id: key }))}
         onFiltersApply={(filters, dateFilter) => {
           if (dateFilter) {
             handleCustomDateRange(dateFilter, ChangeFilter);
@@ -428,7 +451,7 @@ useEffect(() => {
                 <TableCell>
                   <div className="flex flex-wrap gap-1 text-white max-w-[200px]">
                     {contact.services?.slice(0, 2).map((service, idx) => (
-                      <Badge key={idx}  className="text-xs text-white">
+                      <Badge key={idx} className="text-xs text-white">
                         {service.split(' ')[0]}
                       </Badge>
                     ))}
@@ -492,10 +515,10 @@ useEffect(() => {
                 <TableCell className="text-sm text-gray-500">
                   {contact.createdAt
                     ? new Date(contact.createdAt).toLocaleDateString("en-US", {
-                        year: "2-digit",
-                        month: "short",
-                        day: "numeric",
-                      })
+                      year: "2-digit",
+                      month: "short",
+                      day: "numeric",
+                    })
                     : "-"}
                 </TableCell>
                 <TableCell className="text-right">
@@ -512,6 +535,14 @@ useEffect(() => {
                       }}
                     >
                       <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => handleDelete(e, contact)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -687,15 +718,31 @@ useEffect(() => {
             </div>
           )}
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-6 flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={(e) => viewing && handleDelete(e, viewing)}
+              className="flex-1"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {intl.formatMessage({ id: "contacts.delete_request" })}
+            </Button>
             <DialogClose asChild>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="flex-1">
                 {intl.formatMessage({ id: "contacts.close" })}
               </Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={deleteConfirmDialog.isOpen}
+        onOpenChange={deleteConfirmDialog.setIsOpen}
+        variant="delete"
+        onConfirm={deleteConfirmDialog.handleConfirm}
+        onCancel={deleteConfirmDialog.handleCancel}
+      />
     </div>
   );
 }
@@ -714,7 +761,7 @@ function AddContact({
   const intl = useIntl();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const [customerMode, setCustomerMode] = useState<"new" | "existing">("existing");
 
   const [form, setForm] = useState({
@@ -762,10 +809,10 @@ function AddContact({
     form.phoneNumber.trim() &&
     form.address.trim() &&
     form.message.trim() &&
-    (customerMode === "new" ? 
-      (customerForm.customerName.trim() && 
-       customerForm.customerPhone.trim() && 
-       customerForm.customerAddress.trim()) :
+    (customerMode === "new" ?
+      (customerForm.customerName.trim() &&
+        customerForm.customerPhone.trim() &&
+        customerForm.customerAddress.trim()) :
       true
     );
 
@@ -882,9 +929,9 @@ function AddContact({
           toast.success(intl.formatMessage({ id: "contacts.customer_created_success" }));
         } catch (customerError: any) {
           console.error("Customer creation error:", customerError);
-          const errorMessage = customerError?.response?.data?.message || 
-                              customerError?.message || 
-                              intl.formatMessage({ id: "contacts.failed_customer_creation" });
+          const errorMessage = customerError?.response?.data?.message ||
+            customerError?.message ||
+            intl.formatMessage({ id: "contacts.failed_customer_creation" });
           toast.error(errorMessage);
           return;
         }
@@ -915,9 +962,9 @@ function AddContact({
       setOpen(false);
       toast.success(intl.formatMessage({ id: "contacts.contact_created_success" }));
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          intl.formatMessage({ id: "contacts.contact_creation_failed" });
+      const errorMessage = error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "contacts.contact_creation_failed" });
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -939,14 +986,14 @@ function AddContact({
               {intl.formatMessage({ id: "contacts.create_contact_description" })}
             </DialogDescription>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Mode Selection */}
             <div className="space-y-4">
               <Label className="text-base font-medium">
                 {intl.formatMessage({ id: "contacts.customer_selection" })}
               </Label>
-              
+
               <RadioGroup
                 value={customerMode}
                 onValueChange={(value: "new" | "existing") => {
@@ -984,8 +1031,8 @@ function AddContact({
                   <Select
                     value={form.customer}
                     onValueChange={(value) => {
-                      setForm((prev) => ({ 
-                        ...prev, 
+                      setForm((prev) => ({
+                        ...prev,
                         customer: value,
                       }));
                     }}
@@ -1036,7 +1083,7 @@ function AddContact({
                     id="customerPhone"
                     label={intl.formatMessage({ id: "contacts.phone_required" })}
                     value={customerForm.customerPhone}
-                    onChange={(e) => {e;}}
+                    onChange={(e) => { e; }}
                     onPhoneChange={handlePhoneChange}
                     variant="phone"
                     placeholder={intl.formatMessage({ id: "contacts.enter_phone" })}
@@ -1117,7 +1164,7 @@ function AddContact({
                 id="phoneNumber"
                 label={intl.formatMessage({ id: "contacts.phone_number" })}
                 variant="phone"
-                onChange={(e) => {e;}}
+                onChange={(e) => { e; }}
                 value={form.phoneNumber}
                 onPhoneChange={(value) => setForm((f) => ({ ...f, phoneNumber: value || "" }))}
                 placeholder={intl.formatMessage({ id: "contacts.enter_phone" })}
@@ -1193,16 +1240,16 @@ function AddContact({
                   {intl.formatMessage({ id: "contacts.cancel" })}
                 </Button>
               </DialogClose>
-              <Button 
-                type="submit" 
-                className="text-white" 
+              <Button
+                type="submit"
+                className="text-white"
                 disabled={!canSubmit || loading}
               >
-                {loading 
-                  ? intl.formatMessage({ id: "contacts.creating" }) 
+                {loading
+                  ? intl.formatMessage({ id: "contacts.creating" })
                   : customerMode === "new"
-                  ? intl.formatMessage({ id: "contacts.create_customer_contact" })
-                  : intl.formatMessage({ id: "contacts.create_contact" })
+                    ? intl.formatMessage({ id: "contacts.create_customer_contact" })
+                    : intl.formatMessage({ id: "contacts.create_contact" })
                 }
               </Button>
             </DialogFooter>
@@ -1223,16 +1270,16 @@ function AddContact({
 }
 
 // Location Selector Component
-function LocationSelector({ 
-  locationData, 
-  setLocationData, 
-  setForm, 
+function LocationSelector({
+  locationData,
+  setLocationData,
+  setForm,
   intl,
   fieldPrefix = "customer"
-}: { 
-  locationData: LocationData; 
-  setLocationData: (data: LocationData) => void; 
-  setForm: any; 
+}: {
+  locationData: LocationData;
+  setLocationData: (data: LocationData) => void;
+  setForm: any;
   intl: any;
   fieldPrefix?: string;
 }) {
@@ -1244,7 +1291,7 @@ function LocationSelector({
     if (locationData.countryCode) {
       const countryStates = State.getStatesOfCountry(locationData.countryCode);
       setStates(countryStates);
-      
+
       if (locationData.stateCode && !countryStates.find(s => s.isoCode === locationData.stateCode)) {
         setLocationData({
           ...locationData,
@@ -1264,7 +1311,7 @@ function LocationSelector({
     if (locationData.countryCode && locationData.stateCode) {
       const stateCities = City.getCitiesOfState(locationData.countryCode, locationData.stateCode);
       setCities(stateCities);
-      
+
       if (locationData.city && !stateCities.find(c => c.name === locationData.city)) {
         setLocationData({
           ...locationData,
