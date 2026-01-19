@@ -383,9 +383,9 @@ export default class CustomerController extends BaseApi {
               // Skip empty rows
               if (!customerName && !customerPhone && !customerAddress && !customerSource) return;
 
-              // ✅ Validation - الحقول المطلوبة الجديدة
-              if (!customerName || !customerPhone || !customerAddress || !customerSource) {
-                throw new Error("Missing required fields (name, phone, address, or source)");
+              // ✅ Validation - الحقول المطلوبة الجديدة (Updated: Phone is optional)
+              if (!customerName || !customerAddress || !customerSource) {
+                throw new Error("Missing required fields (name, address, or source)");
               }
 
               // Basic email validation if email is provided

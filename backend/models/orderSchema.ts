@@ -25,7 +25,7 @@ const orderSchema = new Schema(
     customer: {
       type: Schema.Types.ObjectId,
       ref: "Customer",
-      required: true,
+      required: false, // ✅ Guest orders allowed (No Customer Doc)
     },
     products: {
       type: [orderItemSchema],
@@ -37,19 +37,64 @@ const orderSchema = new Schema(
         message: "Order must have at least one product",
       },
     },
-    orderQuantity: {
+    
+    // === Shipping Address (Snapshot at time of order) ===
+    shippingAddress: {
+      fullName: String,
+      phone: String,
+      street: String,
+      city: String,
+      region: String,
+      postalCode: String,
+      country: { type: String, default: "Saudi Arabia" },
+    },
+
+    // === Payment Info ===
+    payment: {
+      method: { 
+        type: String, 
+        enum: ["paylink", "cod"], 
+        default: "cod" 
+      },
+      status: { 
+        type: String, 
+        enum: ["pending", "paid", "failed", "refunded"], 
+        default: "pending" 
+      },
+      transactionId: String,
+      paidAt: Date,
+      paymentUrl: String,   // PayLink checkout URL
+      invoiceId: String,    // PayLink invoice ID
+    },
+
+    // === Shipping Info (J&T Express) ===
+    shipping: {
+      carrier: { type: String, default: "jt_express" },
+      trackingNumber: String,
+      status: String,
+      shippingCost: Number,
+      estimatedDelivery: Date,
+      labelUrl: String, // PDF label from J&T
+    },
+
+    // === Order Totals ===
+    orderQuantity: { // Total item count
       type: String,
       required: true,
     },
+    subtotal: { type: Number, default: 0 },
+    shippingCost: { type: Number, default: 0 },
     orderDiscount: {
       type: Number,
       default: 0,
       min: 0,
       max: 100,
     },
+    total: { type: Number, default: 0 },
+
     orderStatus: {
       type: String,
-      enum: ["pending", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
   },

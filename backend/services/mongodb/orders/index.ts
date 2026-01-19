@@ -18,6 +18,7 @@ export default class OrderService extends MongooseFeatures {
       "orderQuantity",
       "orderDiscount",
       "orderStatus",
+      "shippingAddress" // ✅ Added shippingAddress to allowed keys
     ];
   }
 
@@ -210,67 +211,70 @@ export default class OrderService extends MongooseFeatures {
         }
       }
 
-      // 2. Handle Customer Logic
+      // 2. Handle Customer Logic (Auth vs Guest)
       let customerId = body.customer;
-      const customerData = body.customerData;
-      // Phone can be in root or inside customerData
-      const phone = body.customerPhone || customerData?.customerPhone;
+      const customerData = body.customerData || {};
+      const providedShipping = body.shippingAddress || {};
+
+      // Prepare final Shipping Address (Snapshot)
+      // Use provided shipping address, or fallback to customerData if missing
+      const shippingAddress = {
+        fullName: providedShipping.fullName || customerData.customerName || body.customerName,
+        phone: providedShipping.phone || customerData.customerPhone || body.customerPhone,
+        street: providedShipping.street || customerData.customerAddress || body.customerAddress,
+        city: providedShipping.city || customerData.customerLocation || body.customerLocation,
+        region: providedShipping.region || "",
+        postalCode: providedShipping.postalCode || "",
+        country: providedShipping.country || "Saudi Arabia"
+      };
 
       if (customerId) {
-        // CASE 1: Customer ID provided
-        // If we have new data, update the customer
-        if (customerData && Object.keys(customerData).length > 0) {
-          await CustomerModel.findByIdAndUpdate(customerId, customerData, {
-            new: true,
-          });
-        }
-        // If no data provided, we just use the ID. 
-        // Optionally verify it exists, but usually we trust the ID or let it fail at DB level if strict.
-        if (!customerData) {
-          const exists = await CustomerModel.exists({ _id: customerId });
-          if (!exists) throw new ApiError("NOT_FOUND", "Customer not found");
-        }
-      } else if (phone) {
-        // CASE 3 (& 2): Phone provided -> Upsert (Create or Update)
-        // We merge phone into data to ensure it's saved
-        const updateData = { ...customerData, customerPhone: phone };
-
-        const customer = await CustomerModel.findOneAndUpdate(
-          { customerPhone: phone },
-          updateData,
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        customerId = customer._id;
-      } else if (customerData && Object.keys(customerData).length > 0) {
-        // CASE 2: No ID, No Phone, but Customer Data provided -> Create New
-        const customer = await CustomerModel.create(customerData);
-        customerId = customer._id;
+        // ✅ AUTHENTICATED USER FLOW
+        const exists = await CustomerModel.exists({ _id: customerId });
+        if (!exists) throw new ApiError("NOT_FOUND", "Customer account not found");
+        
+        // Optional: Update customer data if provided? 
+        // User requested "auth... then orders". Usually we don't auto-update profile on order unless requested.
+        // We will stick to linking the ID.
       } else {
-        throw new ApiError(
-          "BAD_REQUEST",
-          "Customer ID, Phone, or Customer Data is required"
-        );
+        // ✅ GUEST FLOW
+        // User explicitly said "does not save user data" -> Do NOT create Customer document.
+        // We rely entirely on `shippingAddress` in the Order document.
+        
+        // Validation for Guest
+        if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.street) {
+             throw new ApiError("BAD_REQUEST", "Guest order requires full name, phone, and address (or shippingAddress object)");
+        }
       }
 
       // 3. Create Order
       const newOrderData = pick(body, this.keys);
-      newOrderData.customer = customerId; // Ensure resolved ID is used
+      newOrderData.customer = customerId || undefined; // Link if Auth, undefined if Guest
+      newOrderData.shippingAddress = shippingAddress; // Save snapshot
 
       const order = await super.addDocument(OrderModel, newOrderData);
 
       const populatedOrder = await OrderModel.findById(order._id)
         .populate(
           "customer",
-          " customerName customerEmail customerPhone customerAddress"
+          "customerName customerEmail customerPhone customerAddress"
         )
         .populate(
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         );
-      console.log(populatedOrder);
+      
+      console.log("New Order Created:", populatedOrder?._id);
 
       try {
         const po: any = populatedOrder as any;
+        
+        // Resolve Customer Info for Email (Auth Entity OR Shipping Snapshot)
+        const emailCustomerName = po?.customer?.customerName || po?.shippingAddress?.fullName || "Guest";
+        const emailCustomerEmail = po?.customer?.customerEmail || body.customerEmail || "N/A"; // Email might be in body for guests
+        const emailCustomerPhone = po?.customer?.customerPhone || po?.shippingAddress?.phone || "N/A";
+        const emailCustomerAddress = po?.customer?.customerAddress || po?.shippingAddress?.street || "N/A";
+
         // Build a normalized object for the email template
         const mailOrder: any = {
           _id: po?._id,
@@ -278,11 +282,10 @@ export default class OrderService extends MongooseFeatures {
           createdAt: po?.createdAt,
           notes: po?.notes,
           customer: {
-            name: po?.customer?.customerName || po?.customer?.name || "N/A",
-            email: po?.customer?.customerEmail || po?.customer?.email || "N/A",
-            phone: po?.customer?.customerPhone || po?.customer?.phone || "N/A",
-            address:
-              po?.customer?.customerAddress || po?.customer?.address || "N/A",
+            name: emailCustomerName,
+            email: emailCustomerEmail,
+            phone: emailCustomerPhone,
+            address: emailCustomerAddress,
           },
           products: [],
           totalAmount: 0,

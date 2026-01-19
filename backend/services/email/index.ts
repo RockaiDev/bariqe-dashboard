@@ -610,7 +610,7 @@ export const sendNewOrderEmail = async (order: any) => {
         name: "Order Management System",
         address: process.env.EMAIL_USERNAME || "",
       },
-      to: "hassanrageh.236@gmail.com",
+      to: process.env.ADMIN_EMAIL , // Uses ADMIN_EMAIL env var
       subject: `🎉 New Order #${String(order._id || "")
         .slice(-8)
         .toUpperCase()} - ${typeof order.totalAmount === "number"
@@ -670,4 +670,90 @@ Notes: ${order.notes || "No notes"}
     console.error("❌ Error sending order email:", error);
     throw error;
   }
+};
+
+// ==========================================
+// NEW EMAIL TEMPLATES & FUNCTIONS
+// ==========================================
+
+export const sendShipmentNotification = async (email: string, order: any, tracking: any) => {
+  const mailOptions = {
+    from: { name: "Bariqe Logistics", address: process.env.EMAIL_USERNAME || "" },
+    to: email,
+    subject: `📦 Order #${String(order._id).slice(-8).toUpperCase()} Shipped!`,
+    html: `
+      <h2>Good news! Your order is on the way.</h2>
+      <p>Order ID: #${String(order._id).slice(-8).toUpperCase()}</p>
+      <p>Carrier: ${tracking.carrier}</p>
+      <p>Tracking Number: <strong>${tracking.trackingNumber}</strong></p>
+      <a href="https://www.jtexpress.me/track?no=${tracking.trackingNumber}">Track Shipment</a>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+export const sendOrderConfirmation = async (email: string, order: any) => {
+  // reusing existing template logic or simplified version for customer
+  const mailOptions = {
+    from: { name: "Bariqe Orders", address: process.env.EMAIL_USERNAME || "" },
+    to: email,
+    subject: `✅ Order Confirmation #${String(order._id).slice(-8).toUpperCase()}`,
+    html: `
+      <h2>Thank you for your order!</h2>
+      <p>We have received your order and are processing it.</p>
+      <p>Total: ${order.total} SAR</p>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+export const sendWelcomeEmail = async (email: string, name: string) => {
+  const mailOptions = {
+    from: { name: "Bariqe Team", address: process.env.EMAIL_USERNAME || "" },
+    to: email,
+    subject: `Welcome to Bariqe, ${name}!`,
+    html: `
+      <h1>Welcome on board! 🚀</h1>
+      <p>Hi ${name},</p>
+      <p>We are excited to have you with us. Enjoy shopping!</p>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+export const sendOtpEmail = async (email: string, otp: string, name: string = "Customer") => {
+  const mailOptions = {
+    from: { name: "Bariqe Security", address: process.env.EMAIL_USERNAME || "" },
+    to: email,
+    subject: `🔐 Your Verification Code`,
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Verification Code</h2>
+        <p>Hi ${name},</p>
+        <p>Your verification code is:</p>
+        <h1 style="color: #2563eb; letter-spacing: 5px;">${otp}</h1>
+        <p>This code expires in 10 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      </div>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+export const sendPasswordResetOtp = async (email: string, otp: string, name: string = "Customer") => {
+  const mailOptions = {
+    from: { name: "Bariqe Security", address: process.env.EMAIL_USERNAME || "" },
+    to: email,
+    subject: `🔐 Reset Your Password`,
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Password Reset Request</h2>
+        <p>Hi ${name},</p>
+        <p>You requested to reset your password. Use the code below:</p>
+        <h1 style="color: #dc2626; letter-spacing: 5px;">${otp}</h1>
+        <p>This code expires in 10 minutes.</p>
+      </div>
+    `
+  };
+  return transporter.sendMail(mailOptions);
 };

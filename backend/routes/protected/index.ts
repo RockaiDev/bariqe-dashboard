@@ -12,6 +12,7 @@ import EventController from "../../controllers/events";
 import DatabaseController from "../../controllers/database";
 import ContactController from "../../controllers/contact";
 import BusinessInfoController from "../../controllers/businessInfo";
+import DashboardAdminController from "../../controllers/dashboardAdmin";
 // Initialize protected routes
 const protectedRouter = Router();
 
@@ -216,6 +217,13 @@ protectedRouter.put(
 protectedRouter.delete(
   "/orders/:id",
   orderController.deleteOrder.bind(orderController)
+);
+
+// ✅ NEW: Ship Order (Facade Pattern)
+// Creates shipment with J&T and sends notification email
+protectedRouter.post(
+  "/orders/:id/ship",
+  orderController.shipOrder.bind(orderController)
 );
 
 /* ==============================
@@ -814,4 +822,20 @@ protectedRouter.put(
   "/business-info/:id",
   businessInfoController.upsertBusinessInfo.bind(businessInfoController)
 );
+// ✅ DASHBOARD ADMIN ROUTES (New)
+const dashboardAdminController = new DashboardAdminController();
+
+// Payments
+protectedRouter.get("/payments", dashboardAdminController.getAllPayments.bind(dashboardAdminController));
+protectedRouter.get("/payments/stats", dashboardAdminController.getPaymentStats.bind(dashboardAdminController));
+protectedRouter.get("/payments/:id", dashboardAdminController.getPaymentDetails.bind(dashboardAdminController));
+
+// Shipping
+protectedRouter.get("/shipments", dashboardAdminController.getAllShipments.bind(dashboardAdminController));
+protectedRouter.post("/orders/:orderId/ship", dashboardAdminController.shipOrder.bind(dashboardAdminController));
+protectedRouter.get("/shipping/track/:trackingNumber", dashboardAdminController.trackShipment.bind(dashboardAdminController)); // Public or Admin? Plan said public usually, placing here for admin dashboard use too.
+
+// Order Fulfillment (Enhancement over existing order routes)
+protectedRouter.patch("/orders/:id/status", dashboardAdminController.updateOrderStatus.bind(dashboardAdminController));
+
 export default protectedRouter;

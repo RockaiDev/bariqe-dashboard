@@ -11,12 +11,13 @@ import adminModel from '../../models/adminSchema';
 const authService = new AuthService();
 
 // Cookie options helper to ensure consistent cookie attributes across envs
-const COOKIE_OPTIONS = {
+export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-  maxAge: 1000 * 60 * 60, // 1 hour
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   path: '/',
+  domain: process.env.COOKIE_DOMAIN || undefined,
 } as const;
 
 // Configure multer for temporary uploads (used for avatar and cover image)

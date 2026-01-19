@@ -96,9 +96,35 @@ export default class ContactService extends MongooseFeatures {
       if (body.customerPhone) body.phoneNumber = body.customerPhone;
       if (body.customerMessage) body.message = body.customerMessage;
 
-      // ✅ التحقق من Customer إذا تم تقديمه
-      if (body.customer) {
-        await this.validateCustomer(body.customer);
+      // ✅ AUTO-LINK TO EXISTING CUSTOMER (if found)
+      let customerId = body.customer;
+      
+      if (!customerId) {
+        // 🔍 Try to find existing customer by email or phone
+        const email = body.email?.toLowerCase().trim();
+        const phone = body.phoneNumber?.trim();
+        
+        let existingCustomer = null;
+        
+        // Search by email first (more unique)
+        if (email) {
+          existingCustomer = await CustomerModel.findOne({ customerEmail: email });
+        }
+        
+        // If not found by email, try phone
+        if (!existingCustomer && phone) {
+          existingCustomer = await CustomerModel.findOne({ customerPhone: phone });
+        }
+        
+        if (existingCustomer) {
+          // ✅ Customer EXISTS - Link to existing customer
+          customerId = existingCustomer._id;
+          console.log(`✅ Contact linked to existing customer: ${existingCustomer.customerName}`);
+        }
+        // ❌ Customer NOT FOUND - No account created, contact saved without customer link
+      } else {
+        // ✅ Customer ID provided directly - validate it
+        await this.validateCustomer(customerId);
       }
 
       // ✅ Validate services array
@@ -107,6 +133,8 @@ export default class ContactService extends MongooseFeatures {
       }
 
       const newContact = pick(body, this.keys);
+      newContact.customer = customerId; // Set the customer reference
+      
       const contact = await super.addDocument(ContactModel, newContact);
 
       // ✅ Populate customer before return

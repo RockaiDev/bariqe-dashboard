@@ -9,7 +9,7 @@ const router = Router();
 const auth = new AuthController();
 
 // ✅ Public routes
-// router.post("/auth/signup", auth.signUp.bind(auth));
+// router.post("/api/auth/signup", auth.signUp.bind(auth));
 router.post("/auth/signin", auth.signIn.bind(auth));
 router.get("/auth/verify", auth.verifyToken.bind(auth));
 router.post("/auth/signout", authentication, auth.signOut.bind(auth));
@@ -26,12 +26,21 @@ router.patch('/auth/me', authentication, upload.single('avatar'), auth.me.bind(a
 // Keep old profile endpoint for backward compatibility
 router.patch('/auth/profile', authentication, auth.updateProfile.bind(auth));
 
-// ✅ Public routes (accessible without authentication)
-router.use("/api/public", publicRouter);
-router.use("/public", publicRouter); // Keep for backward compatibility
+// ✅ New Passport Auth Routes
+import passportAuthRouter from "./auth";
+router.use("/api/auth", passportAuthRouter);
 
-// ✅ Protected routes require token
-router.use("/api", authentication, protectedRouter);
-router.use("/", authentication, protectedRouter); // Keep for backward compatibility
+// ✅ Public routes (accessible without authentication)
+// ✅ Public routes (accessible without authentication)
+router.use("/public", publicRouter);
+
+// ✅ Customer Protected Routes
+import customerRouter from "./customer";
+import { customerAuthentication } from "../middlewares/customerAuthentication";
+
+router.use("/customer", customerAuthentication, customerRouter);
+
+// ✅ Admin Protected routes require token
+router.use("/", authentication, protectedRouter);
 
 export default router;

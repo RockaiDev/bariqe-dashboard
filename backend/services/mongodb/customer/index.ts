@@ -55,19 +55,22 @@ export default class CustomerService extends MongooseFeatures {
   // ✅ Add new customer
   public async AddCustomer(body: any) {
     try {
-      // التحقق من الحقول المطلوبة الجديدة
-      if (!body.customerName || !body.customerPhone || !body.customerSource) {
+      // التحقق من الحقول المطلوبة الجديدة (Updated: Phone is optional)
+      if (!body.customerName || !body.customerSource) {
         throw new ApiError(
           "BAD_REQUEST",
-          "Fields 'customerName', 'customerPhone', 'customerSource' are required"
+          "Fields 'customerName', 'customerSource' are required"
         );
       }
 
 
       const duplicateConditions: any = [
-        { customerName: body.customerName },
-        { customerPhone: body.customerPhone }
+        { customerName: body.customerName }
       ];
+
+      if (body.customerPhone) {
+        duplicateConditions.push({ customerPhone: body.customerPhone });
+      }
 
       if (body.customerEmail) {
         duplicateConditions.push({ customerEmail: body.customerEmail });
@@ -94,6 +97,10 @@ export default class CustomerService extends MongooseFeatures {
       }
 
       const newCustomer = pick(body, this.keys);
+      // Clean up empty fields to prevent duplicate key errors on null
+      if (!newCustomer.customerPhone) delete newCustomer.customerPhone;
+      if (!newCustomer.customerEmail) delete newCustomer.customerEmail;
+
       const customer = await super.addDocument(CustomerModel, newCustomer);
       return customer;
     } catch (error) {
@@ -105,17 +112,14 @@ export default class CustomerService extends MongooseFeatures {
   public async EditOneCustomer(id: string, body: any) {
     try {
       const updateData = pick(body, this.keys);
+      // Clean up empty fields
+      if (updateData.customerPhone === "" || updateData.customerPhone === null) delete updateData.customerPhone;
+      if (updateData.customerEmail === "" || updateData.customerEmail === null) delete updateData.customerEmail;
 
       // التحقق من عدم تكرار الاسم أو الرقم أو الإيميل
-      if (body.customerName || body.customerPhone || body.customerEmail) {
+      if ( body.customerEmail) {
         const duplicateConditions = [];
 
-        if (body.customerName) {
-          duplicateConditions.push({ customerName: body.customerName });
-        }
-        if (body.customerPhone) {
-          duplicateConditions.push({ customerPhone: body.customerPhone });
-        }
         if (body.customerEmail) {
           duplicateConditions.push({ customerEmail: body.customerEmail });
         }
@@ -203,22 +207,25 @@ export default class CustomerService extends MongooseFeatures {
 
       for (const customerData of customersData) {
         try {
-          // التحقق من الحقول المطلوبة الجديدة
-          if (!customerData.customerName || !customerData.customerPhone ||
-            !customerData.customerSource || !customerData.customerAddress) {
-            results.failed.push({
-              customerPhone: customerData.customerPhone || 'N/A',
-              customerName: customerData.customerName || 'N/A',
-              error: "Missing required fields: customerName, customerPhone, customerSource, or customerAddress"
-            });
+            // التحقق من الحقول المطلوبة الجديدة (Updated: Phone is optional)
+            if (!customerData.customerName ||
+                !customerData.customerSource || !customerData.customerAddress) {
+              results.failed.push({
+                customerPhone: customerData.customerPhone || 'N/A',
+                customerName: customerData.customerName || 'N/A',
+                error: "Missing required fields: customerName, customerSource, or customerAddress"
+              });
             continue;
           }
 
 
           const duplicateConditions: any = [
-            { customerName: customerData.customerName },
-            { customerPhone: customerData.customerPhone }
+            { customerName: customerData.customerName }
           ];
+
+          if (customerData.customerPhone) {
+            duplicateConditions.push({ customerPhone: customerData.customerPhone });
+          }
 
           if (customerData.customerEmail) {
             duplicateConditions.push({ customerEmail: customerData.customerEmail });
@@ -231,6 +238,8 @@ export default class CustomerService extends MongooseFeatures {
           if (existingCustomer) {
             // تحديث العميل الموجود
             const customerToSave = pick(customerData, this.keys);
+            if (!customerToSave.customerPhone) delete customerToSave.customerPhone;
+            if (!customerToSave.customerEmail) delete customerToSave.customerEmail;
 
             try {
               await CustomerModel.findByIdAndUpdate(
@@ -248,7 +257,11 @@ export default class CustomerService extends MongooseFeatures {
           } else {
             // إنشاء عميل جديد
             try {
-              await CustomerModel.create(pick(customerData, this.keys));
+              const customerToCreate = pick(customerData, this.keys);
+              if (!customerToCreate.customerPhone) delete customerToCreate.customerPhone;
+              if (!customerToCreate.customerEmail) delete customerToCreate.customerEmail;
+              
+              await CustomerModel.create(customerToCreate);
               results.success.push(customerData.customerPhone);
             } catch (createError: any) {
               results.failed.push({
@@ -328,9 +341,12 @@ export default class CustomerService extends MongooseFeatures {
             }
           }
 
+          const updatePayload = pick(updateData, this.keys);
+          if (!updatePayload.customerEmail) delete updatePayload.customerEmail;
+
           const updatedCustomer = await CustomerModel.findOneAndUpdate(
             { customerPhone },
-            { $set: pick(updateData, this.keys) },
+            { $set: updatePayload },
             { new: true }
           );
 

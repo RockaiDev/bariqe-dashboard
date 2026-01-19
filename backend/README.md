@@ -10,7 +10,7 @@ This is the backend API for the Bariqe El Tamioz application, built with Node.js
 - JWT authentication
 - File uploads with Cloudinary
 - Excel file processing
-- Stripe payment integration
+- Paylink payment integration
 - Email notifications with Nodemailer
 
 ## Tech Stack
@@ -21,7 +21,7 @@ This is the backend API for the Bariqe El Tamioz application, built with Node.js
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT (JSON Web Tokens)
 - **File Storage**: Cloudinary
-- **Payments**: Stripe
+- **Payments**: paylink
 - **Email**: Nodemailer
 - **Validation**: Zod
 
@@ -32,7 +32,7 @@ This is the backend API for the Bariqe El Tamioz application, built with Node.js
 - Node.js (v18 or higher)
 - MongoDB database
 - Cloudinary account for file uploads
-- Stripe account for payments
+- paylink account for payments
 
 ### Installation
 

@@ -8,6 +8,7 @@ import EventController from "../../controllers/events";
 import CustomerController from "../../controllers/customer";
 import ContactController from '../../controllers/contact/index';
 import BusinessInfoController from "../../controllers/businessInfo";
+import CustomerAuthController from "../../controllers/customerAuth";
 
 // Initialize public routes
 const publicRouter = Router();
@@ -21,7 +22,9 @@ const materialRequestController = new MaterialRequestController();
 const eventController = new EventController();
 const customerController = new CustomerController();
 const contactController = new ContactController();
+
 const businessInfoController = new BusinessInfoController();
+const customerAuthController = new CustomerAuthController();
 /* ==============================
    PUBLIC PRODUCT ROUTES
 ================================ */
@@ -86,6 +89,20 @@ publicRouter.post(
   orderController.addOrder.bind(orderController)
 );
 
+// ✅ NEW: Initiate Checkout (Facade Pattern)
+// Creates order + payment invoice, returns payment URL
+publicRouter.post(
+  "/orders/checkout",
+  orderController.initiateCheckout.bind(orderController)
+);
+
+// ✅ NEW: PayLink Webhook Callback
+// Called by PayLink when payment is completed/failed
+publicRouter.post(
+  "/orders/webhook/paylink",
+  orderController.handlePaylinkWebhookFacade.bind(orderController)
+);
+
 // Get order by ID (customer can track order with ID)
 publicRouter.get(
   "/orders/:id",
@@ -148,6 +165,54 @@ publicRouter.get(
   "/events/:eventId/files/:fileId/info",
   eventController.getFileInfo.bind(eventController)
 );
+/* ==============================
+   PUBLIC CUSTOMER AUTH ROUTES (New)
+================================ */
+publicRouter.post(
+  "/customer/register",
+  customerAuthController.register.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/verify-otp",
+  customerAuthController.verifyOtp.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/resend-otp",
+  customerAuthController.resendOtp.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/login",
+  customerAuthController.login.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/logout",
+  customerAuthController.logout.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/forgot-password",
+  customerAuthController.forgotPassword.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/reset-password",
+  customerAuthController.resetPassword.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/google",
+  customerAuthController.googleLogin.bind(customerAuthController)
+);
+
+publicRouter.post(
+  "/customer/apple",
+  customerAuthController.appleLogin.bind(customerAuthController)
+);
+
 /* ==============================
    PUBLIC CUSTOMER ROUTES
 ================================ */

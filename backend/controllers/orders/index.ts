@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import BaseApi from "../../utils/BaseApi";
 import OrderService from "../../services/mongodb/orders/index";
+import OrderFacade from "../../services/order-facade";
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -73,8 +74,32 @@ export default class OrderController extends BaseApi {
 
   public async addOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await orderService.AddOrder(req.body);
-      super.send(res, data);
+      const order = await orderService.AddOrder(req.body);
+
+      // === Auto-Init Payment (Force correct flow) ===
+      // By default, assume PayLink or enforce it
+      const PayLinkService = require("../../services/paylink").default;
+      const orderId = (order as any)._id.toString();
+      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`; 
+
+      // Initiate invoice
+      // Note: order is populated with customer from AddOrder service
+      const invoice = await PayLinkService.createInvoice(order, (order as any).customer, callbackUrl);
+
+      if (invoice.transactionNo) {
+          (order as any).payment = (order as any).payment || { method: "paylink", status: "pending" };
+          (order as any).payment.transactionId = invoice.transactionNo;
+          (order as any).payment.method = "paylink";
+          await (order as any).save();
+      }
+
+      // Return order AND payment URL
+      const response = {
+          ...(order as any).toObject(),
+          paymentUrl: invoice.url
+      };
+
+      super.send(res, response);
     } catch (err) {
       next(err);
     }
@@ -96,6 +121,69 @@ export default class OrderController extends BaseApi {
       super.send(res, result);
     } catch (err) {
       next(err);
+    }
+  }
+
+  // ✅ Initiate Payment
+  public async payOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const orderId = req.params.id;
+      const order = await orderService.GetOneOrder(orderId);
+      
+      if (!order.customer) throw new Error("Customer info missing");
+
+      // Check if already paid
+      if (order.payment?.status === "paid") {
+         return super.send(res, { message: "Order already paid" });
+      }
+
+      const PayLinkService = require("../../services/paylink").default;
+      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`; 
+
+      const result = await PayLinkService.createInvoice(order, order.customer, callbackUrl);
+      
+      // Update order with transaction ID
+      if (result.transactionNo) {
+        order.payment = order.payment || { method: "paylink", status: "pending" };
+        order.payment.transactionId = result.transactionNo;
+        order.payment.method = "paylink";
+        await order.save();
+      }
+
+      super.send(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // ✅ Webhook Handler
+  public async paylinkWebhook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { transactionNo, orderStatus } = req.body; // Adjust based on actual PayLink webhook payload
+      
+      // Validate signature if PayLink provides one? 
+      // For now, assume payload contains transactionNo
+
+      if (transactionNo) {
+        const OrderModel = require("../../models/orderSchema").default;
+        const order = await OrderModel.findOne({ "payment.transactionId": transactionNo });
+        
+        if (order) {
+           if (orderStatus === "Paid" || orderStatus === "paid") { // Check PayLink specific status string
+             order.payment.status = "paid";
+             order.payment.paidAt = new Date();
+             order.orderStatus = "confirmed"; // Auto confirm ?
+           } else if (orderStatus === "Cancelled" || orderStatus === "Declined") {
+             order.payment.status = "failed";
+           }
+           await order.save();
+        }
+      }
+      
+      res.status(200).send("OK");
+    } catch (err) {
+      console.error("Webhook Error:", err);
+      res.status(500).send("Error");
     }
   }
 
@@ -539,5 +627,90 @@ export default class OrderController extends BaseApi {
         next(new Error(error.message || "Error processing import file"));
       }
     });
+  }
+
+  // ============================================================================
+  // NEW FACADE-BASED METHODS
+  // ============================================================================
+
+  /**
+   * Initiate Checkout (Facade Pattern)
+   * Creates order + initiates payment, returns payment URL
+   * 
+   * POST /public/orders/checkout
+   */
+  public async initiateCheckout(req: Request, res: Response, next: NextFunction) {
+    try {
+      // If user is authenticated, attach customer ID
+      const customerId = (req as any).user?.id || (req as any).customer?.id;
+      
+      const orderInput = {
+        ...req.body,
+        customer: customerId || req.body.customer,
+      };
+
+      const result = await OrderFacade.initiateOrder(orderInput);
+      
+      super.send(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * PayLink Webhook Handler (Facade Pattern)
+   * Handles payment callbacks from PayLink
+   * 
+   * POST /public/orders/webhook/paylink
+   */
+  public async handlePaylinkWebhookFacade(req: Request, res: Response, next: NextFunction) {
+    try {
+      // PayLink callback payload structure
+      const { transactionNo, orderStatus } = req.body;
+      
+      console.log("[OrderController] PayLink webhook received:", { transactionNo, orderStatus });
+
+      if (!transactionNo) {
+        return res.status(400).json({ success: false, message: "Missing transactionNo" });
+      }
+
+      // Map PayLink status to internal status
+      const paymentStatus = orderStatus?.toLowerCase() === "paid" ? "paid" : "failed";
+
+      const order = await OrderFacade.handlePaymentCallback(transactionNo, paymentStatus);
+
+      // Redirect user to success/failure page if this is a redirect callback
+      if (req.query.redirect === "true") {
+        const redirectUrl = paymentStatus === "paid"
+          ? `${process.env.FRONTEND_URL}/checkout/success?orderId=${order._id}`
+          : `${process.env.FRONTEND_URL}/checkout/failed?orderId=${order._id}`;
+        return res.redirect(redirectUrl);
+      }
+
+      // Otherwise return JSON (for webhook calls)
+      res.status(200).json({ success: true, order });
+    } catch (err: any) {
+      console.error("[OrderController] Webhook error:", err);
+      // Always return 200 to avoid retry loops from PayLink
+      res.status(200).json({ success: false, error: err.message });
+    }
+  }
+
+  /**
+   * Ship Order (Facade Pattern)
+   * Creates shipment with J&T and sends notification email
+   * 
+   * POST /orders/:id/ship
+   */
+  public async shipOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const orderId = req.params.id;
+
+      const result = await OrderFacade.shipOrder(orderId);
+
+      super.send(res, result);
+    } catch (err) {
+      next(err);
+    }
   }
 }
