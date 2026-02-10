@@ -103,6 +103,12 @@ publicRouter.post(
   orderController.handlePaylinkWebhookFacade.bind(orderController)
 );
 
+// ✅ PayLink GET Callback (PayLink redirects the user back via GET with query params)
+publicRouter.get(
+  "/orders/webhook/paylink",
+  orderController.handlePaylinkWebhookFacade.bind(orderController)
+);
+
 // Get order by ID (customer can track order with ID)
 publicRouter.get(
   "/orders/:id",
@@ -157,7 +163,7 @@ publicRouter.get(
 );
 
 publicRouter.get(
-  "/events/:eventId/files/:fileId/preview", 
+  "/events/:eventId/files/:fileId/preview",
   eventController.previewEventFile.bind(eventController)
 );
 

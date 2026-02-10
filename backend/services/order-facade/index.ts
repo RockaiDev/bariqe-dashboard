@@ -61,7 +61,7 @@ export interface ShipOrderResult {
 // ============================================================================
 
 class OrderFacade {
-  
+
   /**
    * STEP 1: Initiate Order
    * 
@@ -69,6 +69,9 @@ class OrderFacade {
    * Returns payment URL for the frontend to redirect the user.
    */
   public async initiateOrder(body: OrderInput): Promise<InitiateOrderResult> {
+    // Track created order ID for rollback
+    let createdOrderId: string | null = null;
+
     try {
       // 1. Validate Products
       if (!body.products || body.products.length === 0) {
@@ -99,11 +102,11 @@ class OrderFacade {
         if (!product) {
           throw new ApiError("NOT_FOUND", `Product ${item.product} not found`);
         }
-        
+
         const price = (product as any).productNewPrice || (product as any).productOldPrice || 0;
         const itemTotal = price * item.quantity;
         subtotal += itemTotal;
-        
+
         populatedProducts.push({
           product: item.product,
           quantity: item.quantity,
@@ -149,26 +152,42 @@ class OrderFacade {
       };
 
       const order = await OrderModel.create(orderData);
-      console.log(`[OrderFacade] Order created: ${order._id}`);
+      createdOrderId = order._id.toString();
+      console.log(`[OrderFacade] Order created: ${createdOrderId}`);
 
       // 6. Handle Payment Method
       if (body.paymentMethod === "paylink") {
         // Create PayLink Invoice
-        const customerData = customerId 
+        const customerData = customerId
           ? await CustomerModel.findById(customerId)
           : null;
 
-        const callbackUrl = `${process.env.BACKEND_URL || "http://localhost:8080"}/public/orders/webhook/paylink`;
-        
-        const invoiceResult = await PayLinkService.createInvoice(
-          { 
-            ...order.toObject(), 
-            products: populatedProducts,
-            total 
-          },
-          customerData,
-          callbackUrl
-        );
+        // User is redirected here after payment
+        const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${order._id}/status`;
+
+        let invoiceResult;
+        try {
+          invoiceResult = await PayLinkService.createInvoice(
+            {
+              ...order.toObject(),
+              products: populatedProducts,
+              total
+            },
+            customerData,
+            callbackUrl
+          );
+        } catch (paymentError: any) {
+          // ⚠️ ROLLBACK: PayLink failed — delete the orphaned order
+          console.error(`[OrderFacade] PayLink invoice failed, rolling back order ${createdOrderId}:`, paymentError.message);
+          if (createdOrderId) {
+            await OrderModel.findByIdAndDelete(createdOrderId);
+            createdOrderId = null;
+          }
+          throw new ApiError(
+            "BAD_REQUEST",
+            `Payment initiation failed: ${paymentError.message || "Payment gateway error"}. Order was not created.`
+          );
+        }
 
         // Update order with payment info
         await OrderModel.findByIdAndUpdate(order._id, {
@@ -235,14 +254,21 @@ class OrderFacade {
       const invoiceDetails = await PayLinkService.getInvoice(transactionNo);
       const verifiedStatus = invoiceDetails.orderStatus?.toLowerCase() || paymentStatus;
 
+      console.log(`[OrderFacade] PayLink verified status: ${verifiedStatus} (passed: ${paymentStatus})`);
+
       // 4. Update order based on payment status
-      const updateData: any = {
-        "payment.status": verifiedStatus === "paid" ? "paid" : "failed",
-      };
+      const updateData: any = {};
 
       if (verifiedStatus === "paid") {
+        updateData["payment.status"] = "paid";
         updateData["payment.paidAt"] = new Date();
         updateData["orderStatus"] = "confirmed";
+      } else if (verifiedStatus === "pending" || verifiedStatus === "processing") {
+        // Payment still processing — keep as pending, don't mark as failed
+        updateData["payment.status"] = "pending";
+      } else {
+        // Explicitly failed/cancelled
+        updateData["payment.status"] = "failed";
       }
 
       const updatedOrder = await OrderModel.findByIdAndUpdate(order._id, updateData, { new: true })
@@ -251,9 +277,9 @@ class OrderFacade {
 
       // 5. Send confirmation email if paid
       if (verifiedStatus === "paid") {
-        const customerEmail = (updatedOrder as any)?.customer?.customerEmail || 
-                              (updatedOrder as any)?.shippingAddress?.email;
-        
+        const customerEmail = (updatedOrder as any)?.customer?.customerEmail ||
+          (updatedOrder as any)?.shippingAddress?.email;
+
         if (customerEmail) {
           try {
             await sendOrderConfirmation(customerEmail, updatedOrder);
@@ -316,7 +342,7 @@ class OrderFacade {
 
       // 4. Create shipment with J&T
       const shipmentResult = await JTExpressService.createShipment(order, customer, shippingAddress);
-      
+
       // Extract tracking info from J&T response
       const data = shipmentResult.data || shipmentResult;
       const trackingNumber = data.billCode || data.logisticId || shipmentResult.billCode || "";

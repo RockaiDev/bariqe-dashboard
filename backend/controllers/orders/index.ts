@@ -80,23 +80,23 @@ export default class OrderController extends BaseApi {
       // By default, assume PayLink or enforce it
       const PayLinkService = require("../../services/paylink").default;
       const orderId = (order as any)._id.toString();
-      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`; 
+      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`;
 
       // Initiate invoice
       // Note: order is populated with customer from AddOrder service
       const invoice = await PayLinkService.createInvoice(order, (order as any).customer, callbackUrl);
 
       if (invoice.transactionNo) {
-          (order as any).payment = (order as any).payment || { method: "paylink", status: "pending" };
-          (order as any).payment.transactionId = invoice.transactionNo;
-          (order as any).payment.method = "paylink";
-          await (order as any).save();
+        (order as any).payment = (order as any).payment || { method: "paylink", status: "pending" };
+        (order as any).payment.transactionId = invoice.transactionNo;
+        (order as any).payment.method = "paylink";
+        await (order as any).save();
       }
 
       // Return order AND payment URL
       const response = {
-          ...(order as any).toObject(),
-          paymentUrl: invoice.url
+        ...(order as any).toObject(),
+        paymentUrl: invoice.url
       };
 
       super.send(res, response);
@@ -129,19 +129,19 @@ export default class OrderController extends BaseApi {
     try {
       const orderId = req.params.id;
       const order = await orderService.GetOneOrder(orderId);
-      
+
       if (!order.customer) throw new Error("Customer info missing");
 
       // Check if already paid
       if (order.payment?.status === "paid") {
-         return super.send(res, { message: "Order already paid" });
+        return super.send(res, { message: "Order already paid" });
       }
 
       const PayLinkService = require("../../services/paylink").default;
-      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`; 
+      const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${orderId}/status`;
 
       const result = await PayLinkService.createInvoice(order, order.customer, callbackUrl);
-      
+
       // Update order with transaction ID
       if (result.transactionNo) {
         order.payment = order.payment || { method: "paylink", status: "pending" };
@@ -160,26 +160,26 @@ export default class OrderController extends BaseApi {
   public async paylinkWebhook(req: Request, res: Response, next: NextFunction) {
     try {
       const { transactionNo, orderStatus } = req.body; // Adjust based on actual PayLink webhook payload
-      
+
       // Validate signature if PayLink provides one? 
       // For now, assume payload contains transactionNo
 
       if (transactionNo) {
         const OrderModel = require("../../models/orderSchema").default;
         const order = await OrderModel.findOne({ "payment.transactionId": transactionNo });
-        
+
         if (order) {
-           if (orderStatus === "Paid" || orderStatus === "paid") { // Check PayLink specific status string
-             order.payment.status = "paid";
-             order.payment.paidAt = new Date();
-             order.orderStatus = "confirmed"; // Auto confirm ?
-           } else if (orderStatus === "Cancelled" || orderStatus === "Declined") {
-             order.payment.status = "failed";
-           }
-           await order.save();
+          if (orderStatus === "Paid" || orderStatus === "paid") { // Check PayLink specific status string
+            order.payment.status = "paid";
+            order.payment.paidAt = new Date();
+            order.orderStatus = "confirmed"; // Auto confirm ?
+          } else if (orderStatus === "Cancelled" || orderStatus === "Declined") {
+            order.payment.status = "failed";
+          }
+          await order.save();
         }
       }
-      
+
       res.status(200).send("OK");
     } catch (err) {
       console.error("Webhook Error:", err);
@@ -643,14 +643,14 @@ export default class OrderController extends BaseApi {
     try {
       // If user is authenticated, attach customer ID
       const customerId = (req as any).user?.id || (req as any).customer?.id;
-      
+
       const orderInput = {
         ...req.body,
         customer: customerId || req.body.customer,
       };
 
       const result = await OrderFacade.initiateOrder(orderInput);
-      
+
       super.send(res, result);
     } catch (err) {
       next(err);
@@ -661,21 +661,32 @@ export default class OrderController extends BaseApi {
    * PayLink Webhook Handler (Facade Pattern)
    * Handles payment callbacks from PayLink
    * 
-   * POST /public/orders/webhook/paylink
+   * POST/GET /public/orders/webhook/paylink
    */
   public async handlePaylinkWebhookFacade(req: Request, res: Response, next: NextFunction) {
     try {
       // PayLink callback payload structure
-      const { transactionNo, orderStatus } = req.body;
-      
-      console.log("[OrderController] PayLink webhook received:", { transactionNo, orderStatus });
+      // Support both POST (body) and GET (query params) since PayLink may use either
+      const transactionNo = req.body?.transactionNo || req.query?.transactionNo;
+      const orderStatus = req.body?.orderStatus || req.query?.orderStatus;
+
+      console.log("[OrderController] PayLink webhook received:", { transactionNo, orderStatus, method: req.method });
 
       if (!transactionNo) {
         return res.status(400).json({ success: false, message: "Missing transactionNo" });
       }
 
       // Map PayLink status to internal status
-      const paymentStatus = orderStatus?.toLowerCase() === "paid" ? "paid" : "failed";
+      // When orderStatus is missing (GET redirect callback), default to "pending"
+      // and let the facade verify the actual status via PayLink API
+      let paymentStatus: string;
+      if (orderStatus) {
+        paymentStatus = (orderStatus as string).toLowerCase() === "paid" ? "paid" : "failed";
+      } else {
+        // GET callback from PayLink redirect - no orderStatus provided
+        // The facade will verify the real status via PayLink API
+        paymentStatus = "pending";
+      }
 
       const order = await OrderFacade.handlePaymentCallback(transactionNo, paymentStatus);
 
