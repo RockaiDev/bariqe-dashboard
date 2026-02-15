@@ -35,6 +35,7 @@ export interface OrderInput {
     city: string;
     region: string;
     postalCode?: string;
+    nationalAddress?: string;
     country?: string;
   };
   customerEmail?: string; // For guest orders
@@ -138,6 +139,7 @@ class OrderFacade {
           city: shippingAddress.city,
           region: shippingAddress.region || "",
           postalCode: shippingAddress.postalCode || "",
+          nationalAddress: shippingAddress.nationalAddress || "",
           country: shippingAddress.country || "Saudi Arabia",
         },
         payment: {
@@ -337,6 +339,7 @@ class OrderFacade {
         city: address.city || "",
         region: address.region || "Riyadh",
         postalCode: address.postalCode || "00000",
+        nationalAddress: address.nationalAddress || "",
         country: address.country || "Saudi Arabia",
       };
 

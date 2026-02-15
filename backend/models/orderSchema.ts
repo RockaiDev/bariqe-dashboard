@@ -37,7 +37,7 @@ const orderSchema = new Schema(
         message: "Order must have at least one product",
       },
     },
-    
+
     // === Shipping Address (Snapshot at time of order) ===
     shippingAddress: {
       fullName: String,
@@ -46,20 +46,24 @@ const orderSchema = new Schema(
       city: String,
       region: String,
       postalCode: String,
+      nationalAddress: {
+        type: String,
+        maxlength: [8, "National Address must be at most 8 characters"]
+      },
       country: { type: String, default: "Saudi Arabia" },
     },
 
     // === Payment Info ===
     payment: {
-      method: { 
-        type: String, 
-        enum: ["paylink", "cod"], 
-        default: "cod" 
+      method: {
+        type: String,
+        enum: ["paylink", "cod"],
+        default: "cod"
       },
-      status: { 
-        type: String, 
-        enum: ["pending", "paid", "failed", "refunded"], 
-        default: "pending" 
+      status: {
+        type: String,
+        enum: ["pending", "paid", "failed", "refunded"],
+        default: "pending"
       },
       transactionId: String,
       paidAt: Date,

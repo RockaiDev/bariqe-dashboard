@@ -18,7 +18,8 @@ export default class OrderService extends MongooseFeatures {
       "orderQuantity",
       "orderDiscount",
       "orderStatus",
-      "shippingAddress" // ✅ Added shippingAddress to allowed keys
+      "shippingAddress",
+      "nationalAddress" // ✅ Added nationalAddress to allowed keys
     ];
   }
 
@@ -225,6 +226,7 @@ export default class OrderService extends MongooseFeatures {
         city: providedShipping.city || customerData.customerLocation || body.customerLocation,
         region: providedShipping.region || "",
         postalCode: providedShipping.postalCode || "",
+        nationalAddress: providedShipping.nationalAddress || body.nationalAddress || "",
         country: providedShipping.country || "Saudi Arabia"
       };
 
@@ -232,7 +234,7 @@ export default class OrderService extends MongooseFeatures {
         // ✅ AUTHENTICATED USER FLOW
         const exists = await CustomerModel.exists({ _id: customerId });
         if (!exists) throw new ApiError("NOT_FOUND", "Customer account not found");
-        
+
         // Optional: Update customer data if provided? 
         // User requested "auth... then orders". Usually we don't auto-update profile on order unless requested.
         // We will stick to linking the ID.
@@ -240,10 +242,10 @@ export default class OrderService extends MongooseFeatures {
         // ✅ GUEST FLOW
         // User explicitly said "does not save user data" -> Do NOT create Customer document.
         // We rely entirely on `shippingAddress` in the Order document.
-        
+
         // Validation for Guest
         if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.street) {
-             throw new ApiError("BAD_REQUEST", "Guest order requires full name, phone, and address (or shippingAddress object)");
+          throw new ApiError("BAD_REQUEST", "Guest order requires full name, phone, and address (or shippingAddress object)");
         }
       }
 
@@ -263,12 +265,12 @@ export default class OrderService extends MongooseFeatures {
           "products.product",
           "productNameAr productNameEn productDescriptionAr productDescriptionEn productOldPrice productNewPrice productImage productCode discountTiers"
         );
-      
+
       console.log("New Order Created:", populatedOrder?._id);
 
       try {
         const po: any = populatedOrder as any;
-        
+
         // Resolve Customer Info for Email (Auth Entity OR Shipping Snapshot)
         const emailCustomerName = po?.customer?.customerName || po?.shippingAddress?.fullName || "Guest";
         const emailCustomerEmail = po?.customer?.customerEmail || body.customerEmail || "N/A"; // Email might be in body for guests
