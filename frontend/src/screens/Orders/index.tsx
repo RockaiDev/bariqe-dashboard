@@ -432,10 +432,15 @@ export default function OrdersPage() {
 
     try {
       setUpdatingStatus(true);
-      await update.mutateAsync({
-        id: viewing._id,
-        payload: { orderStatus: editedStatus },
-      });
+
+      if (editedStatus === "shipped") {
+        await axiosInstance.post(`/orders/${viewing._id}/ship`);
+      } else {
+        await update.mutateAsync({
+          id: viewing._id,
+          payload: { orderStatus: editedStatus },
+        });
+      }
 
       setViewing({
         ...viewing,
@@ -475,10 +480,14 @@ export default function OrdersPage() {
     newStatus: string
   ) => {
     try {
-      await update.mutateAsync({
-        id: orderId,
-        payload: { orderStatus: newStatus },
-      });
+      if (newStatus === "shipped") {
+        await axiosInstance.post(`/orders/${orderId}/ship`);
+      } else {
+        await update.mutateAsync({
+          id: orderId,
+          payload: { orderStatus: newStatus },
+        });
+      }
 
       list.refetch();
       setEditingOrderId(null);
