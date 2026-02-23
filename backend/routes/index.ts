@@ -41,6 +41,10 @@ import { customerAuthentication } from "../middlewares/customerAuthentication";
 router.use("/customer", customerAuthentication, customerRouter);
 
 // ✅ Admin Protected routes require token
-router.use("/", authentication, protectedRouter);
+// Skip paths already handled by customer routes to prevent double-auth
+router.use("/", (req, res, next) => {
+    if (req.path === "/customer" || req.path.startsWith("/customer/")) return next("router");
+    next();
+}, authentication, protectedRouter);
 
 export default router;

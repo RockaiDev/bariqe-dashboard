@@ -10,7 +10,7 @@ export class PayLinkService {
     // PayLink relies on App ID and Secret Key being valid. 
     // Usually sent as headers or part of the auth flow. 
     // According to docs, we get a bearer token first.
-    
+
     try {
       const response = await axios.post(`${PAYLINK_BASE_URL}/api/auth`, {
         apiId: PAYLINK_APP_ID,
@@ -27,13 +27,13 @@ export class PayLinkService {
   public async createInvoice(order: any, customer: any, callbackUrl: string) {
     try {
       const token = await this.getAuthHeader();
-     
+
       // ✅ Resolve customer info (Auth Customer OR Shipping Address for guests)
       const customerName = customer?.customerName || order.shippingAddress?.fullName || "Customer";
       const customerEmail = customer?.customerEmail || order.customerEmail || "customer@example.com";
       const customerPhone = (customer?.customerPhone || order.shippingAddress?.phone || "0500000000")
         .replace(/^\+966/, "0"); // Convert to local format
-      
+
       // ✅ Calculate total if not set (sum of product prices * quantities)
       let orderTotal = order.total || order.orderTotal || 0;
       if (!orderTotal && order.products?.length > 0) {
@@ -47,14 +47,31 @@ export class PayLinkService {
 
       // ✅ Map products to PayLink format
       const paylinkProducts = (order.products || []).map((p: any) => {
-        const product = p.product || p._productData || {};
-        const price = product.productNewPrice || product.productOldPrice || product.price || 0;
+        // p.product can be: a populated object (with productNewPrice etc.), a string ID, or undefined
+        // p._productData is a simplified snapshot { name, price } stored during order creation
+        const productObj = (typeof p.product === "object" && p.product !== null) ? p.product : null;
+        const fallback = p._productData || {};
+
+        const price = productObj?.productNewPrice
+          || productObj?.productOldPrice
+          || productObj?.price
+          || fallback.price
+          || p.price
+          || 0;
+
+
+        const title = productObj?.productNameEn
+          || productObj?.productNameAr
+          || productObj?.name
+          || fallback.name
+          || "Product";
+
         return {
-          title: product.productNameEn || product.productNameAr || product.name || "Product",
-          description: product.productDescriptionEn || product.productDescriptionAr || "",
+          title,
+          description: productObj?.productDescriptionEn || productObj?.productDescriptionAr || "",
           price: price,
           qty: p.quantity || 1,
-          imageSrc: product.productImage || "",
+          imageSrc: productObj?.productImage || "",
           isDigital: false,
           productCost: 0,
           specificVat: 0,
@@ -81,7 +98,7 @@ export class PayLinkService {
           specificVat: 0,
         }]
       };
-      
+
       console.log("[PayLinkService] Full Payload:", JSON.stringify(payload, null, 2));
 
       const response = await axios.post(`${PAYLINK_BASE_URL}/api/addInvoice`, payload, {
@@ -104,7 +121,7 @@ export class PayLinkService {
   public async getInvoice(transactionNo: string) {
     try {
       const token = await this.getAuthHeader();
-      
+
       const response = await axios.get(`${PAYLINK_BASE_URL}/api/getInvoice/${transactionNo}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

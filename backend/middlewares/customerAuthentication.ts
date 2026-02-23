@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 import ApiError from "../utils/errors/ApiError";
 
-const JWT_CUSTOMER = process.env.JWT_CUSTOMER ;
+const JWT_CUSTOMER = process.env.JWT_CUSTOMER;
 
 export function customerAuthentication(req: Request, res: Response, next: NextFunction) {
   try {
@@ -13,6 +13,7 @@ export function customerAuthentication(req: Request, res: Response, next: NextFu
     } else if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
       
+
     }
 
     if (!token) {

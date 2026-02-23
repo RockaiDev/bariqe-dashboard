@@ -19,7 +19,8 @@ export default class OrderService extends MongooseFeatures {
       "orderDiscount",
       "orderStatus",
       "shippingAddress",
-      "nationalAddress" // ✅ Added nationalAddress to allowed keys
+      "nationalAddress",
+      "region"
     ];
   }
 

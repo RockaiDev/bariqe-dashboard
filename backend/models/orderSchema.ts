@@ -75,10 +75,12 @@ const orderSchema = new Schema(
     shipping: {
       carrier: { type: String, default: "jt_express" },
       trackingNumber: String,
+      sortingCode: String,     // J&T three-segment code
+      lastCenterName: String,  // J&T collection center
       status: String,
       shippingCost: Number,
       estimatedDelivery: Date,
-      labelUrl: String, // PDF label from J&T
+      labelUrl: String,
     },
 
     // === Order Totals ===

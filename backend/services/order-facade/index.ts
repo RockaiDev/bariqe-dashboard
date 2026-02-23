@@ -47,6 +47,8 @@ export interface OrderInput {
 export interface InitiateOrderResult {
   order: any;
   paymentUrl?: string; // Only for PayLink payments
+  trackingNumber?: string; // J&T waybill number
+  sortingCode?: string;    // J&T three-segment code
   message: string;
 }
 
@@ -64,10 +66,96 @@ export interface ShipOrderResult {
 class OrderFacade {
 
   /**
+   * PRIVATE: Create shipment with J&T Express SA
+   * 
+   * Called automatically when an order is placed.
+   * Wrapped in try/catch so shipping failures don't block order creation.
+   */
+  private async createShipmentForOrder(orderId: string): Promise<{ trackingNumber?: string; sortingCode?: string }> {
+    try {
+      const order = await OrderModel.findById(orderId)
+        .populate("customer", "customerName customerEmail customerPhone customerAddress")
+        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productDescriptionEn");
+
+      if (!order) {
+        console.warn(`[OrderFacade] Cannot ship — order ${orderId} not found`);
+        return {};
+      }
+
+      const customer = (order as any).customer;
+      const address = (order as any).shippingAddress || {};
+
+      const shippingAddress = {
+        fullName: address.fullName || customer?.customerName || "Customer",
+        phone: address.phone || customer?.customerPhone || "",
+        street: address.street || customer?.customerAddress || "",
+        city: address.city || "",
+        region: address.region || "Riyadh",
+        postalCode: address.postalCode || "",
+        nationalAddress: address.nationalAddress || "",
+        shortAddress: address.nationalAddress || "",
+        country: address.country || "Saudi Arabia",
+      };
+
+      const isCOD = (order as any).payment?.method === "cod";
+
+      const shipmentResult = await JTExpressService.createShipment({
+        order,
+        shippingAddress,
+        customer,
+        operateType: 1, // Always "Add" for new orders
+        expressType: "EZKSA",
+        codAmount: isCOD ? (order as any).total : undefined,
+        codCurrency: "SAR",
+      });
+
+      const trackingNumber = shipmentResult.billCode;
+      const sortingCode = shipmentResult.sortingCode;
+      const lastCenterName = shipmentResult.lastCenterName;
+
+      // Update order with shipping info
+      await OrderModel.findByIdAndUpdate(orderId, {
+        shipping: {
+          carrier: "jt_express",
+          trackingNumber,
+          sortingCode,
+          lastCenterName,
+          status: "shipped",
+        },
+        orderStatus: "shipped", // Auto-advance to shipped
+      });
+
+      console.log(`[OrderFacade] Auto-shipped order ${orderId} — tracking: ${trackingNumber}, sorting: ${sortingCode}`);
+
+      // Send shipment notification email
+      const customerEmail = customer?.customerEmail;
+      if (customerEmail && trackingNumber) {
+        try {
+          await sendShipmentNotification(customerEmail, order, {
+            carrier: "J&T Express",
+            trackingNumber,
+            trackingUrl: `https://www.jtexpress.sa/track?billcode=${trackingNumber}`,
+          });
+          console.log(`[OrderFacade] Shipment notification sent to ${customerEmail}`);
+        } catch (emailErr) {
+          console.error("[OrderFacade] Failed to send shipment email:", emailErr);
+        }
+      }
+
+      return { trackingNumber, sortingCode };
+
+    } catch (shippingError: any) {
+      // ⚠️ Shipping failure should NOT block order creation
+      console.error(`[OrderFacade] Auto-ship failed for order ${orderId}:`, shippingError.message);
+      return {};
+    }
+  }
+
+  /**
    * STEP 1: Initiate Order
    * 
-   * Creates an order with status "pending" and initiates payment if PayLink.
-   * Returns payment URL for the frontend to redirect the user.
+   * Creates an order with status "pending", initiates payment if PayLink,
+   * and automatically sends the order to J&T Express for shipping.
    */
   public async initiateOrder(body: OrderInput): Promise<InitiateOrderResult> {
     // Track created order ID for rollback
@@ -104,7 +192,14 @@ class OrderFacade {
           throw new ApiError("NOT_FOUND", `Product ${item.product} not found`);
         }
 
-        const price = (product as any).productNewPrice || (product as any).productOldPrice || 0;
+
+        const isValidOffer = product.productDiscount && Number(product.productDiscount) > 0 && Number(product.productDiscount) <= 100;
+
+        const price = isValidOffer
+          ? product.productOldPrice - (product.productOldPrice * (Number(product.productDiscount) / 100))
+          : product.productOldPrice;
+
+
         const itemTotal = price * item.quantity;
         subtotal += itemTotal;
 
@@ -205,18 +300,22 @@ class OrderFacade {
         return {
           order: updatedOrder,
           paymentUrl: invoiceResult.url,
-          message: "Order created. Please complete payment.",
+          message: "Order created. Please complete payment to initiate shipping.",
         };
       }
 
-      // COD - No payment URL needed
+      // COD - Auto-ship to J&T Express
+      const shipInfo = await this.createShipmentForOrder(createdOrderId);
+
       const populatedOrder = await OrderModel.findById(order._id)
         .populate("customer", "customerName customerEmail customerPhone")
         .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
 
       return {
         order: populatedOrder,
-        message: "Order created successfully. Cash on delivery.",
+        trackingNumber: shipInfo.trackingNumber,
+        sortingCode: shipInfo.sortingCode,
+        message: "Order created and sent to shipping. Cash on delivery.",
       };
 
     } catch (error: any) {
@@ -273,11 +372,21 @@ class OrderFacade {
         updateData["payment.status"] = "failed";
       }
 
-      const updatedOrder = await OrderModel.findByIdAndUpdate(order._id, updateData, { new: true })
+      let updatedOrder = await OrderModel.findByIdAndUpdate(order._id, updateData, { new: true })
         .populate("customer", "customerName customerEmail customerPhone")
         .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
 
-      // 5. Send confirmation email if paid
+      // 5. Auto-ship order if paid
+      if (verifiedStatus === "paid" && !(order as any).shipping?.trackingNumber) {
+        await this.createShipmentForOrder(order._id.toString());
+
+        // Fetch again to ensure the returned order has the tracking info
+        updatedOrder = await OrderModel.findById(order._id)
+          .populate("customer", "customerName customerEmail customerPhone")
+          .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
+      }
+
+      // 6. Send confirmation email if paid
       if (verifiedStatus === "paid") {
         const customerEmail = (updatedOrder as any)?.customer?.customerEmail ||
           (updatedOrder as any)?.shippingAddress?.email;
@@ -306,14 +415,14 @@ class OrderFacade {
   /**
    * STEP 3: Ship Order (Admin action)
    * 
-   * Creates shipment with J&T Express and sends tracking email.
+   * Creates shipment with J&T Express SA and sends tracking email.
    */
   public async shipOrder(orderId: string): Promise<ShipOrderResult> {
     try {
       // 1. Get order
       const order = await OrderModel.findById(orderId)
         .populate("customer", "customerName customerEmail customerPhone customerAddress")
-        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice");
+        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productDescriptionEn");
 
       if (!order) {
         throw new ApiError("NOT_FOUND", "Order not found");
@@ -338,32 +447,50 @@ class OrderFacade {
         street: address.street || customer?.customerAddress || "",
         city: address.city || "",
         region: address.region || "Riyadh",
-        postalCode: address.postalCode || "00000",
+        postalCode: address.postalCode || "",
         nationalAddress: address.nationalAddress || "",
+        shortAddress: address.nationalAddress || "", // Use nationalAddress as shortAddress for KSA
         country: address.country || "Saudi Arabia",
       };
 
-      // 4. Create shipment with J&T
-      const shipmentResult = await JTExpressService.createShipment(order, customer, shippingAddress);
+      // 4. Determine if this is an update (order already has a billCode)
+      const existingBillCode = (order as any).shipping?.trackingNumber;
+      const operateType = existingBillCode ? 2 : 1;
 
-      // Extract tracking info from J&T response
-      const data = shipmentResult.data || shipmentResult;
-      const trackingNumber = data.billCode || data.logisticId || shipmentResult.billCode || "";
-      const labelUrl = data.waybillURL || data.labelUrl || "";
+      // 5. Determine COD info
+      const isCOD = (order as any).payment?.method === "cod";
+      const codAmount = isCOD ? (order as any).total : undefined;
+
+      // 6. Create shipment with J&T SA
+      const shipmentResult = await JTExpressService.createShipment({
+        order,
+        shippingAddress,
+        customer,
+        operateType: operateType as 1 | 2,
+        billCode: existingBillCode,
+        expressType: "EZKSA", // KSA Standard
+        codAmount,
+        codCurrency: "SAR",
+      });
+
+      const trackingNumber = shipmentResult.billCode;
+      const sortingCode = shipmentResult.sortingCode;
+      const lastCenterName = shipmentResult.lastCenterName;
 
       if (!trackingNumber) {
         console.warn("[OrderFacade] Shipment created but no tracking number received");
       }
 
-      // 5. Update order with shipping info
+      // 7. Update order with shipping info
       const updatedOrder = await OrderModel.findByIdAndUpdate(
         orderId,
         {
           shipping: {
             carrier: "jt_express",
             trackingNumber,
+            sortingCode,
+            lastCenterName,
             status: "shipped",
-            labelUrl,
           },
           orderStatus: "shipped",
         },
@@ -372,14 +499,14 @@ class OrderFacade {
         .populate("customer", "customerName customerEmail customerPhone")
         .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
 
-      // 6. Send shipment notification email
+      // 8. Send shipment notification email
       const customerEmail = (updatedOrder as any)?.customer?.customerEmail;
       if (customerEmail && trackingNumber) {
         try {
           await sendShipmentNotification(customerEmail, updatedOrder, {
             carrier: "J&T Express",
             trackingNumber,
-            trackingUrl: `https://www.jtexpress.com/track?billcode=${trackingNumber}`,
+            trackingUrl: `https://www.jtexpress.sa/track?billcode=${trackingNumber}`,
           });
           console.log(`[OrderFacade] Shipment notification sent to ${customerEmail}`);
         } catch (emailErr) {
@@ -387,12 +514,12 @@ class OrderFacade {
         }
       }
 
-      console.log(`[OrderFacade] Order ${orderId} shipped with tracking: ${trackingNumber}`);
+      console.log(`[OrderFacade] Order ${orderId} shipped — tracking: ${trackingNumber}, sorting: ${sortingCode}`);
 
       return {
         order: updatedOrder,
         trackingNumber,
-        labelUrl,
+        labelUrl: "", // J&T SA addOrder doesn't return a label URL
         message: "Order shipped successfully",
       };
 
