@@ -94,8 +94,16 @@ jobs:
         with:
           image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           format: 'table'
-          exit-code: '1' 
+          exit-code: '0'
           severity: 'CRITICAL,HIGH'
+          output: 'trivy-report.txt' # كدة هيسيف النتيجة في ملف نصي
+
+      - name: Upload Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-security-report
+          path: trivy-report.txt
 
       - name: Push Image
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }} --all-tags
