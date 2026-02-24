@@ -35,7 +35,7 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: npm install --package-lock-only 
+        run: npm ci
         working-directory: ${{ env.WORKING_DIR }}
 
       - name: Run OWASP Dependency-Check
@@ -44,15 +44,15 @@ jobs:
           project: ${{ env.SERVICE_NAME }}
           path: ${{ env.WORKING_DIR }}
           format: 'HTML' 
-          out: 'dependency-reports'
+          out: 'dependency-reports-website'
           args: '--failOnCVSS 11'
       
       - name: Upload Report for Developers
         if: always() 
         uses: actions/upload-artifact@v4
         with:
-          name: website-security-report
-          path: dependency-reports/
+          name: website-security-vulnerability-report
+          path: dependency-reports-website/
 
   build-and-push:
     name: Build and Push
