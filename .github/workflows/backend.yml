@@ -40,7 +40,8 @@ jobs:
           args: >
             -Dsonar.projectKey=bariqe-backend
             -Dsonar.organization=beshoyrockaidev-maker
-            -Dsonar.branch.name=Dev
+            -Dsonar.branch.name=master
+
   dependency-check:
     name: Dependency Scan
     runs-on: ubuntu-latest
