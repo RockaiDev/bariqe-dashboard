@@ -63,6 +63,7 @@ jobs:
           path: ${{ env.WORKING_DIR }}
           format: 'HTML' 
           out: 'dependency-reports'
+          args: '--failOnCVSS 11'
       
       - name: Upload Report for Developers
         if: always() 
