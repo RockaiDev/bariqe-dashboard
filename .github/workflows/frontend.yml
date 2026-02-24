@@ -1,16 +1,16 @@
-name: Bariqe Backend CI/CD
+name: Bariqe Dashboard Frontend CI/CD
 
 on:
   push:
     branches: ["Dev"]
     paths:
-      - 'bariqe-dashboard/backend/**' 
-      - '.github/workflows/backend.yml'
+      - 'bariqe-dashboard/frontend/**' 
+      - '.github/workflows/frontend.yml'
   workflow_dispatch: 
 
 env:
-  SERVICE_NAME: bariqe-backend
-  WORKING_DIR: ./bariqe-dashboard/backend
+  SERVICE_NAME: bariqe-dashboard-frontend
+  WORKING_DIR: ./bariqe-dashboard/frontend
 
 jobs:
   gitleaks:
@@ -22,6 +22,7 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   dependency-check:
     name: Dependency Scan
     runs-on: ubuntu-latest
@@ -50,10 +51,11 @@ jobs:
         if: always() 
         uses: actions/upload-artifact@v4
         with:
-          name: security-vulnerability-report
+          name: frontend-security-report
           path: dependency-reports/
 
   build-and-push:
+    name: Build and Push
     runs-on: ubuntu-latest
     needs: [gitleaks, dependency-check]
     steps:
@@ -77,14 +79,14 @@ jobs:
           format: 'table'
           exit-code: '0'
           severity: 'CRITICAL,HIGH'
-          output: 'trivy-report.txt' 
+          output: 'trivy-frontend-report.txt' 
 
       - name: Upload Trivy Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image-security-report
-          path: trivy-report.txt
+          name: frontend-docker-security-report
+          path: trivy-frontend-report.txt
 
       - name: Push Image
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }} --all-tags
