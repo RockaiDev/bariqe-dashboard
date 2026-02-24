@@ -61,5 +61,13 @@ export const profileService = {
     const favorites = response.result || response;
     return Array.isArray(favorites) ? favorites : [];
   },
+
+  addFavorite: async (productId: string): Promise<void> => {
+    await publicAxiosInstance.post(`/customer/favorites/${productId}`);
+  },
+
+  removeFavorite: async (productId: string): Promise<void> => {
+    await publicAxiosInstance.delete(`/customer/favorites/${productId}`);
+  },
 };
 

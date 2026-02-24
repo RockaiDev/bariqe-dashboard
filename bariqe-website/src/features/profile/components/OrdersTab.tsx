@@ -15,6 +15,7 @@ const OrdersTab = () => {
     const t = useTranslations("profile.orders");
     const locale = useLocale();
     const { data: orders, isLoading } = useOrders();
+    
     const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder();
 
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -73,7 +74,7 @@ const OrdersTab = () => {
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <CardTitle className="text-base font-semibold">
-                                            {t("orderNumber")} {order.orderNumber}
+                                            {t("orderNumber")} {order.payment.invoiceId}
                                         </CardTitle>
                                         <div className="flex items-center text-xs text-gray-500 mt-1 gap-4">
                                             <span className="flex items-center gap-1">
@@ -82,15 +83,15 @@ const OrdersTab = () => {
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <DollarSign className="h-3 w-3" />
-                                                {order.totalAmount}
+                                                {order.total}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
-                                        <Badge variant="secondary" className={cn("capitalize", getStatusColor(order.status))}>
-                                            {t(`statuses.${order.status || 'pending'}` as any)}
+                                        <Badge variant="secondary" className={cn("capitalize", getStatusColor(order.orderStatus))}>
+                                            {t(`statuses.${order.orderStatus || 'pending'}` as any)}
                                         </Badge>
-                                        {order.payment?.status && order.payment.status !== order.status && (
+                                        {order.payment?.status && order.payment.status !== order.orderStatus && (
                                             <span className="text-[10px] text-gray-400 italic">
                                                 Payment: {order.payment.status}
                                             </span>
@@ -106,23 +107,23 @@ const OrdersTab = () => {
                                         {t("items")}
                                     </div>
                                     <div className="bg-gray-50/50 rounded-lg p-3 space-y-2 border border-gray-100">
-                                        {(order.items || []).map((item, idx) => (
+                                        {(order.products || []).map((item, idx) => (
                                             <div key={idx} className="flex justify-between text-sm items-start">
                                                 <div className="flex-1">
                                                     <span className="font-medium text-gray-700">{item.quantity}x</span>
                                                     <span className="ms-2">{locale === 'ar' ? item.product?.productNameAr : item.product?.productNameEn}</span>
                                                 </div>
-                                                <span className="font-semibold text-primary">{(item.price * item.quantity).toFixed(2)}</span>
+                                                {/* <span className="font-semibold text-primary">{(item.itemDiscount * item.quantity).toFixed(2)}</span> */}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
                                     {/* Shipping Section */}
                                     {order.shippingAddress && (
                                         <div className="space-y-1">
-                                            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
                                                 <MapPin className="h-3 w-3" />
                                                 {t("shippingTo")}
                                             </div>
@@ -130,7 +131,7 @@ const OrdersTab = () => {
                                                 {order.shippingAddress.fullName}<br />
                                                 <span className="text-xs text-gray-400">
                                                     {order.shippingAddress.city}, {order.shippingAddress.street}
-                                                    {order.shippingAddress.neighborhood ? `, ${order.shippingAddress.neighborhood}` : ""}
+                                                    {order.shippingAddress.nationalAddress ? `, ${order.shippingAddress.nationalAddress}` : ""}
                                                 </span>
                                             </p>
                                         </div>
@@ -138,7 +139,7 @@ const OrdersTab = () => {
 
                                     {/* Payment Section */}
                                     <div className="space-y-1">
-                                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 ">
                                             <CreditCard className="h-3 w-3" />
                                             {t("paymentMethod")}
                                         </div>
@@ -156,7 +157,7 @@ const OrdersTab = () => {
                             <CardFooter className="bg-gray-50/30 py-3 flex justify-end gap-2">
                                 {/* <Button variant="outline" size="sm">{t("viewDetails")}</Button> */}
 
-                                {['pending'].includes(order.status) && (
+                                {/* {['pending'].includes(order.orderStatus) && (
                                     <Button
                                         variant="destructive"
                                         size="sm"
@@ -166,7 +167,7 @@ const OrdersTab = () => {
                                         <XCircle className="w-3 h-3 mr-1" />
                                         {t("cancel")}
                                     </Button>
-                                )}
+                                )} */}
                             </CardFooter>
                         </Card>
                     ))}

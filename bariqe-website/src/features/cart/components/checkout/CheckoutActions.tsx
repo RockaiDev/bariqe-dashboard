@@ -45,15 +45,7 @@ export const CheckoutActions = ({ isSubmitting }: CheckoutActionsProps) => {
                 </CustomButton>
             </div>
 
-            {/* Delivery Notice */}
-            <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className='flex items-center gap-3 p-4 bg-amber-50 text-amber-700 border border-amber-300 rounded-xl'
-            >
-                <Info className="w-5 h-5 flex-shrink-0" />
-                <p className='text-sm'>{t('deliveryNotice')}</p>
-            </motion.div>
+           
         </div>
     );
 };

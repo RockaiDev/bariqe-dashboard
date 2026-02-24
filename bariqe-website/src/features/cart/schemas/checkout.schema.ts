@@ -21,6 +21,7 @@ export const useCheckoutSchema = () => {
       .optional()
       .or(z.literal('')),
 
+      region: z.string().min(2, { message: t('validation.regionRequired') }),
     city: z.string().min(2, { message: t('validation.cityRequired') }),
 
     neighborhood: z.string().optional().or(z.literal('')),

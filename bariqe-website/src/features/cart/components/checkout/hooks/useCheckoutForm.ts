@@ -27,6 +27,7 @@ export const useCheckoutForm = () => {
             phoneNumber: '',
             city: '',
             email: '',
+            region: '',
             neighborhood: '',
             street: '',
             floor: '',
@@ -45,6 +46,7 @@ export const useCheckoutForm = () => {
                 email: profile.customerEmail || '',
                 phoneNumber: profile.customerPhone?.replace('+966', '') || '',
                 countryCode: profile.customerPhone?.startsWith('+') ? profile.customerPhone.substring(0, 4) : '+966',
+                region: defaultAddress?.region || '',
                 city: defaultAddress?.city || '',
                 neighborhood: defaultAddress?.neighborhood || '',
                 street: defaultAddress?.street || '',
@@ -56,7 +58,7 @@ export const useCheckoutForm = () => {
     }, [profile, form]);
 
     async function onSubmit(data: CheckoutFormValues) {
-        console.log("Submitting checkout with data:", data);
+        // console.log("Submitting checkout with data:", data);
 
         if (items.length === 0) {
             toast.error(t('validation.emptyCart'));
@@ -82,6 +84,7 @@ export const useCheckoutForm = () => {
                     email: data.email || undefined,
                     street: data.street,
                     city: data.city,
+                    region: data.region,
                     neighborhood: data.neighborhood || undefined,
                     building: data.blockNumber || undefined,
                     nationalAddress: data.nationalAddress || undefined,
@@ -109,8 +112,8 @@ export const useCheckoutForm = () => {
                 toast.success(t('success.redirectingToPayment'));
 
                 // Clear the cart before redirecting
-                clearCart();
-                form.reset();
+                // clearCart();
+                // form.reset();
 
                 // Redirect to PayLink payment page
                 window.location.href = response.result.paymentUrl;

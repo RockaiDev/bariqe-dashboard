@@ -19,7 +19,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     const tCard = useTranslations('productCard');
     const local = useLocale();
     const { addItem } = useCart();
-    
+
     // Favorites Store
     const { toggleItem, isFavorite } = useFavoritesStore();
     // Hydration fix for zustand persist
@@ -101,9 +101,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     }}
                     className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors duration-200 group/fav"
                 >
-                    <Heart 
-                        size={16} 
-                        className={`transition-colors duration-200 ${isFav ? 'fill-red-500 text-red-500' : 'text-gray-400 group-hover/fav:text-red-400'}`} 
+                    <Heart
+                        size={16}
+                        className={`transition-colors duration-200 ${isFav ? 'fill-red-500 text-red-500' : 'text-gray-400 group-hover/fav:text-red-400'}`}
                     />
                 </button>
 

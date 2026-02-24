@@ -27,8 +27,10 @@ export const DeliveryAddressSection = ({ control, setValue }: DeliveryAddressSec
         if (!nationalAddressValue) return;
 
         const result = await searchAddress(nationalAddressValue);
+        
         if (result && result.address) {
-            const { city, district, street, houseNumber } = result.address;
+            const { city, county, district, street, houseNumber } = result.address;
+            if (county) setValue('region', county);
             if (city) setValue('city', city);
             if (district) setValue('neighborhood', district);
             if (street) setValue('street', street);
@@ -69,8 +71,17 @@ export const DeliveryAddressSection = ({ control, setValue }: DeliveryAddressSec
                 </Button>
             </div>
 
-            {/* City and Neighborhood */}
+            {/* Region and City */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <CheckoutInput
+                    control={control}
+                    name="region"
+                    labelKey="placeholders.region"
+                    placeholderKey="placeholders.region"
+                    icon={MapPin}
+                    required
+                    autoComplete="address-level1"
+                />
                 <CheckoutInput
                     control={control}
                     name="city"
@@ -80,15 +91,17 @@ export const DeliveryAddressSection = ({ control, setValue }: DeliveryAddressSec
                     required
                     autoComplete="address-level2"
                 />
-                <CheckoutInput
-                    control={control}
-                    name="neighborhood"
-                    labelKey="placeholders.neighborhood"
-                    placeholderKey="placeholders.neighborhood"
-                    icon={Home}
-                    autoComplete="address-level3"
-                />
             </div>
+
+            {/* Neighborhood */}
+            <CheckoutInput
+                control={control}
+                name="neighborhood"
+                labelKey="placeholders.neighborhood"
+                placeholderKey="placeholders.neighborhood"
+                icon={Home}
+                autoComplete="address-level3"
+            />
 
             {/* Street and Block/Floor Row */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>

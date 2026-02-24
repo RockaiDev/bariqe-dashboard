@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/shared/components/ui/button";
 import { publicApiService } from "@/lib/publicApiService";
 import FadeUpReval from "@/shared/animations/FadUpReval";
+import { useCart } from "@/shared/hooks/useCart";
 
 type PaymentStatus = "loading" | "success" | "failed" | "pending";
 
@@ -20,6 +21,7 @@ interface OrderStatusPageProps {
 }
 
 export default function OrderStatusPage(props: OrderStatusPageProps) {
+  const { clearCart } = useCart();
   const params = use(props.params);
   const searchParams = use(props.searchParams);
   
@@ -54,6 +56,7 @@ export default function OrderStatusPage(props: OrderStatusPageProps) {
 
            if (paymentStatus === "paid" || paymentStatus === "Paid" || paymentStatus === "completed" || paymentStatus === "confirmed" || response.order?.orderStatus === "confirmed") {
              setStatus("success");
+             clearCart();
            } else if (paymentStatus === "failed" || paymentStatus === "Failed" || paymentStatus === "cancelled") {
              setStatus("failed");
              setErrorMessage(t("errors.paymentFailed"));
@@ -61,6 +64,7 @@ export default function OrderStatusPage(props: OrderStatusPageProps) {
              // If backend says pending...
              // If we have a transactionNo, it's likely just processing payment
              setStatus("pending");
+             clearCart();
            }
         } else {
            // Verification API failed or returned success:false

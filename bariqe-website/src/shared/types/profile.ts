@@ -26,29 +26,63 @@ export interface CreateAddressData extends Omit<Address, "_id" | "isDefault"> {
   isDefault?: boolean;
 }
 
+
+export interface ProductDetails {
+  _id: string;
+  productNameAr: string;
+  productNameEn: string;
+  productImage: string;
+}
+
 export interface OrderItem {
-  product: Product;
+  product: ProductDetails;
   quantity: number;
-  price: number;
-  itemDiscount?: number;
+  itemDiscount: number;
+  _id: string;
+}
+
+export interface ShippingAddress {
+  fullName: string;
+  phone: string;
+  street: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  nationalAddress: string;
+  country: string;
+}
+
+export interface PaymentInfo {
+  method: string;
+  status: 'pending' | 'paid' | 'failed';
+  invoiceId: string;
+  paymentUrl: string;
+  transactionId: string;
+  
+}
+
+export interface ShippingInfo {
+  carrier: 'jt_express' | string;
+  trackingNumber?: string;
+  sortingCode?: string;
+  lastCenterName?: string;
+  status?: string;
 }
 
 export interface Order {
   _id: string;
-  orderNumber: string;
-  items: OrderItem[];
-  totalAmount: number;
-  shippingAddress: Address;
-  orderStatus: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled" | "paid" | "failed" | string;
-  payment?: {
-    status: string;
-    method?: string;
-    paymentUrl?: string;
-    invoiceId?: string;
-    transactionId?: string;
-  };
+  customer: string;
+  shippingAddress: ShippingAddress;
+  payment: PaymentInfo;
+  shipping: ShippingInfo;
+  products: OrderItem[];
+  orderQuantity: string;
+  subtotal: number;
+  shippingCost: number;
+  orderDiscount: number;
+  total: number;
+  orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: string;
   updatedAt: string;
+  __v: number;
 }
-
