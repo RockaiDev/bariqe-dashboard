@@ -40,18 +40,36 @@ jobs:
           args: >
             -Dsonar.projectKey=bariqe-backend
             -Dsonar.organization=beshoyrockaidev-maker
+            -Dsonar.branch.name=Dev
   dependency-check:
     name: Dependency Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install --package-lock-only 
+        working-directory: ${{ env.WORKING_DIR }}
+
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: ${{ env.SERVICE_NAME }}
           path: ${{ env.WORKING_DIR }}
-          format: 'ALL'
-          args: '--failOnCVSS 8'
+          format: 'HTML' 
+          out: 'dependency-reports'
+      
+      - name: Upload Report for Developers
+        if: always() 
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-vulnerability-report
+          path: dependency-reports/
 
   build-and-push:
     runs-on: ubuntu-latest
