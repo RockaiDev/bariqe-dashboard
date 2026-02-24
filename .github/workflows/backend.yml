@@ -3,8 +3,6 @@ name: Bariqe Backend CI/CD
 on:
   push:
     branches: ["Dev"]
-    paths:
-      - 'bariqe-dashboard/**' 
   workflow_dispatch: 
 
 env:
