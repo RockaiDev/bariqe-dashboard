@@ -1,0 +1,2825 @@
+openapi: "3.0.0"
+info:
+  title: "Bariqe Dashboard API"
+  version: "1.0.0"
+  description: "Comprehensive API documentation for Bariqe Dashboard Backend"
+servers:
+  - 
+    url: "http://localhost:8080"
+    description: "Local Development"
+  - 
+    url: "https://api.bariqe.com"
+    description: "Production"
+paths:
+  /products/export:
+    get:
+      tags:
+        - "Products"
+      summary: "GET /products/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/download-template:
+    get:
+      tags:
+        - "Products"
+      summary: "GET /products/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/import:
+    post:
+      tags:
+        - "Products"
+      summary: "POST /products/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+  /products/base64:
+    post:
+      tags:
+        - "Products"
+      summary: "POST /products/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+  /products:
+    get:
+      tags:
+        - "Products"
+      summary: "GET /products"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    post:
+      tags:
+        - "Products"
+      summary: "POST /products"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+  /products/{id}:
+    get:
+      tags:
+        - "Products"
+      summary: "GET /products/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Products"
+      summary: "PUT /products/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+    delete:
+      tags:
+        - "Products"
+      summary: "DELETE /products/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /products/subcategories/{categoryId}:
+    get:
+      tags:
+        - "Products"
+      summary: "GET /products/subcategories/:categoryId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+      parameters:
+        - 
+          name: "categoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /products/{id}/base64:
+    put:
+      tags:
+        - "Products"
+      summary: "PUT /products/:id/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+  /products/{id}/image:
+    put:
+      tags:
+        - "Products"
+      summary: "PUT /products/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+    delete:
+      tags:
+        - "Products"
+      summary: "DELETE /products/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /orders/export:
+    get:
+      tags:
+        - "Orders"
+      summary: "GET /orders/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/download-template:
+    get:
+      tags:
+        - "Orders"
+      summary: "GET /orders/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/import:
+    post:
+      tags:
+        - "Orders"
+      summary: "POST /orders/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+  /orders:
+    get:
+      tags:
+        - "Orders"
+      summary: "GET /orders"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    post:
+      tags:
+        - "Orders"
+      summary: "POST /orders"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+  /orders/{id}:
+    get:
+      tags:
+        - "Orders"
+      summary: "GET /orders/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Orders"
+      summary: "PUT /orders/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+    delete:
+      tags:
+        - "Orders"
+      summary: "DELETE /orders/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /customers/export/excel:
+    get:
+      tags:
+        - "Customers"
+      summary: "GET /customers/export/excel"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /customers/template/download:
+    get:
+      tags:
+        - "Customers"
+      summary: "GET /customers/template/download"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /customers/template/bulk:
+    get:
+      tags:
+        - "Customers"
+      summary: "GET /customers/template/bulk"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /customers/import/excel:
+    post:
+      tags:
+        - "Customers"
+      summary: "POST /customers/import/excel"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+  /customers/bulk/update:
+    post:
+      tags:
+        - "Customers"
+      summary: "POST /customers/bulk/update"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+  /customers:
+    get:
+      tags:
+        - "Customers"
+      summary: "GET /customers"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    post:
+      tags:
+        - "Customers"
+      summary: "POST /customers"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+  /customers/{id}:
+    get:
+      tags:
+        - "Customers"
+      summary: "GET /customers/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Customers"
+      summary: "PUT /customers/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+    delete:
+      tags:
+        - "Customers"
+      summary: "DELETE /customers/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    patch:
+      tags:
+        - "Customers"
+      summary: "PATCH /customers/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+  /materialRequests/stats:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests/stats"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /materialRequests/customer/{customerId}:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests/customer/:customerId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "customerId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /materialRequests/export:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /materialRequests/download-template:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /materialRequests/import:
+    post:
+      tags:
+        - "MaterialRequests"
+      summary: "POST /materialRequests/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /materialRequests:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    post:
+      tags:
+        - "MaterialRequests"
+      summary: "POST /materialRequests"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /materialRequests/{id}:
+    get:
+      tags:
+        - "MaterialRequests"
+      summary: "GET /materialRequests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "MaterialRequests"
+      summary: "PUT /materialRequests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "MaterialRequests"
+      summary: "DELETE /materialRequests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories/export:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/download-template:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/import:
+    post:
+      tags:
+        - "Categories"
+      summary: "POST /categories/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/active:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/active"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/stats:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/stats"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/bulk-delete:
+    delete:
+      tags:
+        - "Categories"
+      summary: "DELETE /categories/bulk-delete"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/base64:
+    post:
+      tags:
+        - "Categories"
+      summary: "POST /categories/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/{categoryId}/subcategories:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/:categoryId/subcategories"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "categoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    post:
+      tags:
+        - "Categories"
+      summary: "POST /categories/:categoryId/subcategories"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "categoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories/{categoryId}/subcategories/{subCategoryId}:
+    put:
+      tags:
+        - "Categories"
+      summary: "PUT /categories/:categoryId/subcategories/:subCategoryId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "categoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "subCategoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Categories"
+      summary: "DELETE /categories/:categoryId/subcategories/:subCategoryId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "categoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "subCategoryId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories/{id}/image:
+    put:
+      tags:
+        - "Categories"
+      summary: "PUT /categories/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Categories"
+      summary: "DELETE /categories/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories/{id}/toggle-status:
+    patch:
+      tags:
+        - "Categories"
+      summary: "PATCH /categories/:id/toggle-status"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories/{id}/base64:
+    put:
+      tags:
+        - "Categories"
+      summary: "PUT /categories/:id/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /categories:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    post:
+      tags:
+        - "Categories"
+      summary: "POST /categories"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /categories/{id}:
+    get:
+      tags:
+        - "Categories"
+      summary: "GET /categories/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Categories"
+      summary: "PUT /categories/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Categories"
+      summary: "DELETE /categories/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /consultation-requests/export:
+    get:
+      tags:
+        - "Consultation-requests"
+      summary: "GET /consultation-requests/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /consultation-requests/download-template:
+    get:
+      tags:
+        - "Consultation-requests"
+      summary: "GET /consultation-requests/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /consultation-requests/import:
+    post:
+      tags:
+        - "Consultation-requests"
+      summary: "POST /consultation-requests/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /consultation-requests:
+    get:
+      tags:
+        - "Consultation-requests"
+      summary: "GET /consultation-requests"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    post:
+      tags:
+        - "Consultation-requests"
+      summary: "POST /consultation-requests"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /consultation-requests/{id}:
+    get:
+      tags:
+        - "Consultation-requests"
+      summary: "GET /consultation-requests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Consultation-requests"
+      summary: "PUT /consultation-requests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Consultation-requests"
+      summary: "DELETE /consultation-requests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /dashboard:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/summary:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/summary"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/recent-orders:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/recent-orders"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/recent-consultations:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/recent-consultations"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/order-trends:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/order-trends"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/popular-categories:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/popular-categories"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/stats:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/stats"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /dashboard/revenue:
+    get:
+      tags:
+        - "Dashboard"
+      summary: "GET /dashboard/revenue"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /events/export:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+  /events/download-template:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+  /events/import:
+    post:
+      tags:
+        - "Events"
+      summary: "POST /events/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+  /events/base64:
+    post:
+      tags:
+        - "Events"
+      summary: "POST /events/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+  /events/{id}/image:
+    put:
+      tags:
+        - "Events"
+      summary: "PUT /events/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+    delete:
+      tags:
+        - "Events"
+      summary: "DELETE /events/:id/image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /events/{id}/base64:
+    put:
+      tags:
+        - "Events"
+      summary: "PUT /events/:id/base64"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+  /events/{eventId}/files/{fileId}:
+    delete:
+      tags:
+        - "Events"
+      summary: "DELETE /events/:eventId/files/:fileId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "eventId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "fileId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /events:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+    post:
+      tags:
+        - "Events"
+      summary: "POST /events"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+  /events/{id}:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Events"
+      summary: "PUT /events/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+    delete:
+      tags:
+        - "Events"
+      summary: "DELETE /events/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /events/{eventId}/files/{fileId}/download:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/:eventId/files/:fileId/download"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+      parameters:
+        - 
+          name: "eventId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "fileId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /events/{eventId}/files/{fileId}/preview:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/:eventId/files/:fileId/preview"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+      parameters:
+        - 
+          name: "eventId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "fileId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /events/{eventId}/files/{fileId}/info:
+    get:
+      tags:
+        - "Events"
+      summary: "GET /events/:eventId/files/:fileId/info"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+      parameters:
+        - 
+          name: "eventId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "fileId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /database/backup:
+    get:
+      tags:
+        - "Database"
+      summary: "GET /database/backup"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /database/restore:
+    post:
+      tags:
+        - "Database"
+      summary: "POST /database/restore"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /database/download-template:
+    get:
+      tags:
+        - "Database"
+      summary: "GET /database/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /contacts/export:
+    get:
+      tags:
+        - "Contacts"
+      summary: "GET /contacts/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /contacts/download-template:
+    get:
+      tags:
+        - "Contacts"
+      summary: "GET /contacts/download-template"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /contacts/import:
+    post:
+      tags:
+        - "Contacts"
+      summary: "POST /contacts/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contact"
+  /contacts/{id}/status:
+    patch:
+      tags:
+        - "Contacts"
+      summary: "PATCH /contacts/:id/status"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contact"
+  /contacts:
+    get:
+      tags:
+        - "Contacts"
+      summary: "GET /contacts"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    post:
+      tags:
+        - "Contacts"
+      summary: "POST /contacts"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contact"
+  /contacts/{id}:
+    get:
+      tags:
+        - "Contacts"
+      summary: "GET /contacts/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Contacts"
+      summary: "PUT /contacts/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contact"
+    delete:
+      tags:
+        - "Contacts"
+      summary: "DELETE /contacts/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/export:
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info/export"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /business-info/template/download:
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info/template/download"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /business-info/import:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /business-info/{id}/import:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/import"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/about-settings:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/about-settings"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/about-sections:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/about-sections"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/about-sections/{sectionId}:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/about-sections/:sectionId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "sectionId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Business-info"
+      summary: "DELETE /business-info/:id/about-sections/:sectionId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "sectionId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/reviews-settings:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/reviews-settings"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/reviews:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/reviews"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info/:id/reviews"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/reviews/{reviewId}:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/reviews/:reviewId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "reviewId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Business-info"
+      summary: "DELETE /business-info/:id/reviews/:reviewId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "reviewId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/members:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/members"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/members/{memberId}:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/members/:memberId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "memberId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Business-info"
+      summary: "DELETE /business-info/:id/members/:memberId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "memberId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/partners:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/partners"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/partners/{partnerId}:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/partners/:partnerId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "partnerId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Business-info"
+      summary: "DELETE /business-info/:id/partners/:partnerId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "partnerId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/locations:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/locations"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/locations/{locationId}:
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id/locations/:locationId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "locationId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    delete:
+      tags:
+        - "Business-info"
+      summary: "DELETE /business-info/:id/locations/:locationId"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - 
+          name: "locationId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/upload-media:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/:id/upload-media"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/upload-image:
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info/upload-image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /business-info:
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    post:
+      tags:
+        - "Business-info"
+      summary: "POST /business-info"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /business-info/{id}:
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+    put:
+      tags:
+        - "Business-info"
+      summary: "PUT /business-info/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /material-requests:
+    post:
+      tags:
+        - "Material-requests"
+      summary: "POST /material-requests"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /material-requests/{id}:
+    get:
+      tags:
+        - "Material-requests"
+      summary: "GET /material-requests/:id"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /business-info/{id}/about:
+    get:
+      tags:
+        - "Business-info"
+      summary: "GET /business-info/:id/about"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      parameters:
+        - 
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+  /auth/signup:
+    post:
+      tags:
+        - "Auth"
+      summary: "POST /auth/signup"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/signin:
+    post:
+      tags:
+        - "Auth"
+      summary: "POST /auth/signin"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/verify:
+    get:
+      tags:
+        - "Auth"
+      summary: "GET /auth/verify"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/signout:
+    post:
+      tags:
+        - "Auth"
+      summary: "POST /auth/signout"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/cover-image:
+    post:
+      tags:
+        - "Auth"
+      summary: "POST /auth/cover-image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    delete:
+      tags:
+        - "Auth"
+      summary: "DELETE /auth/cover-image"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/me:
+    get:
+      tags:
+        - "Auth"
+      summary: "GET /auth/me"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+    patch:
+      tags:
+        - "Auth"
+      summary: "PATCH /auth/me"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /auth/profile:
+    patch:
+      tags:
+        - "Auth"
+      summary: "PATCH /auth/profile"
+      responses:
+        200:
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+components:
+  schemas:
+    Admin:
+      type: "object"
+      properties:
+        firstName:
+          type: "string"
+        email:
+          type: "string"
+        password:
+          type: "string"
+        role:
+          type: "string"
+        coverImage:
+          type: "string"
+        avatar:
+          type: "string"
+        profilePicture:
+          type: "string"
+      required:
+        - "firstName"
+        - "email"
+        - "password"
+        - "role"
+    BusinessInfo:
+      type: "object"
+      properties:
+        hero_image:
+          type: "string"
+        title_ar:
+          type: "string"
+        title_en:
+          type: "string"
+        description_ar:
+          type: "string"
+        description_en:
+          type: "string"
+        display_order:
+          type: "number"
+        name_ar:
+          type: "string"
+        name_en:
+          type: "string"
+        position_ar:
+          type: "string"
+        position_en:
+          type: "string"
+        bio_ar:
+          type: "string"
+        bio_en:
+          type: "string"
+        image:
+          type: "string"
+        email:
+          type: "string"
+        phone:
+          type: "string"
+        linkedin:
+          type: "string"
+        is_leadership:
+          type: "boolean"
+        website:
+          type: "string"
+        country_ar:
+          type: "string"
+        country_en:
+          type: "string"
+        city_ar:
+          type: "string"
+        city_en:
+          type: "string"
+        address_ar:
+          type: "string"
+        address_en:
+          type: "string"
+        map_url:
+          type: "string"
+        client_name_ar:
+          type: "string"
+        client_name_en:
+          type: "string"
+        client_position_ar:
+          type: "string"
+        client_position_en:
+          type: "string"
+        client_company_ar:
+          type: "string"
+        client_company_en:
+          type: "string"
+        client_image:
+          type: "string"
+        review_ar:
+          type: "string"
+        review_en:
+          type: "string"
+        rating:
+          type: "number"
+        is_featured:
+          type: "boolean"
+        created_at:
+          type: "string"
+          format: "date-time"
+        logo:
+          type: "string"
+        whatsapp:
+          type: "string"
+        facebook:
+          type: "string"
+        about:
+          type: "string"
+        main_title_ar:
+          type: "string"
+        main_title_en:
+          type: "string"
+        main_description_ar:
+          type: "string"
+        main_description_en:
+          type: "string"
+        sections:
+          type: "array"
+          items:
+            type: "string"
+        locations:
+          type: "array"
+          items:
+            type: "string"
+        members:
+          type: "array"
+          items:
+            type: "string"
+        partners:
+          type: "array"
+          items:
+            type: "string"
+        reviews:
+          type: "string"
+        items:
+          type: "array"
+          items:
+            type: "string"
+        is_active:
+          type: "boolean"
+      required:
+        - "hero_image"
+        - "name_ar"
+        - "name_en"
+        - "name_ar"
+        - "name_en"
+        - "client_name_ar"
+        - "client_name_en"
+        - "review_ar"
+        - "review_en"
+        - "title_ar"
+        - "title_en"
+    Category:
+      type: "object"
+      properties:
+        subCategoryNameAr:
+          type: "string"
+        subCategoryNameEn:
+          type: "string"
+        subCategoryDescriptionAr:
+          type: "string"
+        subCategoryDescriptionEn:
+          type: "string"
+        subCategoryStatus:
+          type: "boolean"
+      required: undefined
+    ConsultationRequests:
+      type: "object"
+      properties:
+        ParntersRequestsName:
+          type: "string"
+        ParntersRequestsEmail:
+          type: "string"
+        ParntersRequestsPhone:
+          type: "string"
+        ParntersRequestsMessage:
+          type: "string"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+      required:
+        - "ParntersRequestsName"
+        - "ParntersRequestsPhone"
+        - "ParntersRequestsMessage"
+    Contact:
+      type: "object"
+      properties:
+        contactName:
+          type: "string"
+        email:
+          type: "string"
+        customer:
+          type: "string"
+          format: "uuid"
+        phoneNumber:
+          type: "string"
+        address:
+          type: "string"
+        type:
+          type: "string"
+        message:
+          type: "string"
+        status:
+          type: "boolean"
+      required:
+        - "contactName"
+        - "phoneNumber"
+        - "address"
+        - "message"
+    Customer:
+      type: "object"
+      properties:
+        customerName:
+          type: "string"
+        customerEmail:
+          type: "string"
+        customerPhone:
+          type: "string"
+        customerAddress:
+          type: "string"
+        customerNotes:
+          type: "string"
+        customerSource:
+          type: "string"
+        customerLocation:
+          type: "string"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+      required: undefined
+    Event:
+      type: "object"
+      properties:
+        titleAr:
+          type: "string"
+        titleEn:
+          type: "string"
+        date:
+          type: "string"
+          format: "date-time"
+        type:
+          type: "string"
+        contentAr:
+          type: "string"
+        contentEn:
+          type: "string"
+        eventImage:
+          type: "string"
+        eventImagePublicId:
+          type: "string"
+        filename:
+          type: "string"
+        originalName:
+          type: "string"
+        mimetype:
+          type: "string"
+        size:
+          type: "number"
+        path:
+          type: "string"
+        cloudinaryPublicId:
+          type: "string"
+        status:
+          type: "string"
+        author:
+          type: "string"
+      required:
+        - "titleAr"
+        - "titleEn"
+        - "date"
+        - "contentAr"
+        - "contentEn"
+        - "filename"
+        - "originalName"
+        - "mimetype"
+        - "size"
+        - "path"
+    MaterialRequests:
+      type: "object"
+      properties:
+        materialName:
+          type: "string"
+        materialEmail:
+          type: "string"
+        materialPhone:
+          type: "string"
+        match:
+          type: "array"
+          items:
+            type: "string"
+        materialQuantity:
+          type: "number"
+        materialIntendedUse:
+          type: "string"
+        materialLocation:
+          type: "string"
+        customer:
+          type: "string"
+          format: "uuid"
+        materialActions:
+          type: "string"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+      required:
+        - "materialName"
+        - "materialQuantity"
+    Order:
+      type: "object"
+      properties:
+        product:
+          type: "string"
+          format: "uuid"
+        quantity:
+          type: "number"
+        itemDiscount:
+          type: "number"
+        customer:
+          type: "string"
+          format: "uuid"
+        products:
+          type: "array"
+          items:
+            type: "string"
+        orderQuantity:
+          type: "string"
+        orderDiscount:
+          type: "number"
+        orderStatus:
+          type: "string"
+      required:
+        - "product"
+        - "quantity"
+        - "customer"
+        - "products"
+        - "orderQuantity"
+    Product:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        price:
+          type: "number"
+        quantity:
+          type: "number"
+        description:
+          type: "string"
+      required:
+        - "name"
+        - "price"
+        - "quantity"
+  securitySchemes:
+    bearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+security:
+  - 
+    bearerAuth: []

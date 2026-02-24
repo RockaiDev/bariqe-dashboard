@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: 
+      context: ./bariqe-dashboard/backend
+      dockerfile: Dockerfile
+    container_name: bariqe_backend
+    ports:
+      - "8080:8080" 
+    env_file:
+      - ./bariqe-dashboard/backend/.env 
+    restart: always
+    volumes:
+      - ./bariqe-dashboard/backend/keys:/app/keys
+  
+  website:
+    image: bariqe-website
+    container_name: bariqe-web
+    restart: always
+
+    env_file:
+      - ./bariqe-website/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+  dashboard:
+    build:
+      context: ./bariqe-dashboard/frontend
+      dockerfile: Dockerfile
+    container_name: bariqe_dashboard
+    ports:
+      - "3001:80"
+    restart: always
+    depends_on:
+      - backend

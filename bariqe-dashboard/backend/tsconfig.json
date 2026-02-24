@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+     "target": "ES2020",
+    // "moduleResolution": "node",
+    "outDir": "./dist", // Updated path
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "allowJs": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "esModuleInterop": true,
+    "strict": false
+  },
+  // "ts-node": {
+  //   "esm": true
+  // },
+  "include": ["./**/*.{ts,tsx}", "./app.ts"],
+  "exclude": ["node_modules", "dist"]
+}
