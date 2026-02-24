@@ -4,7 +4,7 @@ on:
   push:
     branches: ["Dev"]
     paths:
-      - 'bariqe-dashboard/backend/**' 
+      - 'bariqe-dashboard/**' 
   workflow_dispatch: 
 
 env:
