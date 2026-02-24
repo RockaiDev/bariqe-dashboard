@@ -1,0 +1,1240 @@
+{
+  "login": {
+    "btn": "Login"
+  },
+  "topHeader": {
+    "btn": "Shop Now",
+    "message": "Free shipping on all products"
+  },
+  "specialSection": {
+    "card1": {
+      "title": "Customer Reviews",
+      "description": "100% Guaranteed Quality"
+    },
+    "card2": {
+      "title": "Special Packages & Offers",
+      "description": "Save More with Our Diverse Packages"
+    },
+    "card3": {
+      "title": "Shipping to all regions",
+      "description": "On All Orders Within the Kingdom"
+    },
+    "card4": {
+      "title": "Made in Saudi Arabia",
+      "description": "Products with warranty and quality"
+    }
+  },
+  "customerReviews": {
+    "title": "Customer Reviews",
+    "description": "Our customers across the Kingdom"
+  },
+  "navigation": {
+    "home": "Home",
+    "allProducts": "All Products",
+    "offersPackages": "Offers & Packages",
+    "about": "About",
+    "contact": "Contact & Partnership",
+    "cart": "Cart",
+    "btn": "Discover Packages"
+  },
+  "siteFooter": {
+    "description": "Specialists in manufacturing and supplying high-quality cleaning products. 100% Saudi products with a golden warranty.",
+    "importantLinks": "Important Links",
+    "contactUs": "Contact & Partnership",
+    "contactInfo": {
+      "phone": "0506713071",
+      "whatsapp": "WhatsApp: +966539474864",
+      "address": "Riyadh, Saudi Arabia",
+      "email": "info@bariqeeltamioz.com"
+    },
+    "copyright": " 2025 Bariqe Al-Tamyoz. All rights reserved. | Manufactured in Saudi Arabia | Licensed by the Ministry of Commerce | CR: 4610109764"
+  },
+  "hero": {
+    "btn": "Shop Now",
+    "title": "Your trusted store for premium cleaning products",
+    "description": "Discover high‑quality, Saudi‑made cleaning products with great bundles, free shipping on packages, and fast delivery. Shop now and save.",
+    "subtitle": "Golden guarantee and instant cleaning",
+    "specialOffer": "Exclusive Offers on Elite Cleaning Products with ",
+    "logo": "Bariqe Al-Tamyoz",
+    "tagline": "Experience power and freshness with guaranteed quality Saudi cleaning products"
+  },
+  "ourCustomerReviews": {
+    "card1": {
+      "title": "Our Customers’ Reviews Speak for Us",
+      "description": "100% Guaranteed Quality"
+    },
+    "card2": {
+      "title": "Special Packages & Offers",
+      "description": "Save More with Our Diverse Packages"
+    },
+    "card3": {
+      "title": "Shipping to all regions",
+      "description": "On All Orders Within the Kingdom"
+    },
+    "card4": {
+      "title": "Made in Saudi Arabia",
+      "description": "Products with warranty and quality"
+    }
+  },
+  "bestsellerSection": {
+    "title": "Best-Selling Packages",
+    "description": "The best packages we offer",
+    "btn": "View All"
+  },
+  "newArrivalsSection": {
+    "title": "New Arrivals",
+    "description": "Our latest innovative products",
+    "btn": "View All"
+  },
+  "homeBanner": {
+    "subtitle": "Premium Quality",
+    "btn": "Discover With Us",
+    "title": "Comprehensive Cleaning Packages",
+    "description": "Saudi cleaning products with global standards, giving you shine and safety in every use"
+  },
+  "allProducts": {
+    "title": "Comprehensive Cleaning Packages",
+    "description": "Saudi cleaning products with global standards, giving you shine and safety in every use",
+    "breadcrumb": "All Products",
+    "searchPlaceholder": "Search",
+    "categories": {
+      "all": "All",
+      "electronics": "Electronics",
+      "clothing": "Clothing",
+      "beauty": "Beauty"
+    }
+  },
+  "common": {
+    "loading": "Loading",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "clear": "Clear",
+    "select": "Select",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "tryAgain": "Try Again",
+    "back": "Back",
+    "goBack": "Go Back",
+    "download": "Download",
+    "free": "FREE",
+    "processing": "Processing..."
+  },
+  "search": {
+    "placeholder": "Search for products",
+    "results": "Search Results",
+    "noResults": "No results found",
+    "suggestions": "Suggestions",
+    "recent": "Recent Searches",
+    "popular": "Popular Searches"
+  },
+  "productDetails": {
+    "productDetailsTitle": "Product Details",
+    "exportProduct": "Export Product",
+    "exporting": "Exporting",
+    "exportingProduct": "Exporting product details",
+    "exportSuccess": "Product exported successfully",
+    "exportFailed": "Failed to export product",
+    "defaultCategory": "Products",
+    "inCart": "{count} in cart",
+    "productCode": "Product Code",
+    "available": "{count} {unit} Available",
+    "pricePerUnit": "Price per {unit}",
+    "totalFor": "Total for {quantity} {unit}",
+    "save": "Save {percent}%",
+    "bulkDiscounts": "Bulk Discounts",
+    "buyMore": "Buy {quantity}+ {unit}: Save {discount}%",
+    "applied": "Applied",
+    "selectQuantity": "Select Quantity ({unit})",
+    "totalPrice": "Total Price",
+    "addMoreOrViewCart": "You can add more or view your cart",
+    "viewCart": "View Cart",
+    "addedToCart": "Added to Cart!",
+    "addToCart": "Add to Cart",
+    "features": {
+      "fastDelivery": "Fast Delivery",
+      "qualityGuaranteed": "Quality Guaranteed"
+    },
+    "sections": {
+      "productDetails": "Product Details",
+      "aboutProduct": "About Product",
+      "synonyms": "Synonyms",
+      "keyFeatures": "Key Features"
+    },
+    "fields": {
+      "form": "Form",
+      "unit": "Unit",
+      "unspscCode": "UNSPSC Code",
+      "ecNumber": "EC Number",
+      "stockAvailable": "Stock Available",
+      "category": "Category"
+    }
+  },
+  "product": {
+    "productDetails": "Product Details",
+    "bestSeller": "Best Seller",
+    "backToProducts": "Back to Products",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "off": "Off",
+    "reviews": "Reviews",
+    "description": "Description",
+    "specifications": "Specifications",
+    "features": "Features",
+    "synonyms": "Synonyms",
+    "form": "Form",
+    "purity": "Purity",
+    "grade": "Grade",
+    "stock": "Stock",
+    "quantity": "Quantity",
+    "available": "Available",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "downloadSpec": "Download Spec",
+    "downloadPriceList": "Download Price List",
+    "aboutProduct": "About Product",
+    "requestQuote": "Request Quote",
+    "noDescription": "No description available",
+    "per": "per",
+    "viewDetails": "View Details",
+    "quickView": "Quick View",
+    "details": "Product Details",
+    "applications": "Applications",
+    "safety": "Safety Information",
+    "datasheet": "Datasheet",
+    "msds": "Material Safety Data Sheet",
+    "price": "Price",
+    "availability": "Availability",
+    "unit": "Unit",
+    "addToCart": "Add to Cart",
+    "relatedProducts": "Related Products",
+    "rating": "Rating",
+    "buyNow": "Buy Now",
+    "addQuantity": "Add quantity:"
+  },
+  "products": {
+    "errorTitle": "Error Loading Products",
+    "errorMessage": "An error occurred while loading products. Please try again.",
+    "noProductsTitle": "No Products Found",
+    "noProductsMessage": "No products were found in this category."
+  },
+  "latestInsights": {
+    "industries": "Industries",
+    "title": "Latest Industry Insights & Updates",
+    "description": "Stay up to date with expert articles, market trends, and product innovations from Bariqe Al-Tamyoz.From new formulations to industry developments, we share knowledge that helps your business grow and stay ahead of change."
+  },
+  "catalogue": {
+    "title": "Store",
+    "products": "Products",
+    "allCategories": "All Categories",
+    "unknownCategory": "Unknown Category",
+    "loading": "Loading",
+    "productsFound": "products found",
+    "errorLoadingProducts": "Error loading products",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "exporting": "Exporting",
+    "viewAllProductsPriceList": "View All Products Price List",
+    "browseProductsDescription": "Browse products and download price lists",
+    "exportAll": "Export All",
+    "export": "Export",
+    "cantFindMaterial": "Can't find a Material?",
+    "exportingAllProducts": "Exporting all products",
+    "exportFailed": "Export failed",
+    "allProductsExportSuccess": "All products price list exported successfully!",
+    "failedToExportAllProducts": "Failed to export all products",
+    "exportingProducts": "Exporting products",
+    "exportSuccessFiltered": "Successfully exported {filtered} filtered products out of {total} total products.",
+    "productsExportSuccess": "Products exported successfully!",
+    "failedToExportProducts": "Failed to export products",
+    "exportFiltered": "Export Filtered Products",
+    "filteredProductsExportSuccess": "Filtered products exported successfully",
+    "serverError": "Server Error",
+    "viewAllProducts": "View All Products",
+    "viewCategoryAllProducts": "View {categoryName} All Products",
+    "exportSuccess": "Successfully exported {count} products!",
+    "exportFilteredSuccess": "Successfully exported {count} filtered products!",
+    "noProductsToExport": "No products to export"
+  },
+  "filters": {
+    "selectCategory": "Select Category",
+    "allCategories": "All Categories",
+    "selectSubCategory": "Select SubCategory",
+    "allSubCategories": "All SubCategories",
+    "activeFilters": "{count} active filters",
+    "searchPlaceholder": "Search products by name, description, or code",
+    "search": "Search",
+    "filters": "Filters",
+    "allForms": "All Forms",
+    "solid": "Solid",
+    "liquid": "Liquid",
+    "gas": "Gas",
+    "powder": "Powder",
+    "granular": "Granular",
+    "allTime": "All Time",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "last30Days": "Last 30 Days",
+    "last3Months": "Last 3 Months",
+    "newestFirst": "Newest First",
+    "oldestFirst": "Oldest First",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "nameAToZ": "Name: A to Z",
+    "nameZToA": "Name: Z to A",
+    "codeAToZ": "Code: A to Z",
+    "codeZToA": "Code: Z to A",
+    "clearAll": "Clear All",
+    "priceRange": "Price Range",
+    "minPrice": "Min Price",
+    "maxPrice": "Max Price",
+    "clearPriceRange": "Clear price range",
+    "searchProductsMobile": "Search products",
+    "form": "Form",
+    "dateRange": "Date Range",
+    "sortBy": "Sort by",
+    "sort": "Sort",
+    "clearAllFilters": "Clear All Filters",
+    "status": "Status",
+    "allStatus": "All Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "export": "Export",
+    "exportFiltered": "Export Filtered",
+    "exporting": "Exporting"
+  },
+  "materialRequest": {
+    "requestNewMaterial": "Request New Material",
+    "title": "Material Request",
+    "description": "Can't find what you're looking for? Let us know and we'll do our best to source it for you.",
+    "customerInformation": "Customer Information",
+    "materialInformation": "Material Information",
+    "customerLocationOptional": "Customer Location (Optional)",
+    "deliveryLocationOptional": "Delivery Location (Optional)",
+    "optional": "Optional",
+    "tabs": {
+      "existingCustomer": "Existing Customer",
+      "newCustomer": "New Customer"
+    },
+    "existingCustomer": {
+      "description": "Search for an existing customer by phone number to auto-fill data",
+      "phoneNumber": "Phone Number",
+      "enterPhone": "Enter phone number",
+      "customerFound": "Customer Found"
+    },
+    "newCustomer": {
+      "description": "Enter new customer information"
+    },
+    "fields": {
+      "customerName": "Customer Name",
+      "phoneNumber": "Phone Number",
+      "emailAddress": "Email Address",
+      "customerAddress": "Customer Address",
+      "materialName": "Material Name",
+      "quantity": "Quantity",
+      "intendedUse": "Intended Use",
+      "materialLocation": "Material Location"
+    },
+    "placeholders": {
+      "customerName": "Enter customer name",
+      "phoneNumber": "Enter phone number",
+      "emailAddress": "Enter email address (optional)",
+      "customerAddress": "Enter full address",
+      "materialName": "Enter material name",
+      "quantity": "Enter required quantity",
+      "intendedUse": "Describe how you intend to use this material",
+      "materialLocation": "Enter delivery location (optional)",
+      "selectCustomerCountry": "Select customer country",
+      "selectCustomerState": "Select customer state",
+      "selectCustomerCity": "Select customer city",
+      "selectDeliveryCountry": "Select delivery country",
+      "selectDeliveryState": "Select delivery state",
+      "selectDeliveryCity": "Select delivery city"
+    },
+    "helpers": {
+      "emailHelper": "We'll send updates to this email",
+      "addressHelper": "Please include street, building number, floor, and any landmarks",
+      "materialLocationHelper": "Where should the material be delivered?",
+      "intendedUseHelper": "Describe how you intend to use this material"
+    },
+    "location": {
+      "country": "Country",
+      "state": "State/Province",
+      "city": "City",
+      "customerLocation": "Customer Location:",
+      "locationCode": "Location Code:",
+      "deliveryCountry": "Delivery Country",
+      "deliveryState": "Delivery State",
+      "deliveryCity": "Delivery City",
+      "deliveryLocation": "Delivery Location:",
+      "deliveryCode": "Delivery Code:"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "creating": "Creating",
+      "createRequest": "Create Request",
+      "search": "Search"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "phoneRequired": "Phone number is required",
+      "phoneMinLength": "Phone number must be at least 10 digits",
+      "emailInvalid": "Invalid email format",
+      "addressRequired": "Address is required",
+      "addressMinLength": "Please provide a more detailed address",
+      "materialNameRequired": "Material name is required",
+      "quantityRequired": "Quantity must be greater than 0",
+      "intendedUseRequired": "Intended use is required",
+      "fillAllFields": "Please fill all required fields correctly"
+    },
+    "errors": {
+      "customerCreationFailed": "Failed to create customer - no ID returned",
+      "phoneExists": "A customer with this phone number already exists",
+      "emailExists": "A customer with this email already exists",
+      "missingCustomerInfo": "Customer information is missing",
+      "requestCreationFailed": "Failed to create material request",
+      "unexpectedError": "An unexpected error occurred",
+      "enterPhoneNumber": "Please enter phone number",
+      "customerNotFound": "Customer not found",
+      "searchFailed": "Failed to search for customer"
+    },
+    "success": {
+      "requestCreated": "Material request created successfully!",
+      "customerFound": "Customer found successfully",
+      "requestAndCustomerCreated": "Request and customer created successfully!",
+      "requestWithExistingCustomer": "Request created with existing customer successfully!"
+    }
+  },
+  "productsGrid": {
+    "loadingProducts": "Loading products",
+    "errorLoading": "Error loading products",
+    "tryAgain": "Please try again later",
+    "noProducts": "No products found",
+    "adjustFilters": "Try adjusting your filters"
+  },
+  "sidebar": {
+    "categories": "Categories",
+    "filterByCategory": "Filter by category",
+    "allCategories": "All Categories",
+    "failedToLoad": "Failed to load categories",
+    "tryAgainLater": "Please try again later",
+    "noCategories": "No categories available"
+  },
+  "productCard": {
+    "currency": "EGP",
+    "pricePerKg": "{price} EGP / kg",
+    "total": "Total",
+    "viewDetails": "View Details",
+    "addToCart": "Add to Cart",
+    "added": "Added",
+    "productImageAlt": "Product Image",
+    "availableUnits": "{count} {count, plural, =1 {unit} other {units}} available",
+    "addedToCart": "Added {quantity} {quantity, plural, =1 {unit} other {units}} of {productName} to cart",
+    "alreadyInCart": "{quantity} {quantity, plural, =1 {unit} other {units}} in cart",
+    "viewCart": "View Cart",
+    "errors": {
+      "onlyUnitsAvailable": "Only {count} {count, plural, =1 {unit} other {units}} available",
+      "quantityMinimum": "Minimum quantity is 1",
+      "addToCartFailed": "Failed to add product to cart"
+    }
+  },
+  "purchaseMaterial": {
+    "purchaseButton": "Purchase Now",
+    "title": "Complete Your Purchase",
+    "description": "Fill in your details to complete the purchase of {productName}",
+    "orderSummary": "Order Summary",
+    "product": "Product",
+    "quantity": "Quantity",
+    "kg": "kg",
+    "unitPrice": "Unit Price",
+    "subtotal": "Subtotal",
+    "discount": "Discount ({percentage}%)",
+    "total": "Total",
+    "currency": "EGP",
+    "contactInformation": "Contact Information",
+    "deliveryLocationOptional": "Delivery Location (Optional)",
+    "additionalInformation": "Additional Information",
+    "buttons": {
+      "cancel": "Cancel",
+      "processing": "Processing",
+      "completePurchase": "Complete Purchase"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "emailAddress": "Email Address",
+      "deliveryAddress": "Delivery Address",
+      "orderNotes": "Order Notes"
+    },
+    "placeholders": {
+      "fullName": "Enter your full name",
+      "phoneNumber": "Enter your phone number",
+      "emailAddress": "Enter your email (optional)",
+      "deliveryAddress": "Enter your complete delivery address",
+      "orderNotes": "Any special instructions, delivery preferences, or additional notes",
+      "selectDeliveryCountry": "Select delivery country",
+      "selectDeliveryState": "Select delivery state",
+      "selectDeliveryCity": "Select delivery city"
+    },
+    "helpers": {
+      "emailHelper": "We'll send order updates to this email",
+      "addressHelper": "Include street, building number, floor, and any landmarks",
+      "notesHelper": "Optional: Let us know if you have any special requirements"
+    },
+    "location": {
+      "deliveryCountry": "Delivery Country",
+      "deliveryState": "Delivery State",
+      "deliveryCity": "Delivery City",
+      "deliveryLocation": "Delivery Location:",
+      "deliveryCode": "Delivery Code:"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "phoneRequired": "Phone number is required",
+      "phoneMinLength": "Phone number must be at least 10 digits",
+      "emailInvalid": "Invalid email format",
+      "addressRequired": "Address is required",
+      "addressMinLength": "Please provide a more detailed address",
+      "fillAllFields": "Please fill in all required fields correctly"
+    },
+    "errors": {
+      "customerCreationFailed": "Failed to create customer - no ID returned",
+      "phoneExists": "A customer with this phone number already exists",
+      "emailExists": "A customer with this email already exists",
+      "missingInfo": "Missing customer or product information",
+      "orderCreationFailed": "Failed to create order",
+      "unexpectedError": "An unexpected error occurred"
+    },
+    "success": {
+      "customerCreated": "Customer created successfully!",
+      "orderCreated": "Order created successfully!",
+      "trackingNumber": "Tracking number: {number}"
+    }
+  },
+  "searchBar": {
+    "placeholder": "Search products"
+  },
+  "freePartnership": {
+    "buttonText": "Free Partnership",
+    "title": "Request Free Partnership",
+    "description": "Get expert advice for your industrial needs. Our team will contact you within 24 hours.",
+    "customerInformation": "Contact Information",
+    "PartnershipInformation": "Partnership Details",
+    "customerLocationOptional": "Your Location (Optional)",
+    "fields": {
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "emailAddress": "Email Address",
+      "customerAddress": "Your Address",
+      "areaOfInterest": "Area of Interest",
+      "PartnershipMessage": "Tell Us About Your Requirements"
+    },
+    "optional": "Optional",
+    "tabs": {
+      "existingCustomer": "Existing Customer",
+      "newCustomer": "New Customer"
+    },
+    "existingCustomer": {
+      "description": "Search for an existing customer by phone number to auto-fill data",
+      "phoneNumber": "Phone Number",
+      "enterPhone": "Enter phone number",
+      "customerFound": "Customer Found"
+    },
+    "newCustomer": {
+      "description": "Enter new customer information"
+    },
+    "placeholders": {
+      "fullName": "Enter your full name",
+      "phoneNumber": "Enter your phone number",
+      "emailAddress": "Enter your email address",
+      "customerAddress": "Enter your complete address",
+      "areaOfInterest": "Example: Chemical Manufacturing, Industrial Equipment, etc.",
+      "PartnershipMessage": "Please describe your project, requirements, or questions in detail",
+      "selectCustomerCountry": "Select your country",
+      "selectCustomerState": "Select your state",
+      "selectCustomerCity": "Select your city"
+    },
+    "helpers": {
+      "emailHelper": "We'll send Partnership updates to this email",
+      "addressHelper": "Please include street, building number, floor, and any landmarks",
+      "areaHelper": "What industry or field do you need Partnership for?",
+      "messageHelper": "The more details you provide, the better we can help you"
+    },
+    "location": {
+      "country": "Country",
+      "state": "State/Province",
+      "city": "City",
+      "customerLocation": "Your Location:",
+      "locationCode": "Location Code:"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "sending": "Sending Request",
+      "sendRequest": "Send Partnership Request",
+      "search": "Search"
+    },
+    "validation": {
+      "nameRequired": "Full name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "phoneRequired": "Phone number is required",
+      "phoneMinLength": "Phone number must be at least 10 digits",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "addressRequired": "Address is required",
+      "addressMinLength": "Please provide a more detailed address",
+      "areaRequired": "Area of interest is required",
+      "messageRequired": "Partnership message is required",
+      "messageMinLength": "Please provide more details (at least 20 characters)",
+      "fillAllFields": "Please fill all required fields correctly"
+    },
+    "errors": {
+      "customerCreationFailed": "Failed to create customer - please try again",
+      "phoneExists": "A customer with this phone number already exists",
+      "emailExists": "A customer with this email already exists",
+      "missingCustomerInfo": "Customer information is missing",
+      "requestCreationFailed": "Failed to create Partnership request",
+      "unexpectedError": "An unexpected error occurred",
+      "enterPhoneNumber": "Please enter phone number",
+      "customerNotFound": "Customer not found",
+      "searchFailed": "Failed to search for customer"
+    },
+    "success": {
+      "requestCreated": "Partnership request sent successfully! We'll contact you soon.",
+      "customerFound": "Customer found successfully",
+      "PartnershipAndCustomerCreated": "Partnership request created successfully! Customer ID: {customerId}",
+      "PartnershipWithExistingCustomer": "Partnership request created successfully with existing customer!"
+    },
+    "notice": {
+      "title": "What Happens Next?",
+      "description": "Our expert team will review your request and contact you within 24 hours to discuss your requirements and provide professional guidance."
+    }
+  },
+  "about": {
+    "hero": {
+      "imageAlt": "About Us Background",
+      "title": "Bariqe Al-Tamyoz — Your Trusted Partner in Chemical Solutions and industrial fragrance",
+      "description": "At Bariqe Al-Tamyoz, we believe success begins with the right materials.We provide high-quality chemicals, expert guidance, and dependable service to empower industries, laboratories, and professionals across Egypt and beyond.",
+      "features": {
+        "quality": "All products meet strict quality standards",
+        "delivery": "Guaranteed availability and on-time delivery",
+        "Partnership": "Professional Partnership and technical guidance every step of the way"
+      },
+      "ctaButton": "Contact & Partnership"
+    },
+    "partners": {
+      "title": "Our Suppliers & Partners",
+      "items": {
+        "nile": {
+          "name": "Nile Detergents Co",
+          "description": "A leading Egyptian detergent manufacturer relying on Bariqe Al-Tamyoz's raw materials for consistent product quality"
+        },
+        "medix": {
+          "name": "Medix Cosmetics",
+          "description": "An emerging cosmetics brand partnering with Bariqe Al-Tamyoz for safe, high-purity specialty chemicals"
+        },
+        "labtech": {
+          "name": "LabTech Egypt",
+          "description": "A laboratory supply and testing company using Bariqe Al-Tamyoz's lab materials for research and education"
+        },
+        "greenpack": {
+          "name": "GreenPack Industries",
+          "description": "Sustainable packaging solutions provider that sources eco-friendly additives from Bariqe Al-Tamyoz"
+        },
+        "pharmacare": {
+          "name": "PharmaCare Solutions",
+          "description": "A regional pharmaceutical supplier collaborating with Bariqe Al-Tamyoz for reliable sourcing of chemical compounds"
+        }
+      }
+    },
+    "whoWeAre": {
+      "title": "Who We Are",
+      "description": "Bariqe Al-Tamyoz is a trusted provider of chemical solutions and industrial fragrance in Egypt, serving industrial manufacturers, laboratories, and individual professionals.We specialize in supplying reliable, high-performance products backed by expert support and consistent availability.",
+      "sectors": "Our solutions cover a wide range of sectors, including cosmetics, detergents, laboratories, and research facilities.",
+      "imageAlt": "Who We Are"
+    },
+    "ourMission": {
+      "imageAlt": "Our Mission",
+      "title": "Our Mission",
+      "description": "Our mission is to make chemical sourcing simple, efficient, and reliable.By combining a diverse product range with technical expertise and attentive customer service, we empower businesses and researchers to innovate, grow, and achieve long-term success."
+    },
+    "whyChooseUs": {
+      "title": "Why Choose Bariqe Al-Tamyoz",
+      "imageAlt": "Why Choose Bariqe Al-Tamyoz",
+      "items": {
+        "quality": {
+          "title": "Quality Products",
+          "description": "Formulations sourced from trusted global manufacturers and thoroughly tested for performance."
+        },
+        "expert": {
+          "title": "Expert Guidance",
+          "description": "A skilled team of chemists offering personalized technical advice and practical support."
+        },
+        "customer": {
+          "title": "Customer-Centric Service",
+          "description": "We prioritize your needs with fast, reliable responses and continuous follow-up to ensure your satisfaction."
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "Knowledge Hub",
+    "subtitle": "Stay Ahead with Bariqe Al-Tamyoz Events",
+    "hero": {
+      "title": "Stay Ahead with Bariqe Al-Tamyoz Events",
+      "description": "Join Bariqe Al-Tamyoz events and connect with industry leaders from across the chemical value chain. Our dedicated networking app helps you plan and organize one-on-one meetings and group discussions with key decision-makers — all under one roof."
+    },
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "defaultTitle": "Event",
+    "defaultContent": "High-performance chemicals designed for specific applications, delivering precision, reliability, and innovation across industries.",
+    "upcomingEvents": "Upcoming Events",
+    "description": "Join us for exciting events, workshops, and seminars designed to enhance your knowledge and network.",
+    "errorLoading": "Error Loading Events",
+    "errorMessage": "There was a problem loading the events. Please try again later.",
+    "noEvents": "No Events Available",
+    "noEventsFound": "No Events Found",
+    "noEventsMessage": "No events are currently scheduled. Please check back later.",
+    "tryDifferentFilters": "Try adjusting your filters to find more events.",
+    "viewDetails": "View Details",
+    "register": "Register",
+    "registerNow": "Register Now",
+    "learnMore": "Learn More",
+    "eventEnded": "Event Ended",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "today": "Today",
+    "by": "By",
+    "attachments": "Attachments",
+    "moreFiles": "more files",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "tags": "Tags",
+    "filterByTags": "Filter by Tags",
+    "clearFilters": "Clear Filters",
+    "eventDetails": "Event Details",
+    "eventInfo": "Event Information",
+    "notFound": "Event Not Found",
+    "whyAttend": {
+      "mainTitle": "Why Attend Bariqe Al-Tamyoz Events?",
+      "networkingTitle": "Networking Opportunities",
+      "networkingDescription": "Join Bariqe Al-Tamyoz events and connect with industry leaders from across the chemical value chain. Our dedicated networking app helps you plan and organize one-on-one meetings and group discussions with key decision-makers — all under one roof.",
+      "networkingAlt": "People shaking hands at a conference",
+      "industryInsightsTitle": "Exclusive Industry Insights",
+      "industryInsightsDescription": "Access meaningful, data-driven insights from top industry experts. Our analyses and reports help you navigate complex and fast-changing chemical markets with confidence, using trusted data and actionable intelligence.",
+      "industryInsightsAlt": "Audience at a conference watching a speaker",
+      "skillBuildingTitle": "Game-Changing Training",
+      "skillBuildingDescription": "Expand your technical and market knowledge with our specialized training programs. Stay ahead of the competition with curated courses focused on base oils, surfactants, and other dynamic chemical industries. Each session is designed to give you practical skills and a deeper understanding of market trends.",
+      "skillBuildingAlt": "Group of people in a workshop setting"
+    }
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "subtitle": "Review your items and proceed to checkout",
+    "metaTitle": "Shopping Cart",
+    "metaDescription": "Review your cart items",
+    "itemsInCart": "{count, plural, =0 {No items} =1 {1 item} other {# items}} in cart",
+    "empty": {
+      "title": "Your cart is empty",
+      "description": "It looks like you haven't added any products to your cart yet. Start shopping now!",
+      "button": "Start Shopping"
+    },
+    "items": {
+      "product": "Product",
+      "price": "Price",
+      "quantity": "Quantity",
+      "remove": "Remove",
+      "productUnit": "product"
+    },
+    "clearCart": "Clear Cart",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "total": "Total",
+    "currency": "SAR",
+    "checkout": "Checkout",
+    "continueShopping": "Continue Shopping",
+    "orderViaWhatsApp": "Order via WhatsApp",
+    "paymentMethods": "Payment Methods",
+    "proceedToCheckout": "Proceed to Checkout",
+    "code": "Code",
+    "saveAmount": "Save {amount} SAR",
+    "emptyCart": {
+      "title": "Your cart is empty",
+      "description": "Looks like you haven't added any items to your cart yet",
+      "browseProducts": "Browse Products"
+    }
+  },
+  "cta": {
+    "title": "Get In touch",
+    "description": "To find out more about attending one of our events or partnership opportunities, contact our team.",
+    "button": "Contact Us"
+  },
+  "aboutPage": {
+    "breadcrumb": "About Us",
+    "banner": {
+      "badge": "About Us",
+      "title": "We guarantee you superior cleanliness and lasting trust.",
+      "description": "We are a Saudi brand specializing in high-quality cleaning products that combine efficiency, safety, and luxurious fragrances. Our vision is to make every Saudi home cleaner and more refreshed."
+    },
+    "whyUs": {
+      "title": "Why Bariqe Al-Tamyoz?",
+      "items": {
+        "0": "We ensure consistent performance and impressive results every time.",
+        "1": "Premium quality you can count on in every use.",
+        "2": "We care for your environment with eco‑friendly products.",
+        "3": "We continuously innovate to meet your changing needs.",
+        "4": "Effective and safe formulas for the whole family."
+      }
+    },
+    "whatSetsUsApart": "What makes us different?"
+  },
+  "contact": {
+    "title": "Contact & Partnership",
+    "subtitle": "We're here to help you",
+    "name": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "message": "Message",
+    "send": "Send Message",
+    "sending": "Sending",
+    "success": "Your message has been sent successfully!",
+    "error": "An error occurred while sending your message. Please try again.",
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "meta": {
+      "title": "Contact Us - Bariqe Al-Tamyoz",
+      "description": "Get in touch with Bariqe Al-Tamyoz. We provide technical training, equipment solutions, and chemical services across Egypt."
+    },
+    "form": {
+      "title": "Get In Touch",
+      "subtitle": "connect with our 24/7 team and get an answer via email or phone calling.",
+      "contactInfo": "Contact Information",
+      "locationDetails": "Location Details (Optional)",
+      "servicesInterest": "Services of Interest (Optional)",
+      "yourMessage": "Your Message",
+      "fields": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "address": "Address",
+        "message": "Message",
+        "required": "*"
+      },
+      "placeholders": {
+        "fullName": "Enter your full name",
+        "email": "your.email@example.com",
+        "phone": "+20 123 456 7890",
+        "address": "Enter your full address",
+        "message": "Tell us about your project or inquiry",
+        "selectCountry": "Select your country",
+        "selectState": "Select your state",
+        "selectCity": "Select your city",
+        "selectServices": "Select services you're interested in"
+      },
+      "helpers": {
+        "addressHelper": "Please provide your complete address including street, city, and postal code",
+        "characterCount": "{count} characters / Minimum 10 characters",
+        "servicesSelected": "{count} service(s) selected"
+      },
+      "services": {
+        "technical": "Technical Training & Partnership",
+        "equipment": "Equipment Sales & Solutions",
+        "quality": "Quality Assurance & Validation",
+        "chemical": "Custom Chemical Solutions",
+        "laboratory": "Laboratory Setup & Support",
+        "regulatory": "Regulatory Compliance & Documentation",
+        "maintenance": "Maintenance & After-Sales Support",
+        "research": "Research & Development Solutions"
+      },
+      "location": {
+        "country": "Country",
+        "state": "State/Province",
+        "city": "City",
+        "selectedLocation": "Selected Location:",
+        "locationCode": "Location Code:",
+        "placeholders": {
+          "country": "Select your country",
+          "state": "Select your state",
+          "city": "Select your city"
+        }
+      },
+      "validation": {
+        "nameRequired": "Full name is required",
+        "nameMinLength": "Name must be at least 2 characters",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email",
+        "phoneRequired": "Phone number is required",
+        "phoneMinLength": "Phone number must be at least 10 digits",
+        "addressRequired": "Address is required",
+        "addressMinLength": "Address must be at least 10 characters",
+        "messageRequired": "Message is required",
+        "messageMinLength": "Message should be at least 10 characters"
+      },
+      "buttons": {
+        "submit": "Send Message",
+        "submitting": "Sending Message"
+      },
+      "messages": {
+        "success": "Thank you for your message! We will get back to you soon.",
+        "error": "Please correct the errors in the form before submitting.",
+        "fillRequired": "Please fill in all required fields correctly",
+        "phoneExists": "This phone number is already registered",
+        "emailExists": "This email is already registered",
+        "customerError": "Failed to create customer",
+        "contactError": "Failed to create contact",
+        "unexpectedError": "An unexpected error occurred"
+      }
+    },
+    "map": {
+      "loading": "Loading map",
+      "companyName": "Bariqe El-Tamioz",
+      "address": "Alexandria, Egypt",
+      "openInMaps": "Open in Google Maps"
+    },
+    "helpers": {
+      "selectedServices": " {count} service(s) selected",
+      "servicesSelected": " {count} service(s) selected"
+    }
+  },
+  "pagination": {
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "perPage": "Per page",
+    "firstPage": "First page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "lastPage": "Last page"
+  },
+  "footer": {
+    "company": {
+      "title": "Company",
+      "aboutUs": "About Us",
+      "leadershipTeam": "Leadership Team",
+      "sustainability": "Sustainability",
+      "careers": "Careers",
+      "newsInsights": "News & Insights"
+    },
+    "solutions": {
+      "title": "Solutions",
+      "industrialChemicals": "Industrial Chemicals",
+      "consumerChemicals": "Consumer Chemicals",
+      "customFormulations": "Custom Formulations",
+      "rdServices": "R&D Services",
+      "safetyCompliance": "Safety & Compliance"
+    },
+    "support": {
+      "title": "Support",
+      "contactUs": "Contact Us",
+      "customerService": "Customer Service",
+      "technicalSupport": "Technical Support",
+      "returnsShipping": "Returns & Shipping"
+    },
+    "legal": {
+      "title": "Legal",
+      "privacyPolicy": "Privacy Policy",
+      "termsConditions": "Terms & Conditions",
+      "complianceCertifications": "Compliance & Certifications",
+      "cookiePolicy": "Cookie Policy"
+    },
+    "bottom": {
+      "privacyPolicies": "Privacy policies",
+      "termsConditions": "Terms and conditions",
+      "cookiePolicy": "Cookie policy",
+      "copyright": "All Rights Reserved"
+    }
+  },
+  "checkout": {
+    "title": "Complete Your Order",
+    "description": "Fill in the information below to complete your purchase",
+    "orderSummary": "Order Summary",
+    "total": "Total",
+    "currency": "EGP",
+    "deliveryLocationOptional": "Delivery Location (Optional)",
+    "additionalInformation": "Additional Information",
+    "steps": {
+      "address": "Address",
+      "payment": "Payment Method",
+      "review": "Review Order"
+    },
+    "securityMessage": "Your card data is protected and processed securely via the payment gateway.",
+    "tabs": {
+      "existingCustomer": "Existing Customer",
+      "newCustomer": "New Customer",
+      "existing": "Existing",
+      "new": "New"
+    },
+    "existingCustomer": {
+      "description": "Search for an existing customer by phone number",
+      "phoneNumber": "Phone Number",
+      "enterPhone": "Enter phone number",
+      "customerFound": "Customer Found"
+    },
+    "newCustomer": {
+      "description": "Enter new customer information"
+    },
+    "fields": {
+      "contactInfo": "Contact Information",
+      "fullName": "Full Name",
+      "name": "Name",
+      "phoneNumber": "Phone Number",
+      "phone": "Phone",
+      "emailAddress": "Email Address",
+      "email": "Email",
+      "deliveryAddress": "Delivery Address",
+      "address": "Address",
+      "orderNotes": "Order Notes"
+    },
+    "deliveryAddress": "Delivery Address",
+    "optional": "Optional",
+    "buttons": {
+      "saveAddress": "Save Address",
+      "enterPayment": "Enter Payment Details",
+      "cancel": "Cancel",
+      "reviewOrder": "Review Order",
+      "confirmOrder": "Confirm Order",
+      "processing": "Processing",
+      "search": "Search"
+    },
+    "payment": {
+      "creditCard": "Pay by credit or Mada card",
+      "applePay": "Pay with Apple Pay",
+      "cashOnDelivery": "Cash on Delivery",
+      "unavailable": "Unavailable"
+    },
+    "placeholders": {
+      "fullName": "Enter full name",
+      "phoneNumber": "Enter phone number",
+      "emailAddress": "Enter email address",
+      "deliveryAddress": "Enter delivery address",
+      "orderNotes": "Any special notes or instructions",
+      "city": "City",
+      "neighborhood": "Neighborhood",
+      "street": "Street",
+      "blockNumber": "Building Number",
+      "floor": "Floor Number",
+      "nationalAddress": "National Address"
+    },
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "taxNotice": "VAT included (15%)",
+    "deliveryNotice": "Your order will be delivered and payment will be collected upon receipt",
+    "validation": {
+      "nameRequired": "Name is required",
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Phone number must be at least 10 digits",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "cityRequired": "City is required",
+      "neighborhoodRequired": "Neighborhood is required",
+      "streetRequired": "Street is required",
+      "floorRequired": "Floor is required",
+      "fillAllFields": "Please fill in all required fields",
+      "emptyCart": "Your cart is empty"
+    },
+    "errors": {
+      "enterPhoneNumber": "Please enter a phone number",
+      "customerNotFound": "Customer not found",
+      "searchFailed": "Failed to search for customer",
+      "selectExistingCustomer": "Please search and select an existing customer",
+      "customerCreationFailed": "Failed to create customer",
+      "orderCreationFailed": "Failed to create order",
+      "checkoutFailed": "Checkout failed. Please try again",
+      "noOrderFound": "No order information found",
+      "paymentFailed": "Payment failed or was cancelled",
+      "verificationFailed": "Failed to verify payment status"
+    },
+    "success": {
+      "customerFound": "Customer found successfully",
+      "customerCreated": "Customer created successfully",
+      "orderCreated": "Order created successfully",
+      "redirectingToPayment": "Redirecting to payment..."
+    },
+    "paymentStatus": {
+      "verifying": "Verifying Payment",
+      "pleaseWait": "Please wait while we verify your payment...",
+      "success": "Payment Successful!",
+      "successMessage": "Thank you for your order! Your payment has been processed successfully.",
+      "pending": "Payment Pending",
+      "pendingMessage": "Your payment is being processed. We'll notify you once it's confirmed.",
+      "failed": "Payment Failed",
+      "failedMessage": "Unfortunately, your payment could not be processed. Please try again.",
+      "orderNumber": "Order Number",
+      "viewOrders": "View My Orders",
+      "continueShopping": "Continue Shopping",
+      "tryAgain": "Try Again"
+    },
+    "confirmation": {
+      "title": "Confirm Your Order",
+      "description": "Please review your order details before confirming",
+      "customerInfo": "Customer Information",
+      "orderSummary": "Order Summary",
+      "totalItems": "Total Items",
+      "totalAmount": "Total Amount",
+      "warning": "Please make sure all information is correct before confirming"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome Back",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot Password?",
+      "submit": "Login",
+      "or": "Or login with",
+      "googleLogin": "Login with Google",
+      "appleLogin": "Login with Apple",
+      "noAccount": "New user?",
+      "registerNow": "Create Account"
+    },
+    "register": {
+      "title": "Create New Account",
+      "subtitle": "Create a new account and get 10% off your first order",
+      "discountOffer": "Create a new account and get 10% off your first order",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Create Account",
+      "or": "Or sign up with",
+      "googleRegister": "Sign up with Google",
+      "appleRegister": "Sign up with Apple",
+      "haveAccount": "Have an account?",
+      "loginNow": "Login"
+    },
+    "forgotPassword": {
+      "title": "Forgot Your Password",
+      "subtitle": "",
+      "instruction": "Please enter your email address and we will send you a code to reset your password",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "submit": "Send Code",
+      "usePhoneInstead": "Use phone number instead"
+    },
+    "verifyOtp": {
+      "title": "Verification",
+      "instruction": "Enter the OTP sent to your email: {email}",
+      "resendCode": "Resend it.",
+      "didNotReceive": "Didn't receive the code?",
+      "submit": "Verify"
+    },
+    "resetPassword": {
+      "title": "Create New Password",
+      "subtitle": "Your new password must be different from previously used passwords.",
+      "newPasswordLabel": "Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "submit": "Save Password"
+    },
+    "common": {
+      "loading": "Loading..."
+    }
+  },
+  "profile": {
+    "btn": "Profile",
+    "title": "My Profile",
+    "tabs": {
+      "orders": "My Orders",
+      "favorites": "Favorites",
+      "personalInfo": "Personal Information"
+    },
+    "personalInfo": {
+      "title": "Personal Information",
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "password": "New Password",
+      "changePassword": "Change Password",
+      "update": "Update Profile",
+      "saved": "Profile updated successfully"
+    },
+    "addresses": {
+      "title": "Saved Addresses",
+      "add": "Add Address",
+      "edit": "Edit",
+      "delete": "Delete",
+      "default": "Default Address",
+      "setDefault": "Set as Default",
+      "noAddresses": "No addresses saved yet.",
+      "form": {
+        "label": "Label (e.g., Home, Work)",
+        "fullName": "Full Name",
+        "city": "City",
+        "region": "Region",
+        "postalCode": "Postal Code",
+        "neighborhood": "Neighborhood",
+        "street": "Street",
+        "building": "Building/Villa/Apartment",
+        "phone": "Phone Number",
+        "save": "Save Address",
+        "cancel": "Cancel"
+      }
+    },
+    "orders": {
+      "title": "My Orders",
+      "orderNumber": "Order #",
+      "status": "Status",
+      "date": "Date",
+      "total": "Total",
+      "items": "Items",
+      "itemsCount": "{count} items",
+      "item": "item",
+      "shippingTo": "Shipping to",
+      "paymentMethod": "Payment Method",
+      "viewDetails": "View Details",
+      "cancel": "Cancel Order",
+      "cancelConfirmTitle": "Cancel Order?",
+      "cancelConfirmDescription": "Are you sure you want to cancel this order? This action cannot be undone.",
+      "cancelSuccess": "Order cancelled successfully",
+      "noOrders": "You have no orders yet.",
+      "statuses": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled",
+        "paid": "Paid",
+        "failed": "Failed"
+      }
+    },
+    "favorites": {
+      "title": "My Favorites",
+      "noFavorites": "No favorite items yet.",
+      "addToCart": "Add to Cart"
+    },
+    "logout": "Logout"
+  }
+}

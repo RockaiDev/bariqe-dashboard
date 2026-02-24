@@ -1,0 +1,1170 @@
+{
+  "login": {
+    "btn": "تسجيل الدخول"
+  },
+  "topHeader": {
+    "btn": "تسوق الان",
+    "message": "شحن مجاني على جميع المنتجات"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "allProducts": "جميع المنتجات",
+    "offersPackages": "العروض والباقات",
+    "about": "من نحن",
+    "contact": "تواصل معنا",
+    "cart": "سلة التسوق",
+    "btn": "اكتشف الباقات"
+  },
+  "siteFooter": {
+    "description": "متخصصون في تصنيع وتوريد منتجات التنظيف عالية الجودة. منتجات سعودية 100% بضمان ذهبي.",
+    "importantLinks": "روابط مهمة",
+    "contactUs": "تواصل معنا",
+    "copyright": "© {year} بريق التميز. جميع الحقوق محفوظة. | مصنع في المملكة العربية السعودية 🇸🇦 مرخص من وزارة التجارة | رقم السجل التجاري: 4610109764",
+    "contactInfo": {
+      "phone": "+9660506713071",
+      "whatsapp": "واتساب: +966539474864",
+      "address": "الرياض، المملكة العربية السعودية",
+      "email": "info@bariqeeltamioz.com"
+    }
+  },
+  "hero": {
+    "btn": "تسوق الان",
+    "title": "متجرك الموثوق لمنتجات التنظيف عالية الجودة",
+    "description": "اكتشف منتجات تنظيف سعودية الصنع بجودة عالية وباقات مميزة وشحن مجاني للباقات وتوصيل سريع. تسوق الآن ووفر.",
+    "subtitle": "ضمان ذهبى ونظافة فورية",
+    "specialOffer": "عروض لا تُفوّت على أقوى منتجات التنظيف مع ",
+    "logo": "بريق التميز",
+    "tagline": "اختبر القوة والانتعاش مع منتجات تنظيف سعودية مضمونة الجودة"
+  },
+  "specialSection": {
+    "card1": {
+      "title": "آراء العملاء",
+      "description": "جودة مضمونة 100%"
+    },
+    "card2": {
+      "title": "باقات وعروض مميزة",
+      "description": "وفر اكثر مع باقاتنا المتنوعة"
+    },
+    "card3": {
+      "title": "شحن لجميع المناطق",
+      "description": "علي جميع الطلبات داخل المملكة"
+    },
+    "card4": {
+      "title": "صنع في السعودية",
+      "description": "منتجات ذات ضمان وجودة"
+    }
+  },
+  "bestsellerSection": {
+    "title": "الأكثر مبيعاً",
+    "description": "الباقات الأكثر طلباً",
+    "btn": "عرض الكل"
+  },
+  "newArrivalsSection": {
+    "title": "وصل حديثا",
+    "description": "احدث منتجاتنا المبتكرة",
+    "btn": "عرض الكل"
+  },
+  "customerReviews": {
+    "title": "اراء عملائنا",
+    "description": "عملاؤنا من جميع انحاء المملكة"
+  },
+  "allProducts": {
+    "title": "باقات التنظيف الشاملة",
+    "description": "منتجات تنظيف سعودية بمعايير عالمية، تمنحك اللمعان والأمان في كل استخدام",
+    "breadcrumb": "جميع المنتجات",
+    "searchPlaceholder": "بحث",
+    "categories": {
+      "all": "الكل",
+      "electronics": "إلكترونيات",
+      "clothing": "ملابس",
+      "beauty": "جمال"
+    }
+  },
+  "homeBanner": {
+    "subtitle": "جودة فاخرة",
+    "btn": "اكتشف معنا",
+    "title": "باقات التنظيف الشاملة",
+    "description": "منتجات تنظيف سعودية بمعايير عالمية، تمنحك اللمعان والأمان في كل استخدام"
+  },
+  "common": {
+    "loading": "جار التحميل...",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "close": "إغلاق",
+    "next": "التالي",
+    "previous": "السابق",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "clear": "مسح",
+    "select": "اختيار",
+    "all": "الكل",
+    "none": "لا شيء",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "error": "خطأ",
+    "success": "نجح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "tryAgain": "حاول مرة أخرى",
+    "back": "رجوع",
+    "goBack": "العودة",
+    "download": "تحميل",
+    "free": "مجاني",
+    "processing": "جاري المعالجة..."
+  },
+  "search": {
+    "placeholder": "ابحث عن المنتجات...",
+    "results": "نتائج البحث",
+    "noResults": "لم يتم العثور على نتائج",
+    "suggestions": "اقتراحات",
+    "recent": "عمليات البحث الأخيرة",
+    "popular": "عمليات البحث الشائعة"
+  },
+  "productDetails": {
+    "productDetailsTitle": "تفاصيل المنتج",
+    "exportProduct": "تصدير المنتج",
+    "exporting": "جارٍ التصدير...",
+    "exportingProduct": "جارٍ تصدير تفاصيل المنتج...",
+    "exportSuccess": "تم تصدير المنتج بنجاح",
+    "exportFailed": "فشل تصدير المنتج",
+    "defaultCategory": "المنتجات",
+    "inCart": "{count} في السلة",
+    "productCode": "كود المنتج",
+    "available": "{count} {unit} متوفر",
+    "pricePerUnit": "السعر لكل {unit}",
+    "totalFor": "الإجمالي لـ {quantity} {unit}",
+    "save": "وفر {percent}%",
+    "bulkDiscounts": "خصومات الجملة",
+    "buyMore": "اشتر {quantity}+ {unit}: وفر {discount}%",
+    "applied": "مطبق",
+    "selectQuantity": "اختر الكمية ({unit})",
+    "totalPrice": "السعر الإجمالي",
+    "addMoreOrViewCart": "يمكنك إضافة المزيد أو عرض السلة",
+    "viewCart": "عرض السلة",
+    "addedToCart": "تمت الإضافة للسلة!",
+    "addToCart": "أضف للسلة",
+    "features": {
+      "fastDelivery": "توصيل سريع",
+      "qualityGuaranteed": "جودة مضمونة"
+    },
+    "sections": {
+      "productDetails": "تفاصيل المنتج",
+      "aboutProduct": "عن المنتج",
+      "synonyms": "المرادفات",
+      "keyFeatures": "المميزات الرئيسية"
+    },
+    "fields": {
+      "form": "الشكل",
+      "unit": "الوحدة",
+      "unspscCode": "كود UNSPSC",
+      "ecNumber": "رقم EC",
+      "stockAvailable": "المخزون المتاح",
+      "category": "الفئة"
+    }
+  },
+  "productCard": {
+    "currency": "جنيه",
+    "pricePerKg": "{price} جنيه / كجم",
+    "total": "الإجمالي",
+    "viewDetails": "عرض التفاصيل",
+    "addToCart": "أضف للسلة",
+    "added": "تمت الإضافة",
+    "productImageAlt": "صورة المنتج",
+    "availableUnits": "{count} وحدة متاحة",
+    "addedToCart": "تمت إضافة {quantity} {quantity, plural, =1 {وحدة} other {وحدات}} من {productName} للسلة",
+    "alreadyInCart": "{quantity} {quantity, plural, =1 {وحدة} other {وحدات}} في السلة",
+    "viewCart": "عرض السلة",
+    "errors": {
+      "onlyUnitsAvailable": "متوفر {count} {count, plural, =1 {وحدة} other {وحدات}} فقط",
+      "quantityMinimum": "الحد الأدنى للكمية هو 1",
+      "addToCartFailed": "فشل في إضافة المنتج للسلة"
+    }
+  },
+  "product": {
+    "productDetails": "تفاصيل المنتج",
+    "bestSeller": "الأكثر مبيعاً",
+    "backToProducts": "العودة للمنتجات",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "off": "خصم",
+    "reviews": "تقييم",
+    "description": "الوصف",
+    "specifications": "المواصفات",
+    "features": "المميزات",
+    "synonyms": "المرادفات",
+    "form": "الشكل",
+    "purity": "النقاء",
+    "grade": "الدرجة",
+    "stock": "المخزون",
+    "quantity": "الكمية",
+    "available": "متوفر",
+    "subtotal": "المجموع الفرعي",
+    "discount": "الخصم",
+    "taxNotice": "شامل ضريبة القيمة المضافة (15%)",
+    "total": "الإجمالي",
+    "downloadSpec": "تحميل المواصفات",
+    "downloadPriceList": "تحميل قائمة الأسعار",
+    "aboutProduct": "حول المنتج",
+    "requestQuote": "طلب عرض سعر",
+    "noDescription": "لا يوجد وصف متاح",
+    "per": "لكل",
+    "viewDetails": "عرض التفاصيل",
+    "quickView": "عرض سريع",
+    "details": "تفاصيل المنتج",
+    "applications": "التطبيقات",
+    "safety": "معلومات الأمان",
+    "datasheet": "ورقة البيانات",
+    "msds": "ورقة بيانات الأمان",
+    "price": "السعر",
+    "availability": "التوفر",
+    "unit": "الوحدة",
+    "addToCart": "أضف إلى السلة",
+    "relatedProducts": "منتجات ذات صلة",
+    "rating": "التقييم",
+    "buyNow": "اشتري الآن",
+    "addQuantity": "اضف الكمية:"
+  },
+  "products": {
+    "errorTitle": "خطأ في تحميل المنتجات",
+    "errorMessage": "حدث خطأ أثناء تحميل المنتجات. يرجى المحاولة مرة أخرى.",
+    "noProductsTitle": "لا توجد منتجات",
+    "allForms": "جميع الأشكال",
+    "solid": "صلب",
+    "liquid": "سائل",
+    "gas": "غاز",
+    "powder": "مسحوق",
+    "granular": "حبيبي",
+    "allTime": "كل الأوقات",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر",
+    "last30Days": "آخر 30 يوم",
+    "last3Months": "آخر 3 شهور",
+    "newestFirst": "الأحدث أولاً",
+    "oldestFirst": "الأقدم أولاً",
+    "priceLowToHigh": "السعر: من الأقل للأعلى",
+    "priceHighToLow": "السعر: من الأعلى للأقل",
+    "nameAToZ": "الاسم: من أ إلى ي",
+    "nameZToA": "الاسم: من ي إلى أ",
+    "codeAToZ": "الكود: من أ إلى ي",
+    "codeZToA": "الكود: من ي إلى أ",
+    "clearAll": "مسح الكل",
+    "priceRange": "نطاق السعر",
+    "minPrice": "أقل سعر",
+    "maxPrice": "أعلى سعر",
+    "clearPriceRange": "مسح نطاق السعر",
+    "searchProductsMobile": "ابحث في المنتجات...",
+    "form": "الشكل",
+    "dateRange": "نطاق التاريخ",
+    "sortBy": "ترتيب حسب",
+    "export": "تصدير",
+    "exportFiltered": "تصدير المفلتر",
+    "exporting": "جاري التصدير...",
+    "sort": "ترتيب",
+    "clearAllFilters": "مسح جميع الفلاتر",
+    "selectCategory": "اختر الفئة",
+    "allCategories": "كل الفئات",
+    "selectSubCategory": "اختر الفئة الفرعية",
+    "allSubCategories": "كل الفئات الفرعية",
+    "activeFilters": "{count} فلاتر نشطة"
+  },
+  "materialRequest": {
+    "requestNewMaterial": "طلب مادة جديدة",
+    "title": "طلب مادة",
+    "description": "لا تجد ما تبحث عنه؟ أخبرنا وسنبذل قصارى جهدنا لتوفيرها لك.",
+    "customerInformation": "معلومات العميل",
+    "materialInformation": "معلومات المادة",
+    "customerLocationOptional": "موقع العميل (اختياري)",
+    "deliveryLocationOptional": "موقع التسليم (اختياري)",
+    "optional": "اختياري",
+    "tabs": {
+      "existingCustomer": "عميل موجود",
+      "newCustomer": "عميل جديد"
+    },
+    "existingCustomer": {
+      "description": "ابحث عن عميل موجود برقم الهاتف لملء البيانات تلقائياً",
+      "phoneNumber": "رقم الهاتف",
+      "enterPhone": "أدخل رقم الهاتف",
+      "customerFound": "تم العثور على العميل"
+    },
+    "newCustomer": {
+      "description": "قم بإدخال بيانات عميل جديد"
+    },
+    "fields": {
+      "customerName": "اسم العميل",
+      "phoneNumber": "رقم الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "customerAddress": "عنوان العميل",
+      "materialName": "اسم المادة",
+      "quantity": "الكمية",
+      "intendedUse": "الاستخدام المقصود",
+      "materialLocation": "موقع المادة"
+    },
+    "placeholders": {
+      "customerName": "أدخل اسم العميل",
+      "phoneNumber": "أدخل رقم الهاتف",
+      "emailAddress": "أدخل البريد الإلكتروني (اختياري)",
+      "materialName": "أدخل اسم المادة",
+      "quantity": "أدخل الكمية المطلوبة",
+      "intendedUse": "اوصف كيف تنوي استخدام هذه المادة",
+      "materialLocation": "أدخل موقع التسليم (اختياري)",
+      "selectCustomerCountry": "اختر بلد العميل",
+      "selectCustomerState": "اختر ولاية العميل",
+      "selectCustomerCity": "اختر مدينة العميل",
+      "selectDeliveryCountry": "اختر بلد التسليم",
+      "selectDeliveryState": "اختر ولاية التسليم",
+      "selectDeliveryCity": "اختر مدينة التسليم"
+    },
+    "helpers": {
+      "emailHelper": "سنرسل التحديثات لهذا البريد الإلكتروني",
+      "addressHelper": "يرجى تضمين الشارع ورقم المبنى والطابق وأي معالم",
+      "materialLocationHelper": "أين يجب توصيل المادة؟",
+      "intendedUseHelper": "اوصف كيف تنوي استخدام هذه المادة"
+    },
+    "location": {
+      "country": "البلد",
+      "state": "الولاية/المحافظة",
+      "city": "المدينة",
+      "customerLocation": "موقع العميل:",
+      "locationCode": "رمز الموقع:",
+      "deliveryCountry": "بلد التسليم",
+      "deliveryState": "ولاية التسليم",
+      "deliveryCity": "مدينة التسليم",
+      "deliveryLocation": "موقع التسليم:",
+      "deliveryCode": "رمز التسليم:"
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "creating": "جاري الإنشاء...",
+      "createRequest": "إنشاء طلب",
+      "search": "بحث"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMinLength": "يجب أن يكون الاسم على الأقل حرفين",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "phoneMinLength": "يجب أن يكون رقم الهاتف على الأقل 10 أرقام",
+      "emailInvalid": "تنسيق البريد الإلكتروني غير صحيح",
+      "addressRequired": "العنوان مطلوب",
+      "addressMinLength": "يرجى تقديم عنوان أكثر تفصيلاً",
+      "materialNameRequired": "اسم المادة مطلوب",
+      "quantityRequired": "يجب أن تكون الكمية أكبر من 0",
+      "intendedUseRequired": "الاستخدام المقصود مطلوب",
+      "fillAllFields": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح"
+    },
+    "errors": {
+      "customerCreationFailed": "فشل في إنشاء العميل - لم يتم إرجاع رقم تعريف",
+      "phoneExists": "يوجد عميل بهذا رقم الهاتف بالفعل",
+      "emailExists": "يوجد عميل بهذا البريد الإلكتروني بالفعل",
+      "missingCustomerInfo": "معلومات العميل مفقودة",
+      "requestCreationFailed": "فشل في إنشاء طلب المادة",
+      "unexpectedError": "حدث خطأ غير متوقع",
+      "enterPhoneNumber": "الرجاء إدخال رقم الهاتف",
+      "customerNotFound": "لم يتم العثور على العميل",
+      "searchFailed": "فشل البحث عن العميل"
+    },
+    "success": {
+      "requestCreated": "تم إنشاء طلب المادة بنجاح!",
+      "customerFound": "تم العثور على العميل بنجاح",
+      "requestAndCustomerCreated": "تم إنشاء الطلب والعميل بنجاح!",
+      "requestWithExistingCustomer": "تم إنشاء الطلب مع العميل الموجود بنجاح!"
+    }
+  },
+  "productsGrid": {
+    "loadingProducts": "جاري تحميل المنتجات...",
+    "errorLoading": "خطأ في تحميل المنتجات",
+    "tryAgain": "يرجى المحاولة مرة أخرى لاحقاً",
+    "noProducts": "لم يتم العثور على منتجات",
+    "adjustFilters": "جرب تعديل الفلاتر"
+  },
+  "sidebar": {
+    "categories": "الفئات",
+    "filterByCategory": "فلترة حسب الفئة",
+    "allCategories": "جميع الفئات",
+    "failedToLoad": "فشل في تحميل الفئات",
+    "tryAgainLater": "يرجى المحاولة مرة أخرى لاحقاً",
+    "noCategories": "لا توجد فئات متاحة"
+  },
+  "purchaseMaterial": {
+    "purchaseButton": "شراء المادة",
+    "title": "إتمام عملية الشراء",
+    "description": "املأ بياناتك لشراء {productName}",
+    "orderSummary": "ملخص الطلب",
+    "product": "المنتج",
+    "quantity": "الكمية",
+    "kg": "كيلو",
+    "unitPrice": "سعر الوحدة",
+    "subtotal": "المجموع الفرعي",
+    "discount": "الخصم ({percentage}%)",
+    "total": "الإجمالي",
+    "currency": "جنيه",
+    "contactInformation": "معلومات الاتصال",
+    "deliveryLocationOptional": "موقع التسليم (اختياري)",
+    "additionalInformation": "معلومات إضافية",
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "phoneNumber": "رقم الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "deliveryAddress": "عنوان التسليم",
+      "orderNotes": "ملاحظات الطلب"
+    },
+    "placeholders": {
+      "fullName": "أدخل اسمك الكامل",
+      "phoneNumber": "أدخل رقم هاتفك",
+      "emailAddress": "أدخل بريدك الإلكتروني (اختياري)",
+      "deliveryAddress": "أدخل عنوان التسليم الكامل",
+      "orderNotes": "أي تعليمات خاصة أو تفضيلات للتسليم أو ملاحظات إضافية...",
+      "selectDeliveryCountry": "اختر بلد التسليم",
+      "selectDeliveryState": "اختر ولاية التسليم",
+      "selectDeliveryCity": "اختر مدينة التسليم"
+    },
+    "helpers": {
+      "emailHelper": "سنرسل تحديثات الطلب لهذا البريد الإلكتروني",
+      "addressHelper": "يرجى تضمين الشارع ورقم المبنى والطابق وأي معالم",
+      "notesHelper": "اختياري: أخبرنا إذا كان لديك أي متطلبات خاصة"
+    },
+    "location": {
+      "deliveryCountry": "بلد التسليم",
+      "deliveryState": "ولاية التسليم",
+      "deliveryCity": "مدينة التسليم",
+      "deliveryLocation": "موقع التسليم:",
+      "deliveryCode": "رمز التسليم:"
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "processing": "جاري المعالجة...",
+      "completePurchase": "إتمام الشراء"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMinLength": "يجب أن يكون الاسم على الأقل حرفين",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "phoneMinLength": "يجب أن يكون رقم الهاتف على الأقل 10 أرقام",
+      "emailInvalid": "تنسيق البريد الإلكتروني غير صحيح",
+      "addressRequired": "العنوان مطلوب",
+      "addressMinLength": "يرجى تقديم عنوان أكثر تفصيلاً",
+      "fillAllFields": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح"
+    },
+    "errors": {
+      "customerCreationFailed": "فشل في إنشاء العميل - لم يتم إرجاع رقم تعريف",
+      "phoneExists": "يوجد عميل بهذا رقم الهاتف بالفعل",
+      "emailExists": "يوجد عميل بهذا البريد الإلكتروني بالفعل",
+      "missingInfo": "معلومات العميل أو المنتج مفقودة",
+      "orderCreationFailed": "فشل في إنشاء الطلب",
+      "unexpectedError": "حدث خطأ غير متوقع"
+    },
+    "success": {
+      "customerCreated": "تم إنشاء العميل بنجاح!",
+      "orderCreated": "تم إنشاء الطلب بنجاح!",
+      "trackingNumber": "رقم التتبع: {number}"
+    }
+  },
+  "searchBar": {
+    "placeholder": "ابحث في المنتجات..."
+  },
+  "freeConsultation": {
+    "buttonText": "استشارة مجانية",
+    "title": "طلب استشارة مجانية",
+    "description": "احصل على مشورة خبراء لاحتياجاتك الصناعية. سيتواصل معك فريقنا خلال 24 ساعة.",
+    "customerInformation": "معلومات الاتصال",
+    "consultationInformation": "تفاصيل الاستشارة",
+    "customerLocationOptional": "موقعك (اختياري)",
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "phoneNumber": "رقم الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "customerAddress": "عنوانك",
+      "areaOfInterest": "مجال الاهتمام",
+      "consultationMessage": "أخبرنا عن متطلباتك"
+    },
+    "optional": "اختياري",
+    "tabs": {
+      "existingCustomer": "عميل موجود",
+      "newCustomer": "عميل جديد"
+    },
+    "existingCustomer": {
+      "description": "ابحث عن عميل موجود برقم الهاتف لملء البيانات تلقائياً",
+      "phoneNumber": "رقم الهاتف",
+      "enterPhone": "أدخل رقم الهاتف",
+      "customerFound": "تم العثور على العميل"
+    },
+    "newCustomer": {
+      "description": "قم بإدخال بيانات عميل جديد"
+    },
+    "placeholders": {
+      "fullName": "أدخل اسمك الكامل",
+      "phoneNumber": "أدخل رقم هاتفك",
+      "emailAddress": "أدخل بريدك الإلكتروني",
+      "customerAddress": "أدخل عنوانك الكامل",
+      "areaOfInterest": "مثال: التصنيع الكيميائي، المعدات الصناعية، إلخ",
+      "consultationMessage": "يرجى وصف مشروعك أو متطلباتك أو أسئلتك بالتفصيل...",
+      "selectCustomerCountry": "اختر بلدك",
+      "selectCustomerState": "اختر ولايتك",
+      "selectCustomerCity": "اختر مدينتك"
+    },
+    "helpers": {
+      "emailHelper": "سنرسل تحديثات الاستشارة لهذا البريد الإلكتروني",
+      "addressHelper": "يرجى تضمين الشارع ورقم المبنى والطابق وأي معالم",
+      "areaHelper": "ما هي الصناعة أو المجال الذي تحتاج استشارة فيه؟",
+      "messageHelper": "كلما قدمت تفاصيل أكثر، كلما تمكنا من مساعدتك بشكل أفضل"
+    },
+    "location": {
+      "country": "البلد",
+      "state": "الولاية/المحافظة",
+      "city": "المدينة",
+      "customerLocation": "موقعك:",
+      "locationCode": "رمز الموقع:"
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "sending": "جاري إرسال الطلب...",
+      "sendRequest": "إرسال طلب الاستشارة",
+      "search": "بحث"
+    },
+    "validation": {
+      "nameRequired": "الاسم الكامل مطلوب",
+      "nameMinLength": "يجب أن يكون الاسم على الأقل حرفين",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "phoneMinLength": "يجب أن يكون رقم الهاتف على الأقل 10 أرقام",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "تنسيق البريد الإلكتروني غير صحيح",
+      "addressRequired": "العنوان مطلوب",
+      "addressMinLength": "يرجى تقديم عنوان أكثر تفصيلاً",
+      "areaRequired": "مجال الاهتمام مطلوب",
+      "messageRequired": "رسالة الاستشارة مطلوبة",
+      "messageMinLength": "يرجى تقديم المزيد من التفاصيل (على الأقل 20 حرف)",
+      "fillAllFields": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح"
+    },
+    "errors": {
+      "customerCreationFailed": "فشل في إنشاء العميل - يرجى المحاولة مرة أخرى",
+      "phoneExists": "يوجد عميل بهذا رقم الهاتف بالفعل",
+      "emailExists": "يوجد عميل بهذا البريد الإلكتروني بالفعل",
+      "missingCustomerInfo": "معلومات العميل مفقودة",
+      "requestCreationFailed": "فشل في إنشاء طلب الاستشارة",
+      "unexpectedError": "حدث خطأ غير متوقع",
+      "enterPhoneNumber": "الرجاء إدخال رقم الهاتف",
+      "customerNotFound": "لم يتم العثور على العميل",
+      "searchFailed": "فشل البحث عن العميل"
+    },
+    "success": {
+      "requestCreated": "تم إرسال طلب الاستشارة بنجاح! سنتواصل معك قريباً.",
+      "customerFound": "تم العثور على العميل بنجاح",
+      "consultationAndCustomerCreated": "تم إنشاء الطلب بنجاح! رقم العميل: {customerId}",
+      "consultationWithExistingCustomer": "تم إنشاء طلب الاستشارة بنجاح مع العميل الموجود!"
+    },
+    "notice": {
+      "title": "ما الذي سيحدث بعد ذلك؟",
+      "description": "سيقوم فريق الخبراء لدينا بمراجعة طلبك والتواصل معك خلال 24 ساعة لمناقشة متطلباتك وتقديم الإرشاد المهني."
+    }
+  },
+  "about": {
+    "hero": {
+      "imageAlt": "خلفية من نحن",
+      "title": "بريق التميز — شريكك الموثوق في الحلول الكيميائية والعطور الصناعية والشخصية",
+      "description": "في بريق التميز، نؤمن أن النجاح الصناعي يبدأ من جودة المواد الأساسية.نوفّر مواد كيميائية عالية الجودة، واستشارات فنية موثوقة، وخدمة عملاء متميزة، لتمكين الصناعات والمختبرات والمحترفين في مصر وخارجها من تحقيق أفضل النتائج.",
+      "features": {
+        "quality": "منتجات تلبي معايير الجودة الصارمة",
+        "delivery": "توافر مضمون وتسليم في الوقت المحدد",
+        "consultation": "دعم تقني في كل خطوة من رحلتك معنا"
+      },
+      "ctaButton": "اتصل بنا"
+    },
+    "partners": {
+      "title": "Our Suppliers & Partners",
+      "items": {
+        "nile": {
+          "name": "شركة النيل للمنظفات",
+          "description": "شركة مصرية رائدة في تصنيع المنظفات تعتمد على المواد الخام من بريق التميز لضمان جودة المنتج"
+        },
+        "medix": {
+          "name": "ميديكس لمستحضرات التجميل",
+          "description": "علامة تجارية ناشئة لمستحضرات التجميل تتعاول مع بريق التميز للحصول على مواد كيميائية متخصصة آمنة وعالية النقاء"
+        },
+        "labtech": {
+          "name": "لاب تك مصر",
+          "description": "شركة لتوريد واختبار المختبرات تستخدم مواد المختبرات من بريق التميز للبحث والتعليم"
+        },
+        "greenpack": {
+          "name": "جرين باك للصناعات",
+          "description": "مزود حلول التعبئة المستدامة الذي يحصل على إضافات صديقة للبيئة من بريق التميز"
+        },
+        "pharmacare": {
+          "name": "فارما كير سوليوشنز",
+          "description": "مورد أدوية إقليمي يتعاون مع بريق التميز للحصول على مركبات كيميائية موثوقة"
+        }
+      }
+    },
+    "whoWeAre": {
+      "title": "من نحن",
+      "description": "بريق التميز هي شركة رائدة في مجال توريد المواد الكيميائية في مصر، تخدم المصنعين، والمختبرات، والمحترفين الأفراد. نحن متخصصون في توفير منتجات موثوقة وعالية الأداء، مدعومة بخبرة فريقنا من الكيميائيين والاستشاريين لضمان أعلى مستويات الجودة والدعم الفني.",
+      "sectors": "نغطي مجموعة واسعة من القطاعات تشمل: مستحضرات التجميل، المنظفات، المختبرات، البحث العلمي، والمجالات الصناعية المتخصصة.",
+      "imageAlt": "من نحن"
+    },
+    "ourMission": {
+      "title": "مهمتنا",
+      "description": "مهمتنا هي تبسيط عملية الحصول على المواد الكيميائية وتقديم تجربة توريد مرنة وفعّالة. نجمع بين تنوع المنتجات، والخبرة الفنية، وخدمة العملاء المتميزة لتوفير حلول تساعد الشركات والباحثين على تحقيق النمو والابتكار بثقة واستمرارية.",
+      "imageAlt": "مهمتنا"
+    },
+    "whyChooseUs": {
+      "title": "لماذا تختار بريق التميز",
+      "imageAlt": "لماذا تختار بريق التميز",
+      "items": {
+        "quality": {
+          "title": "منتجات موثوقة",
+          "description": "مواد مختبرة بعناية من مصنعين عالميين معتمدين"
+        },
+        "expert": {
+          "title": "خبرة فنية",
+          "description": "فريق من الكيميائيين يقدمون استشارات مهنية وتوصيات عملية لكل مشروع"
+        },
+        "customer": {
+          "title": "خدمة تتمحور حول العميل",
+          "description": "استجابة سريعة، دعم متواصل، واهتمام حقيقي باحتياجاتك لضمان تجربة تعاون ناجحة وطويلة الأمد"
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "المقالات والفعاليات",
+    "subtitle": "رؤى ومعرفة من قلب صناعة الكيماويات",
+    "hero": {
+      "title": "المقالات والفعاليات",
+      "description": "في بريق التميز، نؤمن أن تبادل المعرفة هو أساس التطور المستمر. من خلال مقالاتنا وفعالياتنا، نشارك أحدث الاتجاهات، والأفكار العملية، والابتكارات التي تساعد شركاءنا في اتخاذ قرارات أفضل وتعزيز نمو أعمالهم."
+    },
+    "date": "التاريخ",
+    "time": "الوقت",
+    "location": "الموقع",
+    "defaultTitle": "فعالية",
+    "defaultContent": "مواد كيميائية عالية الأداء مصممة لتطبيقات محددة، توفر الدقة والموثوقية والابتكار عبر الصناعات.",
+    "upcomingEvents": "الفعاليات القادمة",
+    "description": "انضم إلينا في فعاليات وورش عمل وندوات مثيرة مصممة لتعزيز معرفتك وشبكتك المهنية.",
+    "errorLoading": "خطأ في تحميل الفعاليات",
+    "errorMessage": "حدثت مشكلة أثناء تحميل الفعاليات. يرجى المحاولة مرة أخرى لاحقًا.",
+    "noEvents": "لا توجد فعاليات متاحة",
+    "noEventsFound": "لم يتم العثور على فعاليات",
+    "noEventsMessage": "لا توجد فعاليات مجدولة حاليًا. يرجى التحقق مرة أخرى لاحقًا.",
+    "tryDifferentFilters": "حاول تعديل فلاتر البحث للعثور على المزيد من الفعاليات.",
+    "viewDetails": "عرض التفاصيل",
+    "register": "سجل الآن",
+    "registerNow": "سجل الآن",
+    "learnMore": "اعرف المزيد",
+    "eventEnded": "انتهت الفعالية",
+    "upcoming": "قادمة",
+    "past": "سابقة",
+    "today": "اليوم",
+    "by": "بواسطة",
+    "attachments": "المرفقات",
+    "moreFiles": "ملفات إضافية",
+    "createdAt": "أُنشئت في",
+    "updatedAt": "حُدثت في",
+    "tags": "الوسوم",
+    "filterByTags": "التصفية حسب الوسوم",
+    "clearFilters": "مسح الفلاتر",
+    "eventDetails": "تفاصيل الفعالية",
+    "eventInfo": "معلومات الفعالية",
+    "notFound": "الفعالية غير موجودة",
+    "generalCategory": "فئة عامة",
+    "whyAttend": {
+      "mainTitle": "لماذا تحضر فعاليات بريق التميز؟",
+      "networkingTitle": "فرص للتواصل",
+      "networkingDescription": "انضم إلى فعاليات بريق التميز حيث يجتمع صُنّاع القرار والخبراء من مختلف قطاعات الصناعة تحت سقف واحد. نساعدك على بناء علاقات مهنية قيّمة من خلال لقاءات منظمة، ومناقشات متخصصة، وفرص تعاون حقيقية. يمكنك أيضًا استخدام تطبيقنا المخصص للتواصل لتخطيط اجتماعاتك ومتابعة فعالياتنا بسهولة.",
+      "networkingAlt": "أشخاص يتصافحون في مؤتمر",
+      "industryInsightsTitle": "رؤى حصرية في الصناعة",
+      "industryInsightsDescription": "ابقَ على اطلاع دائم بأحدث التطورات في سوق المواد الكيميائية. يقدّم خبراؤنا تحليلات دقيقة ورؤى قابلة للتطبيق تساعدك على فهم تحركات السوق واتخاذ قرارات مبنية على بيانات دقيقة. من اتجاهات الأسعار إلى تقنيات التصنيع الحديثة — نمنحك المعرفة التي تبقيك في الصدارة.",
+      "industryInsightsAlt": "جمهور في مؤتمر يشاهد متحدثًا",
+      "skillBuildingTitle": "تدريب يغيّر قواعد اللعبة",
+      "skillBuildingDescription": "استثمر في تطوير فريقك ومعرفتك بالسوق. توفر بريق التميوز برامج تدريبية متخصصة في مجالات الزيوت الأساسية، والمواد الخافضة للتوتر السطحي، وغيرها من الصناعات سريعة النمو. نهدف من خلال هذه الدورات إلى تزويدك بفهم أعمق للمنتجات والسوق، لتبقى دائمًا خطوة أمام منافسيك.",
+      "skillBuildingAlt": "مجموعة من الأشخاص في ورشة عمل"
+    }
+  },
+  "cart": {
+    "title": "سلة التسوق",
+    "subtitle": "راجع المنتجات وأكمل عملية الشراء",
+    "metaTitle": "سلة التسوق",
+    "metaDescription": "راجع منتجات السلة",
+    "itemsInCart": "{count, plural, =0 {لا توجد منتجات} =1 {منتج واحد} other {# منتجات}} في السلة",
+    "empty": {
+      "title": "سلتك فارغة",
+      "description": "يبدو أنك لم تضف أي منتجات إلى سلتك بعد. ابدأ التسوق الآن!",
+      "button": "ابدأ التسوق"
+    },
+    "items": {
+      "product": "المنتج",
+      "price": "السعر",
+      "quantity": "الكمية",
+      "remove": "ازالة",
+      "productUnit": "منتج"
+    },
+    "clearCart": "إفراغ السلة",
+    "orderSummary": "ملخص الطلب",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "الشحن",
+    "discount": "الخصم",
+    "total": "الإجمالي",
+    "currency": "ريال",
+    "checkout": "إتمام الطلب",
+    "continueShopping": "متابعة التسوق",
+    "orderViaWhatsApp": "طلب عبر واتساب",
+    "paymentMethods": "طرق الدفع",
+    "proceedToCheckout": "إتمام الطلب",
+    "code": "الكود",
+    "saveAmount": "وفر {amount} ريال",
+    "emptyCart": {
+      "title": "سلة التسوق فارغة",
+      "description": "يبدو أنك لم تضف أي منتجات إلى السلة بعد",
+      "browseProducts": "تصفح المنتجات"
+    }
+  },
+  "aboutPage": {
+    "breadcrumb": "من نحن",
+    "banner": {
+      "badge": "من نحن",
+      "title": "نضمن لك نظافة أعلى وثقة تدوم",
+      "description": "نحن علامة سعودية متخصصة في منتجات التنظيف عالية الجودة، تجمع بين الكفاءة، الأمان، والرائحة الفاخرة. رؤيتنا هي جعل كل بيت سعودي أكثر نظافة وانتعاشًا."
+    },
+    "whyUs": {
+      "title": "لماذا بريق التميز؟",
+      "items": {
+        "0": "نضمن أداءً ثابتًا ونتائج مبهرة في كل استخدام.",
+        "1": "جودة متميزة يمكنك الاعتماد عليها في كل مرة.",
+        "2": "نحافظ على بيئتك بمنتجات صديقة للطبيعة.",
+        "3": "نطوّر باستمرار حلولًا جديدة لتلبية احتياجاتك المتغيرة.",
+        "4": "تركيبات فعّالة وآمنة لجميع أفراد العائلة."
+      }
+    },
+    "whatSetsUsApart": "ما الذي يميزنا؟"
+  },
+  "contact": {
+    "title": "اتصل بنا",
+    "subtitle": "نحن هنا لمساعدتك",
+    "name": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "message": "الرسالة",
+    "send": "إرسال الرسالة",
+    "sending": "جاري الإرسال...",
+    "success": "تم إرسال رسالتك بنجاح!",
+    "error": "حدث خطأ أثناء إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "invalidPhone": "يرجى إدخال رقم هاتف صحيح",
+    "meta": {
+      "title": "تواصل معنا - بريق التميز",
+      "description": "تواصل مع بريق التميز. نقدم التدريب التقني وحلول المعدات والخدمات الكيميائية في جميع أنحاء مصر."
+    },
+    "form": {
+      "title": "تواصل معنا",
+      "subtitle": "تحدث مع فريقنا على مدار الساعة واحصل على إجابة فورية عن طريق البريد الالكتروني او الاتصال الهاتفي",
+      "contactInfo": "معلومات الاتصال",
+      "locationDetails": "تفاصيل الموقع (اختياري)",
+      "servicesInterest": "الخدمات المهتم بها (اختياري)",
+      "yourMessage": "رسالتك",
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "phone": "رقم الهاتف",
+        "address": "العنوان",
+        "message": "الرسالة",
+        "required": "*"
+      },
+      "placeholders": {
+        "fullName": "أدخل اسمك الكامل",
+        "email": "your.email@example.com",
+        "phone": "+20 123 456 7890",
+        "address": "أدخل عنوانك الكامل",
+        "message": "أخبرنا عن مشروعك أو استفسارك...",
+        "selectServices": "اختر الخدمات التي تهمك"
+      },
+      "helpers": {
+        "addressHelper": "يرجى تقديم عنوانك الكامل بما في ذلك الشارع والمدينة والرمز البريدي",
+        "characterCount": "{count} حرف / الحد الأدنى 10 أحرف",
+        "servicesSelected": "تم اختيار {count} خدمة"
+      },
+      "services": {
+        "technical": "التدريب التقني والاستشارات",
+        "equipment": "مبيعات المعدات والحلول",
+        "quality": "ضمان الجودة والتحقق",
+        "chemical": "الحلول الكيميائية المخصصة",
+        "laboratory": "إعداد المختبرات والدعم",
+        "regulatory": "الامتثال التنظيمي والتوثيق",
+        "maintenance": "الصيانة وخدمة ما بعد البيع",
+        "research": "حلول البحث والتطوير"
+      },
+      "location": {
+        "country": "الدولة",
+        "state": "المحافظة/الولاية",
+        "city": "المدينة",
+        "selectedLocation": "الموقع المحدد:",
+        "locationCode": "رمز الموقع:",
+        "placeholders": {
+          "country": "اختر دولتك",
+          "state": "اختر محافظتك",
+          "city": "اختر مدينتك"
+        }
+      },
+      "validation": {
+        "nameRequired": "الاسم الكامل مطلوب",
+        "nameMinLength": "يجب أن يكون الاسم حرفين على الأقل",
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
+        "phoneRequired": "رقم الهاتف مطلوب",
+        "phoneMinLength": "يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل",
+        "addressRequired": "العنوان مطلوب",
+        "addressMinLength": "يجب أن يكون العنوان 10 أحرف على الأقل",
+        "messageRequired": "الرسالة مطلوبة",
+        "messageMinLength": "يجب أن تكون الرسالة 10 أحرف على الأقل"
+      },
+      "buttons": {
+        "submit": "إرسال الرسالة",
+        "submitting": "جاري الإرسال..."
+      },
+      "messages": {
+        "success": "شكراً لرسالتك! سنعود إليك قريباً.",
+        "error": "يرجى تصحيح الأخطاء في النموذج قبل الإرسال.",
+        "fillRequired": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح",
+        "phoneExists": "رقم الهاتف هذا مسجل بالفعل",
+        "emailExists": "البريد الإلكتروني هذا مسجل بالفعل",
+        "customerError": "فشل في إنشاء العميل",
+        "contactError": "فشل في إنشاء جهة الاتصال",
+        "unexpectedError": "حدث خطأ غير متوقع"
+      }
+    },
+    "map": {
+      "loading": "جاري تحميل الخريطة...",
+      "companyName": "بريق التميوز",
+      "address": "الإسكندرية، مصر",
+      "openInMaps": "فتح في خرائط جوجل"
+    },
+    "helpers": {
+      "selectedServices": "الخدمات المختارة:",
+      "servicesSelected": "خدمة مختارة"
+    }
+  },
+  "pagination": {
+    "showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "results": "نتيجة",
+    "perPage": "لكل صفحة",
+    "firstPage": "الصفحة الأولى",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "lastPage": "الصفحة الأخيرة"
+  },
+  "footer": {
+    "company": {
+      "title": "الشركة",
+      "aboutUs": "من نحن",
+      "leadershipTeam": "فريق القيادة",
+      "sustainability": "الاستدامة",
+      "careers": "الوظائف",
+      "newsInsights": "الأخبار والرؤى"
+    },
+    "solutions": {
+      "title": "الحلول",
+      "industrialChemicals": "المواد الكيميائية الصناعية",
+      "consumerChemicals": "المواد الكيميائية الاستهلاكية",
+      "customFormulations": "التركيبات المخصصة",
+      "rdServices": "خدمات البحث والتطوير",
+      "safetyCompliance": "السلامة والامتثال"
+    },
+    "support": {
+      "title": "الدعم",
+      "contactUs": "اتصل بنا",
+      "customerService": "خدمة العملاء",
+      "technicalSupport": "الدعم الفني",
+      "returnsShipping": "الإرجاع والشحن"
+    },
+    "legal": {
+      "title": "قانوني",
+      "privacyPolicy": "سياسة الخصوصية",
+      "termsConditions": "الشروط والأحكام",
+      "complianceCertifications": "الامتثال والشهادات",
+      "cookiePolicy": "سياسة ملفات تعريف الارتباط"
+    },
+    "bottom": {
+      "privacyPolicies": "سياسات الخصوصية",
+      "termsConditions": "الشروط والأحكام",
+      "cookiePolicy": "سياسة ملفات تعريف الارتباط",
+      "copyright": "جميع الحقوق محفوظة"
+    }
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "description": "املأ المعلومات أدناه لإتمام الشراء",
+    "orderSummary": "ملخص الطلب",
+    "taxNotice": "شامل ضريبة القيمة المضافة (15%)",
+    "total": "الإجمالي",
+    "currency": "جنيه",
+    "deliveryLocationOptional": "موقع التوصيل (اختياري)",
+    "additionalInformation": "معلومات إضافية",
+    "steps": {
+      "address": "العنوان",
+      "payment": "طريقة الدفع",
+      "review": "مراجعة الطلب"
+    },
+    "securityMessage": "بيانات بطاقتك محمية وتُعالَج بشكل آمن عبر بوابة الدفع.",
+    "payment": {
+      "creditCard": "الدفع بالبطاقة أو مدى",
+      "applePay": "الدفع عبر Apple Pay",
+      "cashOnDelivery": "الدفع عند الاستلام",
+      "unavailable": "غير متاح"
+    },
+    "tabs": {
+      "existingCustomer": "عميل موجود",
+      "newCustomer": "عميل جديد",
+      "existing": "موجود",
+      "new": "جديد"
+    },
+    "existingCustomer": {
+      "description": "ابحث عن عميل موجود برقم الهاتف",
+      "phoneNumber": "رقم الهاتف",
+      "enterPhone": "أدخل رقم الهاتف",
+      "customerFound": "تم العثور على العميل"
+    },
+    "newCustomer": {
+      "description": "أدخل معلومات العميل الجديد"
+    },
+    "fields": {
+      "contactInfo": "معلومات الاتصال",
+      "fullName": "الاسم الكامل",
+      "name": "الاسم",
+      "phoneNumber": "رقم الهاتف",
+      "phone": "الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "email": "البريد",
+      "deliveryAddress": "عنوان التوصيل",
+      "address": "العنوان",
+      "orderNotes": "ملاحظات الطلب"
+    },
+    "deliveryAddress": "عنوان التوصيل",
+    "optional": "اختياري",
+    "placeholders": {
+      "fullName": "أدخل الاسم الكامل",
+      "phoneNumber": "أدخل رقم الهاتف",
+      "emailAddress": "أدخل البريد الإلكتروني",
+      "deliveryAddress": "أدخل عنوان التوصيل",
+      "orderNotes": "أي ملاحظات أو تعليمات خاصة",
+      "city": "المدينة",
+      "neighborhood": "الحي",
+      "street": "الشارع",
+      "blockNumber": "رقم المبنى",
+      "floor": "رقم الطابق",
+      "nationalAddress": "العنوان الوطني"
+    },
+    "buttons": {
+      "saveAddress": "حفظ العنوان",
+      "enterPayment": "إدخال بيانات الدفع",
+      "cancel": "إلغاء",
+      "reviewOrder": "مراجعة الطلب",
+      "confirmOrder": "تأكيد الطلب",
+      "processing": "جارٍ المعالجة...",
+      "search": "بحث"
+    },
+    "subtotal": "المجموع الفرعي",
+    "shipping": "الشحن",
+    "discount": "الخصم",
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "phoneInvalid": "رقم الهاتف يجب أن يكون 10 أرقام على الأقل",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "الرجاء إدخال بريد إلكتروني صحيح",
+      "cityRequired": "المدينة مطلوبة",
+      "neighborhoodRequired": "الحي مطلوب",
+      "streetRequired": "الشارع مطلوب",
+      "floorRequired": "رقم الطابق مطلوب",
+      "addressRequired": "عنوان التوصيل مطلوب",
+      "fillAllFields": "الرجاء ملء جميع الحقول المطلوبة",
+      "emptyCart": "سلة التسوق فارغة"
+    },
+    "deliveryNotice": "سيتم توصيل طلبك والدفع عند الاستلام",
+    "errors": {
+      "enterPhoneNumber": "الرجاء إدخال رقم الهاتف",
+      "customerNotFound": "لم يتم العثور على العميل",
+      "searchFailed": "فشل البحث عن العميل",
+      "selectExistingCustomer": "الرجاء البحث واختيار عميل موجود",
+      "customerCreationFailed": "فشل إنشاء العميل",
+      "orderCreationFailed": "فشل إنشاء الطلب",
+      "checkoutFailed": "فشل إتمام الطلب. الرجاء المحاولة مرة أخرى",
+      "noOrderFound": "لم يتم العثور على معلومات الطلب",
+      "paymentFailed": "فشل الدفع أو تم إلغاؤه",
+      "verificationFailed": "فشل التحقق من حالة الدفع",
+      "addressSearchFailed": "فشل البحث عن العنوان الوطني",
+      "invalidNationalAddress": "العنوان الوطني غير صحيح أو غير موجود"
+    },
+    "success": {
+      "customerFound": "تم العثور على العميل بنجاح",
+      "customerCreated": "تم إنشاء العميل بنجاح",
+      "orderCreated": "تم إنشاء الطلب بنجاح",
+      "redirectingToPayment": "جاري التحويل إلى صفحة الدفع..."
+    },
+    "paymentStatus": {
+      "verifying": "جاري التحقق من الدفع",
+      "pleaseWait": "يرجى الانتظار بينما نتحقق من الدفع...",
+      "success": "تم الدفع بنجاح!",
+      "successMessage": "شكراً لطلبك! تم معالجة الدفع بنجاح.",
+      "pending": "الدفع قيد الانتظار",
+      "pendingMessage": "جاري معالجة الدفع. سنبلغك عند التأكيد.",
+      "failed": "فشل الدفع",
+      "failedMessage": "للأسف، لم نتمكن من معالجة الدفع. يرجى المحاولة مرة أخرى.",
+      "orderNumber": "رقم الطلب",
+      "viewOrders": "عرض طلباتي",
+      "continueShopping": "متابعة التسوق",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "confirmation": {
+      "title": "تأكيد الطلب",
+      "description": "الرجاء مراجعة تفاصيل الطلب قبل التأكيد",
+      "customerInfo": "معلومات العميل",
+      "orderSummary": "ملخص الطلب",
+      "totalItems": "إجمالي المنتجات",
+      "totalAmount": "المبلغ الإجمالي",
+      "warning": "الرجاء التأكد من صحة جميع المعلومات قبل التأكيد"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "اهلا بك",
+      "emailLabel": "البريد الالكتروني",
+      "emailPlaceholder": "ادخل البريد الالكتروني",
+      "passwordLabel": "الرقم السرى",
+      "passwordPlaceholder": "ادخل كلمة المرور",
+      "forgotPassword": "هل نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "or": "أو سجل عن طريق",
+      "googleLogin": "سجل عن طريق جوجل",
+      "appleLogin": "سجل عن طريق Apple",
+      "noAccount": "مستخدم جديد ؟",
+      "registerNow": "انشاء حساب"
+    },
+    "register": {
+      "title": "انشاء حساب جديد",
+      "subtitle": "عند إنشاء حساب جديد سيكون لديك 10% خصم على اول طلب لك",
+      "discountOffer": "عند إنشاء حساب جديد سيكون لديك 10% خصم على اول طلب لك",
+      "nameLabel": "اسمك كامل",
+      "namePlaceholder": "ادخل الاسم كاملاً",
+      "emailLabel": "البريد الالكتروني",
+      "emailPlaceholder": "ادخل البريد الالكتروني",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "ادخل كلمة المرور",
+      "submit": "انشاء حساب جديد",
+      "or": "أو سجل عن طريق",
+      "googleRegister": "سجل عن طريق جوجل",
+      "appleRegister": "سجل عن طريق Apple",
+      "haveAccount": "لديك حساب ؟",
+      "loginNow": "تسجيل دخول"
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور الخاصة بك",
+      "subtitle": "",
+      "instruction": "يرجى إدخال عنوان بريدك الإلكتروني وسنرسل لك رمزًا لإعادة تعيين كلمة المرور الخاصة بك",
+      "emailLabel": "البريد الالكتروني",
+      "emailPlaceholder": "ادخل البريد الالكتروني",
+      "submit": "ارسال الرمز",
+      "usePhoneInstead": "استخدم رقم هاتفك"
+    },
+    "verifyOtp": {
+      "title": "التحقق",
+      "instruction": "أدخل رمز OTP المرسل إلى بريدك الإلكتروني : {email}",
+      "resendCode": "أعد إرساله.",
+      "didNotReceive": "هل لم تستلم الرمز؟",
+      "submit": "تحقق"
+    },
+    "resetPassword": {
+      "title": "أنشاء كلمة مرور جديدة",
+      "subtitle": "يجب أن تكون كلمة مرورك الجديدة مختلفة عن كلمات المرور المستخدمة سابقًا.",
+      "newPasswordLabel": "كلمة المرور",
+      "newPasswordPlaceholder": "ادخل كلمة مرور جديدة",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "تأكيد كلمة مرور جديدة",
+      "submit": "حفظ كلمة المرور"
+    },
+    "common": {
+      "loading": "جار التحميل..."
+    }
+  },
+  "profile": {
+    "btn": "الملف الشخصي",
+    "title": "ملفي الشخصي",
+    "tabs": {
+      "orders": "طلباتي",
+      "favorites": "المفضلة",
+      "personalInfo": "المعلومات الشخصية"
+    },
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "name": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "password": "كلمة المرور الجديدة",
+      "update": "تحديث الملف الشخصي",
+      "saved": "تم تحديث الملف الشخصي بنجاح"
+    },
+    "addresses": {
+      "title": "العناوين المحفوظة",
+      "add": "إضافة عنوان",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "default": "العنوان الافتراضي",
+      "setDefault": "تعيين كافتراضي",
+      "noAddresses": "لا توجد عناوين محفوظة بعد.",
+      "form": {
+        "label": "التسمية (مثال: المنزل، العمل)",
+        "fullName": "الاسم الكامل",
+        "city": "المدينة",
+        "region": "المنطقة",
+        "postalCode": "الرمز البريدي",
+        "neighborhood": "الحي",
+        "street": "الشارع",
+        "building": "المبنى/الفيلا/الشقة",
+        "phone": "رقم الهاتف",
+        "save": "حفظ العنوان",
+        "cancel": "إلغاء"
+      }
+    },
+    "orders": {
+      "title": "طلباتي",
+      "orderNumber": "طلب #",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "total": "الإجمالي",
+      "items": "المنتجات",
+      "itemsCount": "{count} منتجات",
+      "item": "منتج",
+      "shippingTo": "يشحن إلى",
+      "paymentMethod": "طريقة الدفع",
+      "viewDetails": "عرض التفاصيل",
+      "cancel": "إلغاء الطلب",
+      "cancelConfirmTitle": "هل تريد إلغاء الطلب؟",
+      "cancelConfirmDescription": "هل أنت متأكد أنك تريد إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancelSuccess": "تم إلغاء الطلب بنجاح",
+      "noOrders": "ليس لديك طلبات بعد.",
+      "statuses": {
+        "pending": "قيد الانتظار",
+        "processing": "جاري التجهيز",
+        "shipped": "تم الشحن",
+        "delivered": "تم التوصيل",
+        "cancelled": "ملغي",
+        "paid": "تم الدفع",
+        "failed": "فشل الدفع"
+      }
+    },
+    "favorites": {
+      "title": "المفضلة",
+      "noFavorites": "لا توجد منتجات مفضلة بعد.",
+      "addToCart": "أضف للسلة"
+    },
+    "logout": "تسجيل الخروج"
+  }
+}

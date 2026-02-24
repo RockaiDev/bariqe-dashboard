@@ -1,0 +1,15 @@
+# Nixpacks configuration for Railway
+# This bypasses mise which can cause gzip extraction errors
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+# Build without turbopack for production stability
+cmds = ["next build"]
+
+[start]
+cmd = "npm start"

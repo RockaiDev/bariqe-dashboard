@@ -1,0 +1,33 @@
+# Development files
+.env
+.env.local
+*.log
+npm-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+
+# Development dependencies
+nodemon.json
+
+# Local uploads (use Cloudinary for production)
+uploads/*
+!uploads/.gitkeep
+
+# Source maps
+*.map
+
+# Documentation
+README.md
+docs/

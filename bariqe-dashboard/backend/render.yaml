@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: bariqe-dashboard-backend
+    env: node
+    region: frankfurt  # Change to your preferred region
+    plan: free  # Change to starter or higher for production
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: MONGO_URI
+        sync: false  # Set this in Render Dashboard
+      - key: JWT
+        generateValue: true  # Auto-generate or set manually
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false  # Set this in Render Dashboard
+      - key: CLOUDINARY_API_KEY
+        sync: false  # Set this in Render Dashboard
+      - key: CLOUDINARY_API_SECRET
+        sync: false  # Set this in Render Dashboard
+      - key: DEV_ORIGIN
+        value: https://your-frontend-url.vercel.app  # Update with your frontend URL
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set if using Stripe
+      - key: EMAIL_HOST
+        sync: false  # Set if using email
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+    autoDeploy: true
+    # Disk storage for uploads (optional - use Cloudinary instead)
+    # disk:
+    #   name: uploads
+    #   mountPath: /opt/render/project/src/uploads
+    #   sizeGB: 1
