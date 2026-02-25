@@ -113,7 +113,7 @@ const ProductDetails = () => {
                 <div className='w-full between-flex flex-1 flex-col gap-3 '>
 
                     <div className='w-full flex items-center justify-between'>
-                        <h5 className='underline body-large text-text-secondary-2 font-medium'>{local === 'en' ? product.productCategory.categoryNameEn : product.productCategory.categoryNameAr}</h5>
+                        <h5 className='underline body-large text-text-secondary-2 font-medium'>{local === 'en' ? product.productCategory?.categoryNameEn : product.productCategory?.categoryNameAr}</h5>
                         <Button onClick={handleShare} variant="outline" size={'icon-lg'} className={cn('rounded-full text-text-secondary-2')}><Share2 /></Button>
 
                     </div>
