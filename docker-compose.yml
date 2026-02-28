@@ -25,7 +25,7 @@ services:
     image: rockaidev/bariqe-dashboard-frontend:latest
     container_name: bariqe_dashboard
     ports:
-      - "3006:80"
+      - "5173:80"
     restart: always
     depends_on:
       - backend

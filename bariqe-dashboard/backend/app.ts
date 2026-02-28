@@ -27,6 +27,10 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
+      "http://202.61.203.177:5173",  
+      "http://202.61.203.177:3005",
+      "http://202.61.203.177:3006",
+      "http://202.61.203.177:3000",
       "http://localhost:5173",
       "http://localhost:3000",
       "https://bariqealtamyoz.com",
