@@ -69,7 +69,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ env.WORKING_DIR }}
+          docker build \
+          --build-arg NEXT_PUBLIC_API_BASE_URL=${{ secrets.WEBSITE_API_URL }} \
+          -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          ${{ env.WORKING_DIR }}
           docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
 
       - name: Scan Image with Trivy

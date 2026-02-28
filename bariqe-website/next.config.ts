@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://yourdomain.com',
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://202.61.203.177:8080',
   },
   images: {
     qualities: [100, 75], // Support quality 100 for logo.svg
