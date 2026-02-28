@@ -14,12 +14,15 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN addgroup -S nodebusers && adduser -S nodeuser -G nodebusers && \
-    mkdir -p uploads && chown -R nodeuser:nodebusers /app
+RUN addgroup -S nodebusers && adduser -S nodeuser -G nodebusers &&\
+    mkdir -p /app/uploads && \
+    chown -R nodeuser:nodebusers /app && \
+    chmod 750 /app && \
+    chmod 770 /app/uploads
 
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=nodeuser:nodebusers /app/package*.json ./
+COPY --from=builder --chown=nodeuser:nodebusers /app/node_modules ./node_modules
+COPY --from=builder --chown=nodeuser:nodebusers /app/dist ./dist
 
 USER nodeuser
 
