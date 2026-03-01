@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 import ApiError from "../utils/errors/ApiError";
 
-const JWT_CUSTOMER = process.env.JWT_CUSTOMER ;
+const JWT_CUSTOMER = process.env.JWT_CUSTOMER || "customer_secret_key_fallback";
 
 export function customerAuthentication(req: Request, res: Response, next: NextFunction) {
   try {

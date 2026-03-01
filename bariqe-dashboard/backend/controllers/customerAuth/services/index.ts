@@ -27,8 +27,14 @@ export default class CustomerAuthService extends AuthFeatures {
   public async Register(body: any): Promise<any> {
     const { name, email, phone, password } = body;
 
-    // Check if email exists
-    const existingCustomer = await customers.findOne({ customerEmail: email });
+    // Normalize email to lowercase and trim whitespace
+    const normalizedEmail = email?.toLowerCase().trim();
+    if (!normalizedEmail) {
+      throw new ApiError("BAD_REQUEST", "Email is required");
+    }
+
+    // Check if email exists (using normalized email)
+    const existingCustomer = await customers.findOne({ customerEmail: normalizedEmail });
     if (existingCustomer) {
       throw new ApiError("CONFLICT", "Email already registered");
     }
@@ -51,7 +57,7 @@ export default class CustomerAuthService extends AuthFeatures {
     // Create Customer
     const newCustomer = await customers.create({
       customerName: name,
-      customerEmail: email,
+      customerEmail: normalizedEmail,
       customerPhone: phone && phone.trim() ? phone : undefined,
       password: hashedPassword,
       otp,
@@ -61,7 +67,7 @@ export default class CustomerAuthService extends AuthFeatures {
     });
 
     // Send OTP Email
-    await otpService.sendVerificationOTP(email, otp, name);
+    await otpService.sendVerificationOTP(normalizedEmail, otp, name);
 
     return { message: "Registration successful. Please verify your email." };
   }
@@ -72,8 +78,9 @@ export default class CustomerAuthService extends AuthFeatures {
   public async VerifyOTP(body: any): Promise<any> {
     const { email, otp } = body;
     
-    // Explicitly select OTP fields since they are hidden (select: false)
-    const customer = await customers.findOne({ customerEmail: email }).select("+otp +otpExpires");
+    // Normalize email and explicitly select OTP fields since they are hidden (select: false)
+    const normalizedEmail = email?.toLowerCase().trim();
+    const customer = await customers.findOne({ customerEmail: normalizedEmail }).select("+otp +otpExpires");
     
     if (!customer) {
       throw new ApiError("NOT_FOUND", "Customer not found");
@@ -109,7 +116,8 @@ export default class CustomerAuthService extends AuthFeatures {
    */
   public async ResendOTP(body: any): Promise<any> {
     const { email } = body;
-    const customer = await customers.findOne({ customerEmail: email });
+    const normalizedEmail = email?.toLowerCase().trim();
+    const customer = await customers.findOne({ customerEmail: normalizedEmail });
 
     if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
     if (customer.isVerified) throw new ApiError("BAD_REQUEST", "Account already verified");
@@ -121,7 +129,7 @@ export default class CustomerAuthService extends AuthFeatures {
     customer.otpExpires = otpExpires;
     await customer.save();
 
-    await otpService.sendVerificationOTP(email, otp, customer.customerName || "Customer");
+    await otpService.sendVerificationOTP(normalizedEmail, otp, customer.customerName || "Customer");
 
     return { message: "OTP resent successfully" };
   }
@@ -132,8 +140,9 @@ export default class CustomerAuthService extends AuthFeatures {
   public async Login(body: any): Promise<any> {
     const { email, password } = body;
 
-    // Determine if login is by email or phone could be added here, currently assuming email
-    const customer = await customers.findOne({ customerEmail: email }).select("+password");
+    // Normalize email and determine if login is by email or phone could be added here, currently assuming email
+    const normalizedEmail = email?.toLowerCase().trim();
+    const customer = await customers.findOne({ customerEmail: normalizedEmail }).select("+password");
 
     if (!customer) {
       throw new ApiError("UNAUTHORIZED", "Invalid credentials");
@@ -169,7 +178,8 @@ export default class CustomerAuthService extends AuthFeatures {
    */
   public async ForgotPassword(body: any): Promise<any> {
     const { email } = body;
-    const customer = await customers.findOne({ customerEmail: email });
+    const normalizedEmail = email?.toLowerCase().trim();
+    const customer = await customers.findOne({ customerEmail: normalizedEmail });
 
     if (!customer) {
       // Return success even if not found to prevent enumeration
@@ -183,7 +193,7 @@ export default class CustomerAuthService extends AuthFeatures {
     customer.resetPasswordOtpExpires = otpExpires;
     await customer.save();
 
-    await otpService.sendPasswordResetOTP(email, otp, customer.customerName || "Customer");
+    await otpService.sendPasswordResetOTP(normalizedEmail, otp, customer.customerName || "Customer");
 
     return { message: "If an account exists, an OTP has been sent." };
   }
@@ -193,7 +203,8 @@ export default class CustomerAuthService extends AuthFeatures {
    */
   public async ResetPassword(body: any): Promise<{message:string}> {
     const { email, otp, password } = body;
-    const customer = await customers.findOne({ customerEmail: email }).select("+resetPasswordOtp +resetPasswordOtpExpires");
+    const normalizedEmail = email?.toLowerCase().trim();
+    const customer = await customers.findOne({ customerEmail: normalizedEmail }).select("+resetPasswordOtp +resetPasswordOtpExpires");
     if (!customer) {
       throw new ApiError("NOT_FOUND", "Request invalid");
     }
@@ -234,8 +245,11 @@ export default class CustomerAuthService extends AuthFeatures {
       throw new ApiError("UNAUTHORIZED", "Could not retrieve email from social provider");
     }
 
+    // Normalize email from social provider
+    const normalizedEmail = socialUser.email.toLowerCase().trim();
+
     // Find or Create User
-    let customer = await customers.findOne({ customerEmail: socialUser.email });
+    let customer = await customers.findOne({ customerEmail: normalizedEmail });
 
     if (customer) {
       // Update info if needed, e.g. connect social ID
@@ -247,8 +261,8 @@ export default class CustomerAuthService extends AuthFeatures {
       await customer.save();
     } else {
       customer = await customers.create({
-        customerName: socialUser.name || "Use",
-        customerEmail: socialUser.email,
+        customerName: socialUser.name || "User",
+        customerEmail: normalizedEmail,
         authProvider: provider,
         socialId: socialUser.socialId,
         isVerified: true,

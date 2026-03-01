@@ -85,8 +85,7 @@ export interface FileInfo {
 
 const fetchBlob = async (url: string): Promise<Blob> => {
   try {
-    const fullUrl = url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL || 'http://localhost:4001'}${url}`;
-    
+        const fullUrl = url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL}${url}`;    
     const response = await axiosInstance.get(fullUrl, {
       responseType: 'blob',
     });

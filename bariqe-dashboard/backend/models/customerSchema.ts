@@ -47,13 +47,16 @@ const customerSchema = new Schema(
       match: [/.+@.+\..+/, "Please fill a valid email address"],
       sparse: true, // Allow multiple nulls/unique only if present
       unique: true,
-      set: (v: any) => (v === "" || v === null ? undefined : v),
+      lowercase: true,
+      trim: true,
+      set: (v: any) => (v === "" || v === null ? undefined : v?.toLowerCase?.().trim?.()),
     },
     customerPhone: {
       type: String,
       required: false,
       match: [/^\+?[1-9]\d{1,14}$/, "Please fill a valid phone number"],
-      set: (v: any) => (v === "" || v === null ? undefined : v),
+      set: (v: any) => (v === "" || v === null ? undefined : v?.trim?.()),
+      sparse: true,
     },
     customerAddress: {
       type: String,
