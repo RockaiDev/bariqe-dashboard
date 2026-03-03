@@ -48,7 +48,7 @@ const orderSchema = new Schema(
       postalCode: String,
       nationalAddress: {
         type: String,
-        maxlength: [8, "National Address must be at most 8 characters"]
+        maxlength: [100, "National Address must be at most 100 characters"]
       },
       country: { type: String, default: "Saudi Arabia" },
     },

@@ -62,13 +62,13 @@ export default class CustomerAuthService extends AuthFeatures {
       password: hashedPassword,
       otp,
       otpExpires,
-      isVerified: true,  // ✅ TEMPORARY: Auto-verify for testing (email SMTP not working)
+      isVerified: false,  // ✅ TEMPORARY: Auto-verify for testing (email SMTP not working)
       authProvider: "local"
     });
 
     // 🔄 TEMPORARILY DISABLED: Email verification
     // Uncomment this line once SMTP/Gmail is configured
-    // await otpService.sendVerificationOTP(normalizedEmail, otp, name);
+    await otpService.sendVerificationOTP(normalizedEmail, otp, name);
 
     return { message: "Registration successful. You can now login!" };
   }
