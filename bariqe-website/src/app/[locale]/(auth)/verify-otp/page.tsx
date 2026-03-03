@@ -41,17 +41,13 @@ const VerifyOTPPage = () => {
 
   const onSubmit = (data: OtpSchema) => {
     verifyOtp({ email, otp: data.otp }, {
-      onSuccess: (response) => {
-        if (type === "register") {
-          // Registration verification flow - redirect to login
-          toast.success("Email verified successfully! Please log in.");
-          router.push("/");
-        } else {
-          // Password reset flow - redirect to reset password page
-          const tokenParam = response.tempToken ? `&token=${response.tempToken}` : "";
-          router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${data.otp}${tokenParam}`);
+      onSuccess: () => {
+            if (type === "register") {
+               router.push("/");  // هيكون logged in أوتوماتيك
+            } else {
+             router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${data.otp}`);
+          }
         }
-      }
     });
   };
 

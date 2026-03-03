@@ -83,10 +83,24 @@ export const useForgotPassword = () => {
 };
 
 export const useVerifyOTP = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: authService.verifyOTP,
-    onSuccess: (data) => {
-      toast.success(data.message);
+    onSuccess: (data: any) => {
+      const result = data.result || data;
+      const token = result.token;
+      const customer = result.customer;
+
+      if (token && customer) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(customer));
+        window.dispatchEvent(new Event("auth-change"));
+        queryClient.invalidateQueries({ queryKey: profileKeys.profile });
+      }
+
+      toast.success(data.message || "Email verified successfully!");
     },
     onError: (error: any) => {
       toast.error(error.message);
