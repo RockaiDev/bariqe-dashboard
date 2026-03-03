@@ -1,12 +1,9 @@
-import nodemailer from "nodemailer";
+import { gmailTransporter } from "../../config/gmail";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// Use Gmail OAuth2 transporter instead of SMTP
+// This uses OAuth2 for authentication, which works over HTTPS port 443
+// and doesn't require SMTP ports (25, 465, 587)
+const transporter = gmailTransporter;
 
 // ✅ قالب احترافي للبريد الإلكتروني
 const getEmailTemplate = (order: any) => {
@@ -608,7 +605,7 @@ export const sendNewOrderEmail = async (order: any) => {
     const mailOptions = {
       from: {
         name: "Order Management System",
-        address: process.env.EMAIL_USERNAME || "",
+        address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "",
       },
       to: process.env.ADMIN_EMAIL , // Uses ADMIN_EMAIL env var
       subject: `🎉 New Order #${String(order._id || "")
@@ -678,7 +675,7 @@ Notes: ${order.notes || "No notes"}
 
 export const sendShipmentNotification = async (email: string, order: any, tracking: any) => {
   const mailOptions = {
-    from: { name: "Bariqe Logistics", address: process.env.EMAIL_USERNAME || "" },
+    from: { name: "Bariqe Logistics", address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "" },
     to: email,
     subject: `📦 Order #${String(order._id).slice(-8).toUpperCase()} Shipped!`,
     html: `
@@ -695,7 +692,7 @@ export const sendShipmentNotification = async (email: string, order: any, tracki
 export const sendOrderConfirmation = async (email: string, order: any) => {
   // reusing existing template logic or simplified version for customer
   const mailOptions = {
-    from: { name: "Bariqe Orders", address: process.env.EMAIL_USERNAME || "" },
+    from: { name: "Bariqe Orders", address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "" },
     to: email,
     subject: `✅ Order Confirmation #${String(order._id).slice(-8).toUpperCase()}`,
     html: `
@@ -709,7 +706,7 @@ export const sendOrderConfirmation = async (email: string, order: any) => {
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
   const mailOptions = {
-    from: { name: "Bariqe Team", address: process.env.EMAIL_USERNAME || "" },
+    from: { name: "Bariqe Team", address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "" },
     to: email,
     subject: `Welcome to Bariqe, ${name}!`,
     html: `
@@ -723,7 +720,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
 export const sendOtpEmail = async (email: string, otp: string, name: string = "Customer") => {
   const mailOptions = {
-    from: { name: "Bariqe Security", address: process.env.EMAIL_USERNAME || "" },
+    from: { name: "Bariqe Security", address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "" },
     to: email,
     subject: `🔐 Your Verification Code`,
     html: `
@@ -742,7 +739,7 @@ export const sendOtpEmail = async (email: string, otp: string, name: string = "C
 
 export const sendPasswordResetOtp = async (email: string, otp: string, name: string = "Customer") => {
   const mailOptions = {
-    from: { name: "Bariqe Security", address: process.env.EMAIL_USERNAME || "" },
+    from: { name: "Bariqe Security", address: process.env.GMAIL_SENDER_EMAIL || process.env.EMAIL_USERNAME || "" },
     to: email,
     subject: `🔐 Reset Your Password`,
     html: `
