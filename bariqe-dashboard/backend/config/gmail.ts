@@ -1,17 +1,17 @@
 /**
- * Gmail API OAuth2 Configuration
- * 
- * This module initializes the Gmail API client with OAuth2 credentials.
- * It handles authentication and provides methods for sending emails via Gmail API.
- * 
+ * Gmail OAuth2 Configuration with Nodemailer
+ *
+ * This module initializes nodemailer with Gmail OAuth2 authentication.
+ * Nodemailer automatically handles OAuth2 token refresh, so no manual
+ * token management is needed.
+ *
  * Required Environment Variables:
- * - GMAIL_CLIENT_ID: OAuth2 Client ID
- * - GMAIL_CLIENT_SECRET: OAuth2 Client Secret
- * - GMAIL_REFRESH_TOKEN: OAuth2 Refresh Token (must have mail.send scope)
- * - GMAIL_SENDER_EMAIL: Email address to send from (must be authorized in OAuth2 app)
+ * - GMAIL_CLIENT_ID: OAuth2 Client ID from Google Cloud Console
+ * - GMAIL_CLIENT_SECRET: OAuth2 Client Secret from Google Cloud Console
+ * - GMAIL_REFRESH_TOKEN: OAuth2 Refresh Token from OAuth Playground
+ * - GMAIL_SENDER_EMAIL: Email address to send from (must be Google-authorized)
  */
 
-import { google } from "googleapis";
 import nodemailer from "nodemailer";
 
 // Validate that all required environment variables are present
@@ -34,22 +34,9 @@ if (missingEnvVars.length > 0) {
 }
 
 /**
- * Create OAuth2 client with refresh token
- */
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GMAIL_CLIENT_ID,
-  process.env.GMAIL_CLIENT_SECRET,
-  "http://localhost" // Redirect URI (not used for refresh token flow)
-);
-
-// Set refresh token to get new access tokens automatically
-oauth2Client.setCredentials({
-  refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-});
-
-/**
- * Create nodemailer transporter using OAuth2
- * This uses the OAuth2 client to automatically refresh tokens as needed
+ * Create nodemailer transporter with Gmail OAuth2
+ * Nodemailer automatically manages token refresh using the refresh token.
+ * No manual OAuth2 client setup needed.
  */
 export const gmailTransporter = nodemailer.createTransport({
   service: "gmail",
@@ -63,27 +50,17 @@ export const gmailTransporter = nodemailer.createTransport({
 });
 
 /**
- * Test Gmail API connection
- * Verify that authentication is working correctly
+ * Test Gmail OAuth2 connection
+ * Verifies that nodemailer can authenticate with Gmail
  */
 export const testGmailConnection = async () => {
   try {
-    const accessToken = await oauth2Client.getAccessToken();
+    await gmailTransporter.verify();
     console.log("✅ Gmail OAuth2 authentication successful");
-    console.log(
-      `📧 Sender email: ${process.env.GMAIL_SENDER_EMAIL}`
-    );
+    console.log(`📧 Sender email: ${process.env.GMAIL_SENDER_EMAIL}`);
     return true;
   } catch (error) {
     console.error("❌ Gmail OAuth2 authentication failed:", error);
     return false;
   }
-};
-
-/**
- * Alternative: Use Gmail API directly (if nodemailer approach fails)
- * Returns the Gmail API client instance
- */
-export const getGmailClient = () => {
-  return google.gmail({ version: "v1", auth: oauth2Client });
 };
