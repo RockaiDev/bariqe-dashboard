@@ -173,11 +173,23 @@ export const useLogout = () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.dispatchEvent(new Event("auth-change"));
       }
       
-      // Clear all queries from the cache
-      queryClient.clear();
+      // ✅ Set profile data to undefined IMMEDIATELY for instant UI update
+      queryClient.setQueryData(profileKeys.profile, undefined);
+      
+      // ✅ Invalidate the profile query so future fetches are fresh
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile });
+      
+      // ✅ Optionally clear other data but keep the structure intact
+      queryClient.removeQueries({ queryKey: profileKeys.addresses });
+      queryClient.removeQueries({ queryKey: profileKeys.orders });
+      queryClient.removeQueries({ queryKey: profileKeys.favorites });
+      
+      // ✅ Dispatch event for any listeners
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth-change"));
+      }
       
       toast.success("Logged out successfully");
       router.push("/");
@@ -187,9 +199,19 @@ export const useLogout = () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+      }
+      
+      // Set profile to undefined immediately even on error
+      queryClient.setQueryData(profileKeys.profile, undefined);
+      queryClient.invalidateQueries({ queryKey: profileKeys.profile });
+      queryClient.removeQueries({ queryKey: profileKeys.addresses });
+      queryClient.removeQueries({ queryKey: profileKeys.orders });
+      queryClient.removeQueries({ queryKey: profileKeys.favorites });
+      
+      if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("auth-change"));
       }
-      queryClient.clear();
+      
       router.push("/");
     }
   });

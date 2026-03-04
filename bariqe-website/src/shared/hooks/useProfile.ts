@@ -15,11 +15,12 @@ export const profileKeys = {
 
 // Profile Hooks
 export const useProfile = () => {
-  return useQuery<UserProfile>({
+  return useQuery<UserProfile | undefined>({
     queryKey: profileKeys.profile,
     queryFn: profileService.getProfile,
     retry: 0, // Don't retry for unauthenticated users
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 5 - ensures quick updates after logout
+    gcTime: 0, // Don't cache garbage collected data (formerly cacheTime)
   });
 };
 

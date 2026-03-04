@@ -63,6 +63,16 @@ publicAxiosInstance.interceptors.response.use(
     });
 
     if (error.response) {
+      // Handle 401 Unauthorized - clear auth state
+      if (error.response.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          // Dispatch auth-change event so all listeners know about logout
+          window.dispatchEvent(new Event("auth-change"));
+        }
+      }
+
       // For blob responses with errors, we need to read the blob
       if (error.config?.responseType === 'blob' && error.response.data instanceof Blob) {
         return new Promise((resolve, reject) => {

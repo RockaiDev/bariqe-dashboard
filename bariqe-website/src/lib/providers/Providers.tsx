@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { Toaster } from 'react-hot-toast';
 import QueryProvider from './QueryProvider';
 import { LoadingProvider } from './LoadingProvider';
+import { AuthStateListenerWrapper } from './AuthStateListenerWrapper';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -12,9 +13,11 @@ interface ProvidersProps {
 export default function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-          <LoadingProvider>
-               {children}
-          </LoadingProvider>
+      <AuthStateListenerWrapper>
+        <LoadingProvider>
+          {children}
+        </LoadingProvider>
+      </AuthStateListenerWrapper>
    
       
       {/* Toast Notifications */}
