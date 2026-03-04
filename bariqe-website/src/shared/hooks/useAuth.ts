@@ -185,46 +185,37 @@ export const useLogout = () => {
         localStorage.removeItem("user");
       }
 
-      // ✅ Set profile data to undefined IMMEDIATELY for instant UI update
-      queryClient.setQueryData(profileKeys.profile, undefined);
-
-      // ✅ Invalidate the profile query so future fetches are fresh
-      queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-
-      // ✅ Optionally clear other data but keep the structure intact
-      queryClient.removeQueries({ queryKey: profileKeys.addresses });
-      queryClient.removeQueries({ queryKey: profileKeys.orders });
-      queryClient.removeQueries({ queryKey: profileKeys.favorites });
-
-      // ✅ Dispatch event for any listeners
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("auth-change"));
-      }
+      // Clear all cached query data
+      queryClient.clear();
 
       toast.success("Logged out successfully");
-      router.push("/");
-      router.refresh(); // ✅ Force re-render even if already on home page
+
+      // ✅ Hard redirect so the entire page re-mounts with cleared auth state.
+      // router.push/refresh won't reliably update client state when already on the same page.
+      if (typeof window !== "undefined") {
+        const locale = window.location.pathname.split("/")[1] || "ar";
+        setTimeout(() => {
+          window.location.href = `/${locale}`;
+        }, 500); // small delay so the toast is visible before redirect
+      }
     },
-    onError: (error: any) => {
-      // Even if server error, we clear local state
+    onError: () => {
+      // Even on server error, clear local auth state
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
 
-      // Set profile to undefined immediately even on error
-      queryClient.setQueryData(profileKeys.profile, undefined);
-      queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-      queryClient.removeQueries({ queryKey: profileKeys.addresses });
-      queryClient.removeQueries({ queryKey: profileKeys.orders });
-      queryClient.removeQueries({ queryKey: profileKeys.favorites });
+      // Clear all cached query data
+      queryClient.clear();
 
+      // ✅ Hard redirect — guarantees a clean page reload
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("auth-change"));
+        const locale = window.location.pathname.split("/")[1] || "ar";
+        setTimeout(() => {
+          window.location.href = `/${locale}`;
+        }, 500);
       }
-
-      router.push("/");
-      router.refresh(); // ✅ Force re-render even if already on home page
     }
   });
 };
