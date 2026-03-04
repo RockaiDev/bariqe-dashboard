@@ -5,17 +5,15 @@ import { authService } from "@/lib/services/auth";
 import { AuthResponse } from "@/shared/types/auth";
 import { profileKeys } from "@/shared/hooks/useProfile";
 
-import { useFavoritesStore } from "@/shared/hooks/useFavoritesStore";
-
 export const useLogin = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-
+  
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (data: any) => {
 
-
+      
       // Handle the case where the interceptor might have modified the structure
       // or if it matches AuthResponse structure
       const result = data.result || data;
@@ -23,19 +21,15 @@ export const useLogin = () => {
       const token = result.token;
 
       if (customer && customer.isVerified === false) {
-        toast.error("Please verify your email first.");
-        router.push(`/verify-otp?email=${encodeURIComponent(customer.customerEmail)}&type=register`);
-        return;
+         toast.error("Please verify your email first.");
+         router.push(`/verify-otp?email=${encodeURIComponent(customer.customerEmail)}&type=register`);
+         return;
       }
-
+     
 
       toast.success(data.message || "Logged in successfully");
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-
-      // Sync favorites from backend after login
-      useFavoritesStore.getState().syncFromBackend();
-
-      router.push("/");
+      router.push("/"); 
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -51,12 +45,12 @@ export const useRegister = () => {
     onSuccess: (data: AuthResponse, variables) => {
       // After registration, redirect to verify-otp page for email verification
       // Don't store token yet - user needs to verify their email first
-
+      
       // Use the email from the input variables since we know it's valid
       // This avoids issues with response structure transformation by the axios interceptor
       const email = variables.email;
-
-
+      
+     
       toast.success("Account created! Please verify your email.");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=register`);
     },
@@ -83,24 +77,10 @@ export const useForgotPassword = () => {
 };
 
 export const useVerifyOTP = () => {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: authService.verifyOTP,
-    onSuccess: (data: any) => {
-      const result = data.result || data;
-      const token = result.token;
-      const customer = result.customer;
-
-      if (token && customer) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(customer));
-        window.dispatchEvent(new Event("auth-change"));
-        queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-      }
-
-      toast.success(data.message || "Email verified successfully!");
+    onSuccess: (data) => {
+      toast.success(data.message);
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -126,13 +106,13 @@ export const useGoogleLogin = () => {
   return useMutation({
     mutationFn: authService.loginWithGoogle,
     onSuccess: (data: any) => {
-
-      // If backend returns a URL to redirect to
-      if (data?.url) {
-        window.location.href = data.url;
-      } else if (data?.result?.token) {
-        // If it somehow returns a token directly (mock?)
-        if (typeof window !== 'undefined') {
+      
+       // If backend returns a URL to redirect to
+       if (data?.url) {
+         window.location.href = data.url;
+       } else if (data?.result?.token) {
+         // If it somehow returns a token directly (mock?)
+         if (typeof window !== 'undefined') {
           localStorage.setItem("token", data.result.token);
           localStorage.setItem("user", JSON.stringify(data.result.customer));
           window.dispatchEvent(new Event('auth-change'));
@@ -140,7 +120,7 @@ export const useGoogleLogin = () => {
           const locale = window.location.pathname.split('/')[1] || 'ar';
           window.location.href = `/${locale}`;
         }
-      }
+       }
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -164,10 +144,10 @@ export const useAppleLogin = () => {
   return useMutation({
     mutationFn: authService.loginWithApple,
     onSuccess: (data: any) => {
-      if (data?.url) {
-        window.location.href = data.url;
-      } else if (data?.result?.token) {
-        if (typeof window !== 'undefined') {
+       if (data?.url) {
+         window.location.href = data.url;
+       } else if (data?.result?.token) {
+         if (typeof window !== 'undefined') {
           localStorage.setItem("token", data.result.token);
           localStorage.setItem("user", JSON.stringify(data.result.customer));
           window.dispatchEvent(new Event('auth-change'));
@@ -175,7 +155,7 @@ export const useAppleLogin = () => {
           const locale = window.location.pathname.split('/')[1] || 'ar';
           window.location.href = `/${locale}`;
         }
-      }
+       }
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -195,13 +175,10 @@ export const useLogout = () => {
         localStorage.removeItem("user");
         window.dispatchEvent(new Event("auth-change"));
       }
-
+      
       // Clear all queries from the cache
       queryClient.clear();
-
-      // Reset favorites auth state
-      useFavoritesStore.getState().setAuthenticated(false);
-
+      
       toast.success("Logged out successfully");
       router.push("/");
     },
@@ -213,12 +190,7 @@ export const useLogout = () => {
         window.dispatchEvent(new Event("auth-change"));
       }
       queryClient.clear();
-
-      // Reset favorites auth state
-      useFavoritesStore.getState().setAuthenticated(false);
-
       router.push("/");
     }
   });
 };
-
