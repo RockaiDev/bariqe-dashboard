@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react"; 
 import { profileService } from "@/lib/services/profile";
 import { toast } from "react-hot-toast";
 import { UserProfile, Address, Order } from "@/shared/types/profile";
@@ -15,11 +16,22 @@ export const profileKeys = {
 
 // Profile Hooks
 export const useProfile = () => {
+  const [hasToken, setHasToken] = useState(
+    typeof window !== "undefined" && !!localStorage.getItem("token")
+  );
+
+  useEffect(() => {
+    const handler = () => setHasToken(!!localStorage.getItem("token"));
+    window.addEventListener("auth-change", handler);
+    return () => window.removeEventListener("auth-change", handler);
+  }, []);
+
   return useQuery<UserProfile>({
     queryKey: profileKeys.profile,
     queryFn: profileService.getProfile,
-    retry: 0, // Don't retry for unauthenticated users
+    retry: 0,
     staleTime: 5 * 60 * 1000,
+    enabled: hasToken,
   });
 };
 
