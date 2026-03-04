@@ -8,12 +8,12 @@ import { profileKeys } from "@/shared/hooks/useProfile";
 export const useLogin = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (data: any) => {
 
-      
+
       // Handle the case where the interceptor might have modified the structure
       // or if it matches AuthResponse structure
       const result = data.result || data;
@@ -21,11 +21,11 @@ export const useLogin = () => {
       const token = result.token;
 
       if (customer && customer.isVerified === false) {
-         toast.error("Please verify your email first.");
-         router.push(`/verify-otp?email=${encodeURIComponent(customer.customerEmail)}&type=register`);
-         return;
+        toast.error("Please verify your email first.");
+        router.push(`/verify-otp?email=${encodeURIComponent(customer.customerEmail)}&type=register`);
+        return;
       }
-     
+
 
       // ✅ Save auth credentials to localStorage so API calls carry the token
       if (typeof window !== "undefined" && token) {
@@ -55,12 +55,12 @@ export const useRegister = () => {
     onSuccess: (data: AuthResponse, variables) => {
       // After registration, redirect to verify-otp page for email verification
       // Don't store token yet - user needs to verify their email first
-      
+
       // Use the email from the input variables since we know it's valid
       // This avoids issues with response structure transformation by the axios interceptor
       const email = variables.email;
-      
-     
+
+
       toast.success("Account created! Please verify your email.");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=register`);
     },
@@ -116,13 +116,13 @@ export const useGoogleLogin = () => {
   return useMutation({
     mutationFn: authService.loginWithGoogle,
     onSuccess: (data: any) => {
-      
-       // If backend returns a URL to redirect to
-       if (data?.url) {
-         window.location.href = data.url;
-       } else if (data?.result?.token) {
-         // If it somehow returns a token directly (mock?)
-         if (typeof window !== 'undefined') {
+
+      // If backend returns a URL to redirect to
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.result?.token) {
+        // If it somehow returns a token directly (mock?)
+        if (typeof window !== 'undefined') {
           localStorage.setItem("token", data.result.token);
           localStorage.setItem("user", JSON.stringify(data.result.customer));
           window.dispatchEvent(new Event('auth-change'));
@@ -130,7 +130,7 @@ export const useGoogleLogin = () => {
           const locale = window.location.pathname.split('/')[1] || 'ar';
           window.location.href = `/${locale}`;
         }
-       }
+      }
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -154,10 +154,10 @@ export const useAppleLogin = () => {
   return useMutation({
     mutationFn: authService.loginWithApple,
     onSuccess: (data: any) => {
-       if (data?.url) {
-         window.location.href = data.url;
-       } else if (data?.result?.token) {
-         if (typeof window !== 'undefined') {
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.result?.token) {
+        if (typeof window !== 'undefined') {
           localStorage.setItem("token", data.result.token);
           localStorage.setItem("user", JSON.stringify(data.result.customer));
           window.dispatchEvent(new Event('auth-change'));
@@ -165,7 +165,7 @@ export const useAppleLogin = () => {
           const locale = window.location.pathname.split('/')[1] || 'ar';
           window.location.href = `/${locale}`;
         }
-       }
+      }
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -184,25 +184,26 @@ export const useLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
-      
+
       // ✅ Set profile data to undefined IMMEDIATELY for instant UI update
       queryClient.setQueryData(profileKeys.profile, undefined);
-      
+
       // ✅ Invalidate the profile query so future fetches are fresh
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-      
+
       // ✅ Optionally clear other data but keep the structure intact
       queryClient.removeQueries({ queryKey: profileKeys.addresses });
       queryClient.removeQueries({ queryKey: profileKeys.orders });
       queryClient.removeQueries({ queryKey: profileKeys.favorites });
-      
+
       // ✅ Dispatch event for any listeners
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("auth-change"));
       }
-      
+
       toast.success("Logged out successfully");
       router.push("/");
+      router.refresh(); // ✅ Force re-render even if already on home page
     },
     onError: (error: any) => {
       // Even if server error, we clear local state
@@ -210,19 +211,20 @@ export const useLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
-      
+
       // Set profile to undefined immediately even on error
       queryClient.setQueryData(profileKeys.profile, undefined);
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
       queryClient.removeQueries({ queryKey: profileKeys.addresses });
       queryClient.removeQueries({ queryKey: profileKeys.orders });
       queryClient.removeQueries({ queryKey: profileKeys.favorites });
-      
+
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("auth-change"));
       }
-      
+
       router.push("/");
+      router.refresh(); // ✅ Force re-render even if already on home page
     }
   });
 };
