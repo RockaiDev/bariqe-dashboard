@@ -27,9 +27,19 @@ export const useLogin = () => {
       }
      
 
+      // ✅ Save auth credentials to localStorage so API calls carry the token
+      if (typeof window !== "undefined" && token) {
+        localStorage.setItem("token", token);
+        if (customer) {
+          localStorage.setItem("user", JSON.stringify(customer));
+        }
+        // Notify all listeners (e.g. Header) that auth state changed
+        window.dispatchEvent(new Event("auth-change"));
+      }
+
       toast.success(data.message || "Logged in successfully");
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-      router.push("/"); 
+      router.push("/");
     },
     onError: (error: any) => {
       toast.error(error.message);
