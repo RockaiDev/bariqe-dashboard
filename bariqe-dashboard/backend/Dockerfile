@@ -8,7 +8,6 @@ RUN npm install
 COPY . .
 RUN npm run build
 RUN npm prune --production
-
 # Stage 2: Run
 FROM node:20-alpine AS runner
 WORKDIR /app
