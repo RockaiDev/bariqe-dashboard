@@ -647,6 +647,8 @@ export default class OrderController extends BaseApi {
       const orderInput = {
         ...req.body,
         customer: customerId || req.body.customer,
+        // ✅ Pass the callbackUrl from the frontend so PayLink redirects correctly
+        callbackUrl: req.body.callbackUrl,
       };
 
       const result = await OrderFacade.initiateOrder(orderInput);
@@ -690,11 +692,14 @@ export default class OrderController extends BaseApi {
 
       const order = await OrderFacade.handlePaymentCallback(transactionNo, paymentStatus);
 
+      // ✅ Safely resolve FRONTEND_URL (may be comma-separated)
+      const frontendBaseUrl = (process.env.FRONTEND_URL || "http://localhost:3000").split(',')[0].trim();
+
       // Redirect user to success/failure page if this is a redirect callback
       if (req.query.redirect === "true") {
         const redirectUrl = paymentStatus === "paid"
-          ? `${process.env.FRONTEND_URL}/checkout/success?orderId=${order._id}`
-          : `${process.env.FRONTEND_URL}/checkout/failed?orderId=${order._id}`;
+          ? `${frontendBaseUrl}/checkout/success?orderId=${order._id}`
+          : `${frontendBaseUrl}/checkout/failed?orderId=${order._id}`;
         return res.redirect(redirectUrl);
       }
 

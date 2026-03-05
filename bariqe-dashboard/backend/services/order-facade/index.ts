@@ -42,7 +42,14 @@ export interface OrderInput {
   paymentMethod?: "paylink" | "cod";
   orderDiscount?: number;
   notes?: string;
+  callbackUrl?: string; // Optional: override the default PayLink callback URL
 }
+
+// Safely resolve the first URL from FRONTEND_URL env var (may be comma-separated)
+const resolveFrontendUrl = (): string => {
+  const raw = process.env.FRONTEND_URL || "http://localhost:3000";
+  return raw.split(',')[0].trim();
+};
 
 export interface InitiateOrderResult {
   order: any;
@@ -164,8 +171,14 @@ class OrderFacade {
           ? await CustomerModel.findById(customerId)
           : null;
 
-        // User is redirected here after payment
-        const callbackUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/orders/${order._id}/status`;
+        // ✅ Use the frontend-supplied callbackUrl if provided;
+        // otherwise fallback to the backend webhook URL so PayLink POSTs back to us.
+        const frontendUrl = resolveFrontendUrl();
+        const callbackUrl = body.callbackUrl
+          ? body.callbackUrl
+          : `${frontendUrl}/checkout/success`;
+
+        console.log(`[OrderFacade] PayLink callbackUrl: ${callbackUrl}`);
 
         let invoiceResult;
         try {

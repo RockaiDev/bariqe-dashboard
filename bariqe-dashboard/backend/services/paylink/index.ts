@@ -5,12 +5,15 @@ const PAYLINK_APP_ID = process.env.PAYLINK_APP_ID;
 const PAYLINK_SECRET_KEY = process.env.PAYLINK_SECRET_KEY;
 const PAYLINK_BASE_URL = process.env.PAYLINK_BASE_URL || "https://restpilot.paylink.sa"; // Default to sandbox
 
+// Safely resolve the first URL from a potentially comma-separated FRONTEND_URL
+const FRONTEND_BASE_URL = (process.env.FRONTEND_URL || "http://localhost:3000").split(',')[0].trim();
+
 export class PayLinkService {
   private async getAuthHeader() {
     // PayLink relies on App ID and Secret Key being valid. 
     // Usually sent as headers or part of the auth flow. 
     // According to docs, we get a bearer token first.
-    
+
     try {
       const response = await axios.post(`${PAYLINK_BASE_URL}/api/auth`, {
         apiId: PAYLINK_APP_ID,
@@ -27,13 +30,13 @@ export class PayLinkService {
   public async createInvoice(order: any, customer: any, callbackUrl: string) {
     try {
       const token = await this.getAuthHeader();
-     
+
       // ✅ Resolve customer info (Auth Customer OR Shipping Address for guests)
       const customerName = customer?.customerName || order.shippingAddress?.fullName || "Customer";
       const customerEmail = customer?.customerEmail || order.customerEmail || "customer@example.com";
       const customerPhone = (customer?.customerPhone || order.shippingAddress?.phone || "0500000000")
         .replace(/^\+966/, "0"); // Convert to local format
-      
+
       // ✅ Calculate total if not set (sum of product prices * quantities)
       let orderTotal = order.total || order.orderTotal || 0;
       if (!orderTotal && order.products?.length > 0) {
@@ -64,7 +67,7 @@ export class PayLinkService {
       const payload = {
         amount: orderTotal,
         callBackUrl: callbackUrl,
-        cancelUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/checkout/cancelled`,
+        cancelUrl: `${FRONTEND_BASE_URL}/checkout/cancelled`,
         clientEmail: customerEmail,
         clientMobile: customerPhone,
         clientName: customerName,
@@ -81,7 +84,7 @@ export class PayLinkService {
           specificVat: 0,
         }]
       };
-      
+
       console.log("[PayLinkService] Full Payload:", JSON.stringify(payload, null, 2));
 
       const response = await axios.post(`${PAYLINK_BASE_URL}/api/addInvoice`, payload, {
@@ -104,7 +107,7 @@ export class PayLinkService {
   public async getInvoice(transactionNo: string) {
     try {
       const token = await this.getAuthHeader();
-      
+
       const response = await axios.get(`${PAYLINK_BASE_URL}/api/getInvoice/${transactionNo}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
