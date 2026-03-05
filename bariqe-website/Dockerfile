@@ -5,6 +5,7 @@ RUN apk add --no-cache curl
 COPY package*.json ./
 
 RUN npm install
+
 # Stage 2: Builder
 FROM node:20-alpine AS builder
 WORKDIR /app
