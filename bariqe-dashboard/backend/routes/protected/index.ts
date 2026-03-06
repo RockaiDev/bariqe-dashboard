@@ -32,22 +32,22 @@ const businessInfoController = new BusinessInfoController();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadDir = "uploads/";
-    
+
     // تحديد المجلد حسب نوع الملف
-    if (file.fieldname === "productImage" || 
-        file.fieldname === "categoryImage" || 
-        file.fieldname === "eventImage" ||
-        file.fieldname === "logo" ||
-        file.fieldname === "bannerImage" ||
-        file.fieldname === "heroImages" ||
-        file.fieldname === "image") {
+    if (file.fieldname === "productImage" ||
+      file.fieldname === "categoryImage" ||
+      file.fieldname === "eventImage" ||
+      file.fieldname === "logo" ||
+      file.fieldname === "bannerImage" ||
+      file.fieldname === "heroImages" ||
+      file.fieldname === "image") {
       uploadDir = "uploads/temp/";
     } else if (file.fieldname === "file") {
       uploadDir = "uploads/";
     } else if (file.fieldname === "eventFiles") {
       uploadDir = "uploads/events/";
     }
-    
+
     if (!require("fs").existsSync(uploadDir)) {
       require("fs").mkdirSync(uploadDir, { recursive: true });
     }
@@ -67,11 +67,11 @@ const upload = multer({
         return cb(new Error("Only Excel files are allowed"));
       }
     }
-    
+
     // ✅ Support all image uploads
     if (
-      file.fieldname === "productImage" || 
-      file.fieldname === "categoryImage" || 
+      file.fieldname === "productImage" ||
+      file.fieldname === "categoryImage" ||
       file.fieldname === "eventImage" ||
       file.fieldname === "logo" ||
       file.fieldname === "aboutHeroImage" ||    // ✅ NEW
@@ -82,7 +82,7 @@ const upload = multer({
     ) {
       const allowedTypes = [
         "image/jpeg",
-        "image/jpg", 
+        "image/jpg",
         "image/png",
         "image/webp",
         "image/gif",
@@ -91,11 +91,11 @@ const upload = multer({
         return cb(new Error("Only JPEG, PNG, WebP, and GIF images are allowed"));
       }
     }
-    
+
     if (file.fieldname === "eventFiles") {
       const allowedTypes = [
         "application/pdf",
-        "text/plain", 
+        "text/plain",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "image/jpeg",
@@ -107,7 +107,7 @@ const upload = multer({
         return cb(new Error("File type not allowed for event files"));
       }
     }
-    
+
     cb(null, true);
   },
   limits: {
@@ -607,7 +607,7 @@ protectedRouter.get(
 );
 
 protectedRouter.get(
-  "/events/:eventId/files/:fileId/preview", 
+  "/events/:eventId/files/:fileId/preview",
   eventController.previewEventFile.bind(eventController)
 );
 
@@ -837,5 +837,21 @@ protectedRouter.get("/shipping/track/:trackingNumber", dashboardAdminController.
 
 // Order Fulfillment (Enhancement over existing order routes)
 protectedRouter.patch("/orders/:id/status", dashboardAdminController.updateOrderStatus.bind(dashboardAdminController));
+
+/* ==============================
+   PAYLINK DIAGNOSTIC ROUTES
+================================ */
+import PayLinkService from "../../services/paylink";
+
+/**
+ * GET /paylink/test
+ * Admin-only: test connectivity + credentials from the VPS to PayLink.
+ * Returns latency, base URL, and whether auth succeeded.
+ */
+protectedRouter.get("/paylink/test", async (req, res) => {
+  const result = await PayLinkService.testConnection();
+  const statusCode = result.success ? 200 : 503;
+  res.status(statusCode).json(result);
+});
 
 export default protectedRouter;
