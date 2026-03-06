@@ -69,9 +69,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ env.WORKING_DIR }}
-          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:latest
-
+           docker build \
+           --build-arg VITE_API_BASE_URL=${{ secrets.DASHBOARD_API_URL }} \
+           -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+           ${{ env.WORKING_DIR }}
+           docker tag ...
       - name: Scan Image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
