@@ -70,7 +70,7 @@ export class PayLinkService {
 
     try {
       const response = await withRetry(() =>
-        paylinkAxios.post("/api/V2/auth", {
+        paylinkAxios.post("/api/auth", {
           apiId: PAYLINK_APP_ID,
           secretKey: PAYLINK_SECRET_KEY,
           persistToken: false,
@@ -98,7 +98,7 @@ export class PayLinkService {
         console.error(
           `[PayLinkService] Auth TIMED OUT after ${REQUEST_TIMEOUT_MS}ms. ` +
           "The VPS IP may be blocked by PayLink, or the PayLink endpoint is unreachable. " +
-          `URL: ${PAYLINK_BASE_URL}/api/V2/auth`
+          `URL: ${PAYLINK_BASE_URL}/api/auth`
         );
         throw new ApiError(
           "INTERNAL_SERVER_ERROR",
@@ -109,7 +109,7 @@ export class PayLinkService {
       if (isNetworkErr) {
         console.error(
           `[PayLinkService] Network error reaching PayLink: ${error.code} – ${error.message}. ` +
-          `URL: ${PAYLINK_BASE_URL}/api/V2/auth`
+          `URL: ${PAYLINK_BASE_URL}/api/auth`
         );
         throw new ApiError(
           "INTERNAL_SERVER_ERROR",
@@ -233,7 +233,7 @@ export class PayLinkService {
       );
 
       const response = await withRetry(() =>
-        paylinkAxios.post("/api/V2/addInvoice", payload, {
+        paylinkAxios.post("/api/addInvoice", payload, {
           headers: { Authorization: `Bearer ${token}` },
         })
       );
@@ -265,7 +265,7 @@ export class PayLinkService {
       const token = await this.getAuthHeader();
 
       const response = await withRetry(() =>
-        paylinkAxios.get(`/api/V2/getInvoice/${transactionNo}`, {
+        paylinkAxios.get(`/api/getInvoice/${transactionNo}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       );
