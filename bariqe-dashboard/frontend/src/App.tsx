@@ -29,12 +29,10 @@ function AppWrapper() {
   const { loading, authenticated } = useAuth();
   const { isInitialized } = useAuthStore();
 
-  // تعيين navigate function لـ axios
   useEffect(() => {
     setNavigate(navigate);
   }, [navigate]);
 
-  // عرض loading فقط إذا لم يتم التهيئة بعد
   if (!isInitialized || loading) {
     return <LoadingComponent />;
   }
@@ -83,30 +81,28 @@ function AppWrapper() {
         {!authenticated && (
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
+        {authenticated && (
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        )}
       </Routes>
     </Fragment>
   );
 }
 
-// دالة مساعدة لاسترجاع اللغة من localStorage
 const getStoredLocale = (): Locale => {
   try {
     const storedLocale = localStorage.getItem("locale") as Locale;
     return storedLocale && ['en', 'ar'].includes(storedLocale) ? storedLocale : "en";
   } catch (error) {
-    // في حالة عدم توفر localStorage (SSR مثلاً)
     return "en";
   }
 };
 
 export default function App() {
-  // استرجاع اللغة من localStorage أو تعيين الافتراضية
   const [locale, setLocale] = useState<Locale>(getStoredLocale());
 
-  // دالة لتحديث اللغة وحفظها في localStorage
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale);
-    // حفظ في localStorage
     try {
       localStorage.setItem("locale", newLocale);
     } catch (error) {
@@ -114,7 +110,6 @@ export default function App() {
     }
   };
 
-  // حفظ اللغة في localStorage عند التغيير (backup)
   useEffect(() => {
     try {
       localStorage.setItem("locale", locale);
