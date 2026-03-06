@@ -868,13 +868,13 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium">
-                        {order.customer?.customerName}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {order.customer?.customerEmail}
-                      </p>
-                    </div>
+                       <p className="font-medium">
+                          {order.customer?.customerName || (order as any).shippingAddress?.fullName || "Guest"}
+                       </p>
+                       <p className="text-sm text-gray-500">
+                         {order.customer?.customerEmail || (order as any).shippingAddress?.phone || "-"}
+                       </p>
+                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
