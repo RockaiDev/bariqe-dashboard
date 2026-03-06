@@ -77,6 +77,11 @@ interface Order {
     customerAddress?: string; // ✅ إضافة
     customerLocation?: string; // ✅ إضافة
     customerNotes?: string; // ✅ إضافة
+    shippingAddress?: {
+    fullName?: string;
+    phone?: string;
+    street?: string;
+    city?: string; };
   };
   products: OrderProduct[];
   orderQuantity: string;
@@ -1795,7 +1800,7 @@ export default function OrdersPage() {
                       {intl.formatMessage({ id: "orders.name" })}
                     </Label>
                     <p className="font-medium">
-                      {viewing.customer?.customerName}
+                      {viewing.customer?.customerName || (viewing as any).shippingAddress?.fullName || "Guest"}
                     </p>
                   </div>
 
@@ -1812,7 +1817,9 @@ export default function OrdersPage() {
                     <Label className="text-sm font-medium text-gray-600">
                       {intl.formatMessage({ id: "orders.phone" })}
                     </Label>
-                    <p className="text-sm">{viewing.customer?.customerPhone}</p>
+                    <p className="text-sm">
+                       {viewing.customer?.customerPhone || (viewing as any).shippingAddress?.phone || "-"}
+                    </p>
                   </div>
 
                   <div className="space-y-2">
