@@ -39,6 +39,7 @@ const corsOptions = {
       "https://bariqeeltamioz.com",
       "https://www.bariqeeltamioz.com",
       "https://dashboard.bariqeeltamioz.com",
+      "https://api.bariqealtamyoz.com",
       "https://attractive-happiness-production-a8a5.up.railway.app",
       "https://attractive-happiness-production-4918.up.railway.app",
       "https://bariqe-dashboard-production.up.railway.app",
