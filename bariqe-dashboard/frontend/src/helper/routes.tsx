@@ -29,7 +29,7 @@ const authenticationRoutes: RouteObject[] = [
     element: <LoginPage />,
   },
 
-  ...globalRoutes,
+  
 ];
 
 const routes: RouteObject[] = [
