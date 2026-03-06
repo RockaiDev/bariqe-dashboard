@@ -152,7 +152,9 @@ export class PayLinkService {
         customer?.customerPhone ||
         order.shippingAddress?.phone ||
         "0500000000"
-      ).replace(/^\+966/, "0"); // Convert +966 to local format
+      ).replace(/^\+966/, "0")
+       .replace(/^\+20/, "0") 
+       .replace(/^\+/, "");    // Convert +966 to local format
 
       // ✅ Calculate total if not set
       let orderTotal = order.total || order.orderTotal || 0;

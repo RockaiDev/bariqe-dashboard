@@ -77,7 +77,8 @@ export function useShow(resource: string, id: string | null | undefined) {
     queryFn: async () => {
       if (!id) return null;
       const response = await publicAxiosInstance.get(`/${resource}/${id}`);
-      return response;
+      return response?.result || response;
+      
     },
     enabled: !!id,
   });
