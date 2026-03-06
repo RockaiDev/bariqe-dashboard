@@ -202,7 +202,7 @@ export class PayLinkService {
       const payload = {
         amount: orderTotal,
         callBackUrl: callbackUrl,
-        cancelUrl: `${FRONTEND_BASE_URL}/checkout/cancelled`,
+        cancelUrl: `${FRONTEND_BASE_URL}/ar`,
         clientEmail: customerEmail,
         clientMobile: customerPhone,
         clientName: customerName,
