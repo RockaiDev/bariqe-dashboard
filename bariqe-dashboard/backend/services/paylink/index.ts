@@ -165,16 +165,24 @@ export class PayLinkService {
       // ✅ Calculate total if not set
       let orderTotal = order.total || order.orderTotal || 0;
       if (!orderTotal && order.products?.length > 0) {
-        orderTotal = order.products.reduce((sum: number, p: any) => {
-          const product = p.product || p._productData || {};
-          const price =
-            product.productNewPrice ||
-            product.productOldPrice ||
-            product.price ||
-            0;
-          const qty = p.quantity || 1;
-          return sum + price * qty;
-        }, 0);
+       orderTotal = order.products.reduce((sum: number, p: any) => {
+         const product = p.product || p._productData || {};
+         const oldPrice = product.productOldPrice || product.price || 0;
+         const newPrice = product.productNewPrice;
+    
+          // Use newPrice if explicitly set and > 0, otherwise oldPrice
+         const basePrice = (newPrice !== undefined && newPrice !== null && newPrice > 0)
+         ? newPrice
+         : oldPrice;
+    
+         const qty = p.quantity || 1;
+         const itemDiscount = p.itemDiscount || 0;
+         const orderDiscount = order.orderDiscount || 0;
+         const effectiveDiscount = Math.max(itemDiscount, orderDiscount);
+    
+         const itemTotal = basePrice * qty * (1 - effectiveDiscount / 100);
+         return sum + itemTotal;
+       }, 0);
       }
 
       // Guard: PayLink requires a positive amount
@@ -184,27 +192,28 @@ export class PayLinkService {
 
       // ✅ Map products to PayLink format
       const paylinkProducts = (order.products || []).map((p: any) => {
-        const product = p.product || p._productData || {};
-        const price =
-          product.productNewPrice ||
-          product.productOldPrice ||
-          product.price ||
-          0;
-        return {
-          title:
-            product.productNameEn ||
-            product.productNameAr ||
-            product.name ||
-            "Product",
-          description:
-            product.productDescriptionEn || product.productDescriptionAr || "",
-          price: price,
-          qty: p.quantity || 1,
-          imageSrc: product.productImage || "",
-          isDigital: false,
-          productCost: 0,
-          specificVat: 0,
-        };
+         const product = p.product || p._productData || {};
+         const oldPrice = product.productOldPrice || product.price || 0;
+         const newPrice = product.productNewPrice;
+         const basePrice = (newPrice !== undefined && newPrice !== null && newPrice > 0)
+           ? newPrice
+           : oldPrice;
+  
+         const itemDiscount = p.itemDiscount || 0;
+         const orderDiscount = order.orderDiscount || 0;
+         const effectiveDiscount = Math.max(itemDiscount, orderDiscount);
+         const finalPrice = basePrice * (1 - effectiveDiscount / 100);
+  
+         return {
+           title: product.productNameEn || product.productNameAr || "Product",
+           description: product.productDescriptionEn || product.productDescriptionAr || "",
+           price: finalPrice,  // ← السعر بعد الخصم
+           qty: p.quantity || 1,
+           imageSrc: product.productImage || "",
+           isDigital: false,
+           productCost: 0,
+           specificVat: 0,
+         };
       });
 
       const payload = {
