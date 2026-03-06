@@ -148,13 +148,19 @@ export class PayLinkService {
         customer?.customerName || order.shippingAddress?.fullName || "Customer";
       const customerEmail =
         customer?.customerEmail || order.customerEmail || "customer@example.com";
-      const customerPhone = (
+      const rawPhone = (
         customer?.customerPhone ||
         order.shippingAddress?.phone ||
-        "0500000000"
-      ).replace(/^\+966/, "0")
-       .replace(/^\+20/, "0") 
-       .replace(/^\+/, "");    // Convert +966 to local format
+          ""
+      ).trim();
+
+      const customerPhone = (() => {
+        if (!rawPhone) return "0500000000";
+        if (rawPhone.startsWith("+966")) return "0" + rawPhone.slice(4);
+        if (rawPhone.startsWith("966")) return "0" + rawPhone.slice(3);
+        if (rawPhone.startsWith("05") && rawPhone.length === 10) return rawPhone;
+        return "0500000000"; // أي رقم تاني (مصري وغيره) → fallback
+      })();   // Convert +966 to local format
 
       // ✅ Calculate total if not set
       let orderTotal = order.total || order.orderTotal || 0;
@@ -209,7 +215,7 @@ export class PayLinkService {
         clientMobile: customerPhone,
         clientName: customerName,
         currency: "SAR",
-        note: `Order #${order._id}`,
+        note: `Order #${order._id} | Phone: ${rawPhone}`,
         orderNumber: order._id?.toString() || `ORDER-${Date.now()}`,
         products:
           paylinkProducts.length > 0
