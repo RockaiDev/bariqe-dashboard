@@ -4,6 +4,8 @@ import { profileService } from "@/lib/services/profile";
 import { toast } from "react-hot-toast";
 import { UserProfile, Address, Order } from "@/shared/types/profile";
 import { Product } from "@/shared/types";
+import { useTranslations } from "next-intl";
+
 
 // Keys for React Query
 export const profileKeys = {
@@ -15,25 +17,25 @@ export const profileKeys = {
 
 // Profile Hooks
 export const useProfile = () => {
-  return useQuery<UserProfile | undefined>({
+  return useQuery<UserProfile>({
     queryKey: profileKeys.profile,
     queryFn: profileService.getProfile,
     retry: 0, // Don't retry for unauthenticated users
-    staleTime: 1 * 60 * 1000, // 1 minute instead of 5 - ensures quick updates after logout
-    gcTime: 0, // Don't cache garbage collected data (formerly cacheTime)
+    staleTime: 5 * 60 * 1000,
   });
 };
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.personalInfo.messages");
   return useMutation({
     mutationFn: profileService.updateProfile,
     onSuccess: (data) => {
       queryClient.setQueryData(profileKeys.profile, data);
-      toast.success("Profile updated successfully");
+      toast.success(t("updateSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || t("updateFailed"));
     },
   });
 };
@@ -48,56 +50,60 @@ export const useAddresses = () => {
 
 export const useCreateAddress = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.addresses.messages");
   return useMutation({
     mutationFn: profileService.createAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.addresses });
-      toast.success("Address added successfully");
+      toast.success(t("addSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to add address");
+      toast.error(error?.response?.data?.message || t("addFailed"));
     },
   });
 };
 
 export const useUpdateAddress = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.addresses.messages");
   return useMutation({
     mutationFn: profileService.updateAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.addresses });
-      toast.success("Address updated successfully");
+      toast.success(t("updateSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to update address");
+      toast.error(error?.response?.data?.message || t("updateFailed"));
     },
   });
 };
 
 export const useDeleteAddress = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.addresses.messages");
   return useMutation({
     mutationFn: profileService.deleteAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.addresses });
-      toast.success("Address deleted successfully");
+      toast.success(t("deleteSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to delete address");
+      toast.error(error?.response?.data?.message || t("deleteFailed"));
     },
   });
 };
 
 export const useSetDefaultAddress = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.addresses.messages");
   return useMutation({
     mutationFn: profileService.updateAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.addresses });
-      toast.success("Default address set successfully");
+      toast.success(t("defaultSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to set default address");
+      toast.error(error?.response?.data?.message || t("defaultFailed"));
     }
   });
 };
@@ -113,14 +119,15 @@ export const useOrders = () => {
 
 export const useCancelOrder = () => {
   const queryClient = useQueryClient();
+  const t = useTranslations("profile.orders.messages");
   return useMutation({
     mutationFn: profileService.cancelOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.orders });
-      toast.success("Order cancelled successfully");
+      toast.success(t("cancelSuccess"));
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to cancel order");
+      toast.error(error?.response?.data?.message || t("cancelFailed"));
     },
   });
 };
@@ -133,3 +140,4 @@ export const useFavorites = () => {
     queryFn: profileService.getFavorites,
   });
 };
+

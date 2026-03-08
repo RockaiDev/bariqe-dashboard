@@ -21,6 +21,7 @@ import { CustomPhoneInput } from "@/shared/components/phone-input";
 import { Button } from "@/shared/components/ui/button";
 import { useTranslations } from "next-intl";
 import CustomBreadcrumb from "@/shared/components/CustomBreadcrumb";
+import { useProfile } from "@/shared/hooks/useProfile";
 
 interface FormData {
   contactName: string;
@@ -48,12 +49,25 @@ const initialLocationData: LocationData = {
 
 export default function ContactForm() {
   const t = useTranslations("contact.form");
+  const { data: userProfile } = useProfile();
+
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationData, setLocationData] =
     useState<LocationData>(initialLocationData);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    if (userProfile) {
+      setFormData((prev) => ({
+        ...prev,
+        contactName: prev.contactName || userProfile.customerName || "",
+        email: prev.email || userProfile.customerEmail || "",
+        phoneNumber: prev.phoneNumber || userProfile.customerPhone || "",
+      }));
+    }
+  }, [userProfile]);
 
   // Services Dropdown State
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
@@ -106,7 +120,12 @@ export default function ContactForm() {
   };
 
   const resetForm = () => {
-    setFormData(initialFormData);
+    setFormData(userProfile ? {
+      ...initialFormData,
+      contactName: userProfile.customerName || "",
+      email: userProfile.customerEmail || "",
+      phoneNumber: userProfile.customerPhone || "",
+    } : initialFormData);
     setErrors({});
     setLocationData(initialLocationData);
     setSubmitSuccess(false);
@@ -128,7 +147,7 @@ export default function ContactForm() {
       setSubmitSuccess(false);
       setErrors({});
 
-    
+
       // let customerId: string;
       // "Fields 'customerName', 'customerPhone', 'customerSource' and 'customerAddress' are required"
       // try {
@@ -138,7 +157,7 @@ export default function ContactForm() {
       //     customerEmail: formData.email.trim().toLowerCase(),
       //     customerSource:'other',
       //     customerAddress:'test address'
-        
+
 
 
       //   };
@@ -147,18 +166,18 @@ export default function ContactForm() {
       //   const customerResponse: any = await publicApiService.createCustomer(
       //     customerData
       //   );
-        // console.log("Customer created successfully:", customerResponse);
+      // console.log("Customer created successfully:", customerResponse);
 
-        // customerId = customerResponse?.result?._id || customerResponse?._id;
+      // customerId = customerResponse?.result?._id || customerResponse?._id;
 
-        // if (!customerId) {
-        //   toast.error(t("messages.customerError"));
-        //   return;
-        // }
+      // if (!customerId) {
+      //   toast.error(t("messages.customerError"));
+      //   return;
+      // }
 
-        // console.log("Customer created with ID:", customerId);
+      // console.log("Customer created with ID:", customerId);
       // } catch (customerError: any) {
-        // console.log("Customer creation error:", customerError);
+      // console.log("Customer creation error:", customerError);
 
       //   const errorMessage =
       //     customerError?.response?.data?.message ||
@@ -183,7 +202,7 @@ export default function ContactForm() {
 
       try {
         const contactData = {
-          
+
           contactName: formData.contactName.trim(),
           email: formData.email.trim().toLowerCase(),
           phoneNumber: formData.phoneNumber.trim(),
@@ -191,7 +210,7 @@ export default function ContactForm() {
           message: formData.message.trim(),
 
         };
-      
+
         // console.log("Creating contact with data:", contactData);
         await publicApiService.createContact(contactData);
         // console.log("Contact created successfully");
