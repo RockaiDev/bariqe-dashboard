@@ -83,8 +83,6 @@ export default function CustomersPage() {
   // Customer source options
   const customerSources = [
     { value: "order", label: intl.formatMessage({ id: "customers.source_order" }) },
-    { value: "consultation", label: intl.formatMessage({ id: "customers.source_consultation" }) },
-    { value: "material_request", label: intl.formatMessage({ id: "customers.source_material_request" }) },
     { value: "contact", label: intl.formatMessage({ id: "customers.source_contact" }) },
     { value: "other", label: intl.formatMessage({ id: "customers.source_other" }) },
   ];

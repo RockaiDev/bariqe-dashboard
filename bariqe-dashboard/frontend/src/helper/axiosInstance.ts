@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://202.61.203.177:8080';
+const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const axiosInstance = axios.create({
   baseURL: BASE,

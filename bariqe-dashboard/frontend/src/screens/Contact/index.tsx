@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useIntl } from "react-intl";
+import ExcelJS from 'exceljs';
 import { Country, State, City } from 'country-state-city';
 import {
   Dialog,
@@ -272,18 +273,68 @@ export default function ContactPage() {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `contacts_export_${new Date().toISOString().split("T")[0]
-        }.xlsx`;
-      document.body.appendChild(a);
-      a.click();
+      try {
+        const arrayBuffer = await blob.arrayBuffer();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        const worksheet = workbook.worksheets[0];
 
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
+        if (worksheet) {
+          const headerRow = worksheet.getRow(1);
+          const columnsToDelete: number[] = [];
+
+          headerRow.eachCell((cell, colNumber) => {
+            const norm = String(cell.value || "").toLowerCase().replace(/[\s_]+/g, '');
+
+            const isAddress = norm === "address" || norm === "contactaddress" || norm === "العنوان";
+            const isCustomerName = norm === "customername" || norm === "اسمالعميل";
+            const isCustomerEmail = norm === "customeremail" || norm === "البريدالإلكترونيللعميل" || norm === "بريدالعميل";
+            const isCustomerCompany = norm === "customercompany" || norm === "شركةالعميل" || norm === "company" || norm === "الشركة";
+            const isCustomerServices = norm === "customerservices" || norm === "services" || norm === "الخدمات" || norm === "خدماتالعميل";
+
+            if (isAddress || isCustomerName || isCustomerEmail || isCustomerCompany || isCustomerServices) {
+              columnsToDelete.push(colNumber);
+            }
+          });
+
+          columnsToDelete.sort((a, b) => b - a);
+          columnsToDelete.forEach((colNumber) => {
+            worksheet.spliceColumns(colNumber, 1);
+          });
+
+          const newBuffer = await workbook.xlsx.writeBuffer();
+          const newBlob = new Blob([newBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+
+          const url = window.URL.createObjectURL(newBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `contacts_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }, 100);
+        } else {
+          throw new Error("Worksheet not found");
+        }
+      } catch (e) {
+        console.error("Excel processing failed, downloading original", e);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `contacts_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 100);
+      }
 
       toast.dismiss(loadingToast);
       toast.success(intl.formatMessage({ id: "contacts.contacts_exported_success" }));
@@ -329,12 +380,7 @@ export default function ContactPage() {
             {intl.formatMessage({ id: "contacts.export_contacts" })}
           </Button>
 
-          <AddContact
-            create={create.mutate}
-            createCustomer={createCustomer}
-            isLoading={create.isPending}
-            customers={customers}
-          />
+
         </div>
       </div>
 
@@ -440,12 +486,7 @@ export default function ContactPage() {
                       <Phone className="w-3 h-3" />
                       <span>{contact.phoneNumber}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate max-w-[150px]">
-                        {contact.address}
-                      </span>
-                    </div>
+
                   </div>
                 </TableCell>
                 <TableCell>
@@ -634,15 +675,7 @@ export default function ContactPage() {
                   </div>
                 )}
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {intl.formatMessage({ id: "contacts.address" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    <p className="text-sm">{viewing.address}</p>
-                  </div>
-                </div>
+
               </div>
 
               {/* Services */}
