@@ -219,7 +219,7 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // ✅ Export Products
+  // ✅ Export Products — field names match controller Excel column keys exactly
   public async ExportProducts(query?: any) {
     try {
       const {
@@ -240,39 +240,46 @@ export default class ProductService extends MongooseFeatures {
       if (result.data && result.data.length > 0) {
         await ProductModel.populate(result.data, {
           path: 'productCategory',
-          select: 'categoryNameAr categoryNameEn'
+          select: 'categoryNameAr categoryNameEn subCategories'
         });
       }
 
       const exportData = result.data.map((product: any) => {
         let categoryNameEn = '';
         let categoryNameAr = '';
+        let subCategoryNameEn = '';
+        let subCategoryNameAr = '';
 
         if (product.productCategory && typeof product.productCategory === 'object') {
           categoryNameEn = product.productCategory.categoryNameEn || '';
           categoryNameAr = product.productCategory.categoryNameAr || '';
-        }
 
-        let optionsText = '';
-        if (product.productOptions && product.productOptions.length > 0) {
-          optionsText = product.productOptions.map((opt: any) =>
-            `${opt.name} (${opt.price} SAR)`
-          ).join('; ');
+          // Resolve subCategory if product has a subCategory reference
+          if (product.productSubCategory && product.productCategory.subCategories) {
+            const subCat = product.productCategory.subCategories.find(
+              (sc: any) => sc._id?.toString() === product.productSubCategory?.toString()
+            );
+            if (subCat) {
+              subCategoryNameEn = subCat.subCategoryNameEn || '';
+              subCategoryNameAr = subCat.subCategoryNameAr || '';
+            }
+          }
         }
 
         return {
-          NameAr: product.productNameAr || "",
-          NameEn: product.productNameEn || "",
-          DescriptionAr: product.productDescriptionAr || "",
-          DescriptionEn: product.productDescriptionEn || "",
-          Price: product.productPrice || 0,
-          Amount: product.amount || 0,
-          CategoryEn: categoryNameEn,
-          CategoryAr: categoryNameAr,
-          MoreSale: product.productMoreSale ? "Yes" : "No",
-          Discount: product.productDiscount || "",
-          Options: optionsText,
-          CreatedAt: product.createdAt ? new Date(product.createdAt).toISOString().split('T')[0] : ""
+          productCode: product.productCode || product._id?.toString().substring(0, 6) || "",
+          productNameAr: product.productNameAr || "",
+          productNameEn: product.productNameEn || "",
+          productDescriptionAr: product.productDescriptionAr || "",
+          productDescriptionEn: product.productDescriptionEn || "",
+          productPrice: product.productOldPrice || product.productNewPrice || 0,
+          categoryNameEn: categoryNameEn,
+          categoryNameAr: categoryNameAr,
+          subCategoryNameEn: subCategoryNameEn,
+          subCategoryNameAr: subCategoryNameAr,
+          productForm: product.productForm || "Solid",
+          productStatus: product.productMoreSale !== undefined ? product.productMoreSale : true,
+          productDiscount: product.productDiscount || "",
         };
       });
 
@@ -283,7 +290,7 @@ export default class ProductService extends MongooseFeatures {
     }
   }
 
-  // ✅ Import Products
+  // ✅ Import Products — maps Excel fields to the actual Schema fields
   public async ImportProducts(productsData: any[]) {
     try {
       const results = {
@@ -294,46 +301,88 @@ export default class ProductService extends MongooseFeatures {
 
       for (const productData of productsData) {
         try {
-          const identifier = productData.productNameEn || productData.productNameAr || "Unknown";
+          const identifier = productData.productCode || productData.productNameEn || productData.productNameAr || "Unknown";
 
+          // --- Resolve Category ---
           let categoryId = null;
+          let categoryDoc: any = null;
           if (productData.categoryNameEn || productData.categoryNameAr) {
-            const category = await CategoryModel.findOne({
+            categoryDoc = await CategoryModel.findOne({
               $or: [
-                { categoryNameEn: productData.categoryNameEn },
-                { categoryNameAr: productData.categoryNameAr }
+                ...(productData.categoryNameEn ? [{ categoryNameEn: productData.categoryNameEn }] : []),
+                ...(productData.categoryNameAr ? [{ categoryNameAr: productData.categoryNameAr }] : []),
               ]
             });
-            if (category) categoryId = category._id;
+            if (categoryDoc) categoryId = categoryDoc._id;
           }
 
           if (!categoryId) {
             results.failed.push({
               identifier,
-              error: "Category not found or missing"
+              error: `Category not found: "${productData.categoryNameEn || productData.categoryNameAr}"`
             });
             continue;
           }
 
-          const productToSave = {
+          // --- Resolve SubCategory (optional but validated when provided) ---
+          let subCategoryId = null;
+          if (productData.subCategoryNameEn || productData.subCategoryNameAr) {
+            if (categoryDoc && categoryDoc.subCategories && categoryDoc.subCategories.length > 0) {
+              const subCat = categoryDoc.subCategories.find((sc: any) => {
+                if (productData.subCategoryNameEn && sc.subCategoryNameEn === productData.subCategoryNameEn) return true;
+                if (productData.subCategoryNameAr && sc.subCategoryNameAr === productData.subCategoryNameAr) return true;
+                return false;
+              });
+              if (subCat) {
+                subCategoryId = subCat._id;
+              } else {
+                results.failed.push({
+                  identifier,
+                  error: `SubCategory "${productData.subCategoryNameEn || productData.subCategoryNameAr}" not found in category "${productData.categoryNameEn || productData.categoryNameAr}"`
+                });
+                continue;
+              }
+            }
+          }
+
+          // --- Map Excel fields → Schema fields ---
+          const productToSave: any = {
             productNameAr: productData.productNameAr,
             productNameEn: productData.productNameEn,
             productDescriptionAr: productData.productDescriptionAr,
             productDescriptionEn: productData.productDescriptionEn,
-            productPrice: Number(productData.productPrice),
-            amount: Number(productData.amount) || 0,
+            productOldPrice: Number(productData.productPrice) || 0,
             productCategory: categoryId,
-            productMoreSale: productData.productMoreSale === 'Yes' || productData.productMoreSale === true,
             productDiscount: productData.productDiscount || "Offer 20%",
-            productOptions: []
+            productMoreSale: productData.productStatus === 'Active' || productData.productStatus === true,
           };
 
-          const existingProduct = await ProductModel.findOne({
-            productNameEn: productToSave.productNameEn
-          });
+          // Set productCode if provided
+          if (productData.productCode) {
+            productToSave.productCode = productData.productCode;
+          }
+
+          // Set subCategory if resolved
+          if (subCategoryId) {
+            productToSave.productSubCategory = subCategoryId;
+          }
+
+          // Set productForm if provided
+          if (productData.productForm) {
+            productToSave.productForm = productData.productForm;
+          }
+
+          // --- Upsert: update if exists (by productCode or productNameEn), else create ---
+          let existingProduct = null;
+          if (productData.productCode) {
+            existingProduct = await ProductModel.findOne({ productCode: productData.productCode });
+          }
+          if (!existingProduct && productToSave.productNameEn) {
+            existingProduct = await ProductModel.findOne({ productNameEn: productToSave.productNameEn });
+          }
 
           if (existingProduct) {
-            await ProductModel.findByIdAndUpdate(existingProduct._id, productToSave);
+            await ProductModel.findByIdAndUpdate(existingProduct._id, productToSave, { runValidators: true });
             results.updated.push(identifier);
           } else {
             await ProductModel.create(productToSave);
@@ -342,7 +391,7 @@ export default class ProductService extends MongooseFeatures {
 
         } catch (error: any) {
           results.failed.push({
-            identifier: productData.productNameEn || "Unknown",
+            identifier: productData.productCode || productData.productNameEn || "Unknown",
             error: error.message
           });
         }
