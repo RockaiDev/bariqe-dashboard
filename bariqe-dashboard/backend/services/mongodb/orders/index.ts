@@ -19,7 +19,8 @@ export default class OrderService extends MongooseFeatures {
       "orderDiscount",
       "orderStatus",
       "shippingAddress",
-      "nationalAddress" // ✅ Added nationalAddress to allowed keys
+      "nationalAddress",
+      "region"
     ];
   }
 
@@ -343,6 +344,15 @@ export default class OrderService extends MongooseFeatures {
     try {
       const updateData = pick(body, this.keys);
 
+      // Fetch the current order BEFORE updating to detect status transitions
+      const currentOrder = await OrderModel.findById(id);
+      if (!currentOrder) {
+        throw new ApiError("NOT_FOUND", `Order with id ${id} not found`);
+      }
+
+      const oldStatus = currentOrder.orderStatus;
+      const newStatus = updateData.orderStatus;
+
       const updatedOrder = await OrderModel.findByIdAndUpdate(id, updateData, {
         new: true,
         runValidators: true,
@@ -358,6 +368,52 @@ export default class OrderService extends MongooseFeatures {
 
       if (!updatedOrder) {
         throw new ApiError("NOT_FOUND", `Order with id ${id} not found`);
+      }
+
+      // ✅ Stock Management: Adjust product quantities on status transitions
+      if (newStatus && newStatus !== oldStatus) {
+        const orderProducts = currentOrder.products || [];
+
+        // DECREMENT stock when order is delivered (fulfilled)
+        if (newStatus === "delivered" && oldStatus !== "delivered") {
+          console.log(`[OrderService] Order ${id} fulfilled → decrementing stock`);
+          for (const item of orderProducts) {
+            const productId = item.product;
+            const qty = item.quantity || 0;
+            if (productId && qty > 0) {
+              const result = await ProductModel.findByIdAndUpdate(
+                productId,
+                { $inc: { amount: -qty } },
+                { new: true }
+              );
+              if (result) {
+                console.log(`  ✅ Product ${productId}: stock decremented by ${qty} → new stock: ${result.amount}`);
+              }
+            }
+          }
+        }
+
+        // RESTORE stock when order is cancelled (from a non-cancelled state)
+        if (newStatus === "cancelled" && oldStatus !== "cancelled") {
+          // Only restore if the order was previously delivered (stock was already decremented)
+          if (oldStatus === "delivered") {
+            console.log(`[OrderService] Order ${id} cancelled (was delivered) → restoring stock`);
+            for (const item of orderProducts) {
+              const productId = item.product;
+              const qty = item.quantity || 0;
+              if (productId && qty > 0) {
+                const result = await ProductModel.findByIdAndUpdate(
+                  productId,
+                  { $inc: { amount: qty } },
+                  { new: true }
+                );
+                if (result) {
+                  console.log(`  ✅ Product ${productId}: stock restored by ${qty} → new stock: ${result.amount}`);
+                }
+              }
+            }
+          }
+        }
       }
 
       return updatedOrder;
