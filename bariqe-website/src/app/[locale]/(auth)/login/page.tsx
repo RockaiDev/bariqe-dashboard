@@ -5,7 +5,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, LoginSchema } from "@/lib/validations/auth";
+import { getLoginSchema, LoginSchema } from "@/lib/validations/auth";
 import { useLogin, useGoogleLogin, useAppleLogin } from "@/shared/hooks/useAuth";
 import AuthCard from "@/features/auth/components/AuthCard";
 import PasswordInput from "@/features/auth/components/PasswordInput";
@@ -29,13 +29,15 @@ const LoginPage = () => {
   const common = useTranslations("auth.common");
   const locale = useLocale();
   const isRtl = locale === "ar";
-  
+
   const { mutate: login, isPending } = useLogin();
   const { mutate: googleLogin } = useGoogleLogin();
   const { mutate: appleLogin } = useAppleLogin();
 
+  const tValidation = useTranslations("auth.validation");
+
   const form = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema(tValidation)),
     defaultValues: {
       email: "",
       password: "",
@@ -85,20 +87,20 @@ const LoginPage = () => {
           />
 
           <div className="flex justify-end">
-             <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-gray-500 hover:text-primary underline underline-offset-4"
-              >
-                {t("forgotPassword")}
-              </Link>
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-gray-500 hover:text-primary underline underline-offset-4"
+            >
+              {t("forgotPassword")}
+            </Link>
           </div>
 
           <Button type="submit" className="w-full bg-[#004e6e] hover:bg-[#003b53] text-white" disabled={isPending}>
             {isPending ? common("loading") : t("submit")}
             {!isPending && (isRtl ? <ChevronLeft className="mr-2 h-4 w-4" /> : <ChevronRight className="ml-2 h-4 w-4" />)}
           </Button>
-          
-           <div className="relative">
+
+          <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -108,20 +110,20 @@ const LoginPage = () => {
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <GoogleAuthButton 
-              text={t("googleLogin")} 
+            <GoogleAuthButton
+              text={t("googleLogin")}
               onClick={() => googleLogin(undefined)}
             />
-            <AppleAuthButton 
-              text={t("appleLogin")} 
+            <AppleAuthButton
+              text={t("appleLogin")}
               onClick={() => appleLogin()}
             />
           </div>
 
           <div className="text-center text-sm text-gray-500">
-             {t("noAccount")}{" "}
+            {t("noAccount")}{" "}
             <Link href="/register" className="font-semibold text-primary underline underline-offset-4 hover:text-[#004e6e]">
               {t("registerNow")}
             </Link>

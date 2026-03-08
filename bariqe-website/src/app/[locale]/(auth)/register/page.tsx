@@ -5,7 +5,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, RegisterSchema } from "@/lib/validations/auth";
+import { getRegisterSchema, RegisterSchema } from "@/lib/validations/auth";
 import { useRegister, useGoogleLogin, useAppleLogin } from "@/shared/hooks/useAuth";
 import AuthCard from "@/features/auth/components/AuthCard";
 import PasswordInput from "@/features/auth/components/PasswordInput";
@@ -34,8 +34,10 @@ const RegisterPage = () => {
   const { mutate: googleLogin } = useGoogleLogin();
   const { mutate: appleLogin } = useAppleLogin();
 
+  const tValidation = useTranslations("auth.validation");
+
   const form = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(getRegisterSchema(tValidation)),
     defaultValues: {
       name: "",
       email: "",
@@ -61,7 +63,7 @@ const RegisterPage = () => {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-             <FormField
+          <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
@@ -105,7 +107,7 @@ const RegisterPage = () => {
 
           <Button type="submit" className="w-full bg-[#004e6e] hover:bg-[#003b53] text-white mt-2" disabled={isPending}>
             {isPending ? common("loading") : t("submit")}
-             {!isPending && (isRtl ? <ChevronLeft className="mr-2 h-4 w-4" /> : <ChevronRight className="ml-2 h-4 w-4" />)}
+            {!isPending && (isRtl ? <ChevronLeft className="mr-2 h-4 w-4" /> : <ChevronRight className="ml-2 h-4 w-4" />)}
           </Button>
 
           <div className="relative my-4">
@@ -114,18 +116,18 @@ const RegisterPage = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="px-2 text-muted-foreground bg-white">
-                 {t("or")}
+                {t("or")}
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <GoogleAuthButton 
-              text={t("googleRegister")} 
+            <GoogleAuthButton
+              text={t("googleRegister")}
               onClick={() => googleLogin(undefined)}
             />
-            <AppleAuthButton 
-              text={t("appleRegister")} 
+            <AppleAuthButton
+              text={t("appleRegister")}
               onClick={() => appleLogin()}
             />
           </div>

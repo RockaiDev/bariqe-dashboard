@@ -1150,6 +1150,16 @@
       "didNotReceive": "Didn't receive the code?",
       "submit": "Verify"
     },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "otpLength": "OTP must be 6 characters",
+      "passwordsMismatch": "Passwords do not match"
+    },
     "resetPassword": {
       "title": "Create New Password",
       "subtitle": "Your new password must be different from previously used passwords.",
@@ -1161,6 +1171,17 @@
     },
     "common": {
       "loading": "Loading..."
+    },
+    "messages": {
+      "verifyEmailFirst": "Please verify your email first.",
+      "loginSuccess": "Logged in successfully",
+      "accountCreatedVerify": "Account created! Please verify your email.",
+      "otpSent": "OTP sent to your email",
+      "passwordResetSuccess": "Password reset successfully",
+      "otpResentSuccess": "OTP resent successfully",
+      "logoutSuccess": "Logged out successfully",
+      "emailVerifiedLogin": "Email verified successfully! Please log in.",
+      "emailRequired": "Email address is required"
     }
   },
   "profile": {
@@ -1181,7 +1202,11 @@
       "password": "New Password",
       "changePassword": "Change Password",
       "update": "Update Profile",
-      "saved": "Profile updated successfully"
+      "saved": "Profile updated successfully",
+      "messages": {
+        "updateSuccess": "Profile updated successfully",
+        "updateFailed": "Failed to update profile"
+      }
     },
     "addresses": {
       "title": "Saved Addresses",
@@ -1203,6 +1228,16 @@
         "phone": "Phone Number",
         "save": "Save Address",
         "cancel": "Cancel"
+      },
+      "messages": {
+        "addSuccess": "Address added successfully",
+        "updateSuccess": "Address updated successfully",
+        "deleteSuccess": "Address deleted successfully",
+        "defaultSuccess": "Default address set successfully",
+        "addFailed": "Failed to add address",
+        "updateFailed": "Failed to update address",
+        "deleteFailed": "Failed to delete address",
+        "defaultFailed": "Failed to set default address"
       }
     },
     "orders": {
@@ -1230,6 +1265,10 @@
         "cancelled": "Cancelled",
         "paid": "Paid",
         "failed": "Failed"
+      },
+      "messages": {
+        "cancelSuccess": "Order cancelled successfully",
+        "cancelFailed": "Failed to cancel order"
       }
     },
     "favorites": {

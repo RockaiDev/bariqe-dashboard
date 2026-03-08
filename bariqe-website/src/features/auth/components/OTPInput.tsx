@@ -14,9 +14,9 @@ const OTPInput = ({ length = 6, value, onChange, className }: OTPInputProps) => 
 
   // Sync internal state with external value if needed (e.g. clear)
   useEffect(() => {
-     if (value === "") {
-        setOtp(new Array(length).fill(""));
-     }
+    if (value === "") {
+      setOtp(new Array(length).fill(""));
+    }
   }, [value, length]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -58,14 +58,17 @@ const OTPInput = ({ length = 6, value, onChange, className }: OTPInputProps) => 
     });
     setOtp(newOtp);
     onChange(newOtp.join(""));
-    
+
     // Focus last filled
     const nextFocusIndex = Math.min(pastedData.length, length - 1);
     inputRefs.current[nextFocusIndex]?.focus();
   };
 
   return (
-    <div className={cn("flex gap-1 justify-center", className)}>
+    <div
+      className={cn("flex gap-1 justify-center", className)}
+      style={{ direction: "ltr" }}
+    >
       {otp.map((digit, index) => (
         <input
           key={index}
@@ -77,6 +80,7 @@ const OTPInput = ({ length = 6, value, onChange, className }: OTPInputProps) => 
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
           className="w-12 h-12 text-center text-xl font-bold border-2 border-yellow-400 rounded-lg focus:border-primary focus:outline-none transition-colors"
+          style={{ textAlign: 'center' }}
         />
       ))}
     </div>

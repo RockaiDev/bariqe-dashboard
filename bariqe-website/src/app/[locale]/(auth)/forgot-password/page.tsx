@@ -5,7 +5,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forgotPasswordSchema, ForgotPasswordSchema } from "@/lib/validations/auth";
+import { getForgotPasswordSchema, ForgotPasswordSchema } from "@/lib/validations/auth";
 import { useForgotPassword } from "@/shared/hooks/useAuth";
 import AuthCard from "@/features/auth/components/AuthCard";
 import SecurityIcons from "@/features/auth/components/SecurityIcons";
@@ -19,17 +19,19 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { useRouter } from "@/i18n/routing";    
+import { useRouter } from "@/i18n/routing";
 
 const ForgotPasswordPage = () => {
   const t = useTranslations("auth.forgotPassword");
   const common = useTranslations("auth.common");
-  const router = useRouter(); 
-  
+  const router = useRouter();
+
   const { mutate: forgotPassword, isPending } = useForgotPassword();
 
+  const tValidation = useTranslations("auth.validation");
+
   const form = useForm<ForgotPasswordSchema>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(getForgotPasswordSchema(tValidation)),
     defaultValues: {
       email: "",
     },
@@ -49,7 +51,7 @@ const ForgotPasswordPage = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="text-center text-sm text-gray-500 mb-4">
-               {t("instruction")}
+            {t("instruction")}
           </div>
 
           <FormField
@@ -70,7 +72,7 @@ const ForgotPasswordPage = () => {
             {isPending ? common("loading") : t("submit")}
           </Button>
 
-           {/* <div className="text-center mt-4">
+          {/* <div className="text-center mt-4">
                 <button type="button" className="text-sm text-gray-500 hover:text-primary underline">
                     {t("usePhoneInstead")}
                 </button>

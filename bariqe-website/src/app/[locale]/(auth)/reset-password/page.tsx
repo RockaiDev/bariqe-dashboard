@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { resetPasswordSchema, ResetPasswordSchema } from "@/lib/validations/auth";
+import { getResetPasswordSchema, ResetPasswordSchema } from "@/lib/validations/auth";
 import { useResetPassword } from "@/shared/hooks/useAuth";
 import AuthCard from "@/features/auth/components/AuthCard";
 import SecurityIcons from "@/features/auth/components/SecurityIcons";
@@ -30,8 +30,10 @@ const ResetPasswordPage = () => {
 
   const { mutate: resetPassword, isPending } = useResetPassword();
 
+  const tValidation = useTranslations("auth.validation");
+
   const form = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(getResetPasswordSchema(tValidation)),
     defaultValues: {
       otp: urlOtp, // Pre-fill if available
       password: "",
@@ -40,12 +42,12 @@ const ResetPasswordPage = () => {
   });
 
   const onSubmit = (data: ResetPasswordSchema) => {
-  
+
     resetPassword({
-        email,
-        otp: data.otp, 
-        password: data.password,
-        confirmPassword: data.confirmPassword
+      email,
+      otp: data.otp,
+      password: data.password,
+      confirmPassword: data.confirmPassword
     });
   };
 
@@ -86,7 +88,7 @@ const ResetPasswordPage = () => {
             )}
           />
 
-           <FormField
+          <FormField
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (

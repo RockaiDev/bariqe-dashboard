@@ -5,9 +5,14 @@ import { authService } from "@/lib/services/auth";
 import { AuthResponse } from "@/shared/types/auth";
 import { profileKeys } from "@/shared/hooks/useProfile";
 
+import { useFavoritesStore } from "@/shared/hooks/useFavoritesStore";
+import { useTranslations } from "next-intl";
+
 export const useLogin = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const t = useTranslations("auth.messages");
+
 
   return useMutation({
     mutationFn: authService.login,
@@ -21,24 +26,18 @@ export const useLogin = () => {
       const token = result.token;
 
       if (customer && customer.isVerified === false) {
-        toast.error("Please verify your email first.");
+        toast.error(t("verifyEmailFirst"));
         router.push(`/verify-otp?email=${encodeURIComponent(customer.customerEmail)}&type=register`);
         return;
       }
 
 
-      // ✅ Save auth credentials to localStorage so API calls carry the token
-      if (typeof window !== "undefined" && token) {
-        localStorage.setItem("token", token);
-        if (customer) {
-          localStorage.setItem("user", JSON.stringify(customer));
-        }
-        // Notify all listeners (e.g. Header) that auth state changed
-        window.dispatchEvent(new Event("auth-change"));
-      }
-
-      toast.success(data.message || "Logged in successfully");
+      toast.success(data.message || t("loginSuccess"));
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
+
+      // Sync favorites from backend after login
+      useFavoritesStore.getState().syncFromBackend();
+
       router.push("/");
     },
     onError: (error: any) => {
@@ -49,6 +48,7 @@ export const useLogin = () => {
 
 export const useRegister = () => {
   const router = useRouter();
+  const t = useTranslations("auth.messages");
 
   return useMutation({
     mutationFn: authService.register,
@@ -61,7 +61,7 @@ export const useRegister = () => {
       const email = variables.email;
 
 
-      toast.success("Account created! Please verify your email.");
+      toast.success(t("accountCreatedVerify"));
       router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=register`);
     },
     onError: (error: any) => {
@@ -73,11 +73,12 @@ export const useRegister = () => {
 
 export const useForgotPassword = () => {
   const router = useRouter();
+  const t = useTranslations("auth.messages");
 
   return useMutation({
     mutationFn: authService.forgotPassword,
     onSuccess: (_, variables) => {
-      toast.success("OTP sent to your email");
+      toast.success(t("otpSent"));
       router.push(`/reset-password?email=${encodeURIComponent(variables.email)}`);
     },
     onError: (error: any) => {
@@ -100,11 +101,12 @@ export const useVerifyOTP = () => {
 
 export const useResetPassword = () => {
   const router = useRouter();
+  const t = useTranslations("auth.messages");
 
   return useMutation({
     mutationFn: authService.resetPassword,
     onSuccess: () => {
-      toast.success("Password reset successfully");
+      toast.success(t("passwordResetSuccess"));
       router.push("/login");
     },
     onError: (error: any) => {
@@ -139,10 +141,11 @@ export const useGoogleLogin = () => {
 };
 
 export const useResendOTP = () => {
+  const t = useTranslations("auth.messages");
   return useMutation({
     mutationFn: authService.resendOTP,
     onSuccess: (data) => {
-      toast.success(data.message || "OTP resent successfully");
+      toast.success(data.message || t("otpResentSuccess"));
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -176,6 +179,7 @@ export const useAppleLogin = () => {
 export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const t = useTranslations("auth.messages");
 
   return useMutation({
     mutationFn: authService.logout,
@@ -183,39 +187,32 @@ export const useLogout = () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        window.dispatchEvent(new Event("auth-change"));
       }
 
-      // Clear all cached query data
+      // Clear all queries from the cache
       queryClient.clear();
 
-      toast.success("Logged out successfully");
+      // Reset favorites auth state
+      useFavoritesStore.getState().setAuthenticated(false);
 
-      // ✅ Hard redirect so the entire page re-mounts with cleared auth state.
-      // router.push/refresh won't reliably update client state when already on the same page.
-      if (typeof window !== "undefined") {
-        const locale = window.location.pathname.split("/")[1] || "ar";
-        setTimeout(() => {
-          window.location.href = `/${locale}`;
-        }, 500); // small delay so the toast is visible before redirect
-      }
+      toast.success(t("logoutSuccess"));
+      router.push("/");
     },
-    onError: () => {
-      // Even on server error, clear local auth state
+    onError: (error: any) => {
+      // Even if server error, we clear local state
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        window.dispatchEvent(new Event("auth-change"));
       }
-
-      // Clear all cached query data
       queryClient.clear();
 
-      // ✅ Hard redirect — guarantees a clean page reload
-      if (typeof window !== "undefined") {
-        const locale = window.location.pathname.split("/")[1] || "ar";
-        setTimeout(() => {
-          window.location.href = `/${locale}`;
-        }, 500);
-      }
+      // Reset favorites auth state
+      useFavoritesStore.getState().setAuthenticated(false);
+
+      router.push("/");
     }
   });
 };
+

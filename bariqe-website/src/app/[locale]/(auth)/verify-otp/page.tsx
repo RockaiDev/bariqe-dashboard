@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { otpSchema, OtpSchema } from "@/lib/validations/auth";
+import { getOtpSchema, OtpSchema } from "@/lib/validations/auth";
 import { useVerifyOTP, useResendOTP } from "@/shared/hooks/useAuth";
 import AuthCard from "@/features/auth/components/AuthCard";
 import SecurityIcons from "@/features/auth/components/SecurityIcons";
@@ -24,6 +24,7 @@ import { toast } from "react-hot-toast";
 const VerifyOTPPage = () => {
   const t = useTranslations("auth.verifyOtp");
   const common = useTranslations("auth.common");
+  const authMessages = useTranslations("auth.messages");
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const type = searchParams.get("type") || "reset"; // 'register' or 'reset'
@@ -32,8 +33,10 @@ const VerifyOTPPage = () => {
   const { mutate: verifyOtp, isPending } = useVerifyOTP();
   const { mutate: resendOtp, isPending: isResending } = useResendOTP();
 
+  const tValidation = useTranslations("auth.validation");
+
   const form = useForm<OtpSchema>({
-    resolver: zodResolver(otpSchema),
+    resolver: zodResolver(getOtpSchema(tValidation)),
     defaultValues: {
       otp: "",
     },
@@ -41,19 +44,23 @@ const VerifyOTPPage = () => {
 
   const onSubmit = (data: OtpSchema) => {
     verifyOtp({ email, otp: data.otp }, {
-      onSuccess: () => {
-            if (type === "register") {
-               router.push("/");  // هيكون logged in أوتوماتيك
-            } else {
-             router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${data.otp}`);
-          }
+      onSuccess: (response) => {
+        if (type === "register") {
+          // Registration verification flow - redirect to login
+          toast.success(authMessages("emailVerifiedLogin"));
+          router.push("/");
+        } else {
+          // Password reset flow - redirect to reset password page
+          const tokenParam = response.tempToken ? `&token=${response.tempToken}` : "";
+          router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${data.otp}${tokenParam}`);
         }
+      }
     });
   };
 
   const handleResendOTP = () => {
     if (!email) {
-      toast.error("Email address is required");
+      toast.error(authMessages("emailRequired"));
       return;
     }
     resendOtp({ email });
@@ -67,8 +74,8 @@ const VerifyOTPPage = () => {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-           <div className="text-center text-sm text-gray-500 -mt-2">
-              {t("instruction", { email: email || "your email" })}
+          <div className="text-center text-sm text-gray-500 -mt-2">
+            {t("instruction", { email: email || "your email" })}
           </div>
 
           <FormField
@@ -85,14 +92,14 @@ const VerifyOTPPage = () => {
           />
 
           <div className="text-center text-sm">
-             {t("didNotReceive")}{" "}
-            <button 
-              type="button" 
+            {t("didNotReceive")}{" "}
+            <button
+              type="button"
               className="font-bold text-primary hover:text-primary/90 disabled:opacity-50"
               onClick={handleResendOTP}
               disabled={isResending}
             >
-                {isResending ? common("loading") : t("resendCode")}
+              {isResending ? common("loading") : t("resendCode")}
             </button>
           </div>
 

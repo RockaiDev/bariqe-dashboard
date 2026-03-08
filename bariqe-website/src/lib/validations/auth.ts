@@ -10,19 +10,37 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+export const getLoginSchema = (t: any) => z.object({
+  email: z.string().min(1, t("emailRequired")).email(t("emailInvalid")),
+  password: z.string().min(1, t("passwordRequired")).min(6, t("passwordMinLength")),
+});
+
 export const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  // phone: z.string().optional(),
+});
+
+export const getRegisterSchema = (t: any) => z.object({
+  name: z.string().min(1, t("nameRequired")).min(2, t("nameMinLength")),
+  email: z.string().min(1, t("emailRequired")).email(t("emailInvalid")),
+  password: z.string().min(1, t("passwordRequired")).min(6, t("passwordMinLength")),
 });
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+export const getForgotPasswordSchema = (t: any) => z.object({
+  email: z.string().min(1, t("emailRequired")).email(t("emailInvalid")),
+});
+
 export const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 characters"),
+});
+
+export const getOtpSchema = (t: any) => z.object({
+  otp: z.string().length(6, t("otpLength")),
 });
 
 export const resetPasswordSchema = z
@@ -33,6 +51,17 @@ export const resetPasswordSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export const getResetPasswordSchema = (t: any) => z
+  .object({
+    otp: z.string().length(6, t("otpLength")),
+    password: z.string().min(1, t("passwordRequired")).min(6, t("passwordMinLength")),
+    confirmPassword: z.string().min(1, t("passwordRequired")).min(6, t("passwordMinLength")),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: t("passwordsMismatch"),
     path: ["confirmPassword"],
   });
 
