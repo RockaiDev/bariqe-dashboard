@@ -34,11 +34,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
     const [quantity, setQuantity] = useState(1);
     const [imageError, setImageError] = useState(false);
 
-    const isValidOffer = product.productDiscount && product.productDiscount > 0 && product.productDiscount <= 100;
+    const discount = Number(product.productDiscount || 0);
+    const oldPrice = Number(product.productOldPrice || 0);
+    const isValidOffer = discount > 0 && discount <= 100;
 
     const realPrice = isValidOffer
-        ? product.productOldPrice - (product.productOldPrice * (product.productDiscount / 100))
-        : product.productOldPrice;
+        ? oldPrice - (oldPrice * (discount / 100))
+        : oldPrice;
 
     const handleIncrement = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -79,7 +81,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     {/* Discount Badge */}
                     {isValidOffer && (
                         <div className="bg-destructive text-white text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-sm">
-                            {product.productDiscount}% {local === 'en' ? 'OFF' : 'خصم'}
+                            {discount}% {local === 'en' ? 'OFF' : 'خصم'}
                         </div>
                     )}
 
@@ -130,12 +132,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
                         </Link>
 
                         <div className="flex items-center justify-end gap-1 mt-1 text-primary">
-                            <span className="text-base sm:text-lg font-bold">{Math.round(realPrice)}</span>
+                            <span className="text-base sm:text-lg font-bold">{Number(realPrice.toFixed(2))}</span>
                             <span className="text-[10px] sm:text-xs icon-saudi_riyal_new"></span>
                         </div>
                         {isValidOffer && (
                             <div className="flex items-center justify-end gap-1 text-gray-400 text-[10px] sm:text-xs line-through">
-                                <span>{product.productOldPrice}</span>
+                                <span>{Number(oldPrice.toFixed(2))}</span>
                                 <span className="icon-saudi_riyal_new"></span>
                             </div>
                         )}

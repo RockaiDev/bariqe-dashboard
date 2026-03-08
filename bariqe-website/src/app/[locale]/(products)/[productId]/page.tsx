@@ -33,6 +33,7 @@ const ProductDetails = () => {
     const tCR = useTranslations('customerReviews');
     const [showData, setShowData] = useState(true);
     const [quantity, setQuantity] = useState<number>(1);
+    const [imgError, setImgError] = useState(false);
     const { addItem, items, removeItem } = useCart();
     const router = useRouter();
 
@@ -40,8 +41,11 @@ const ProductDetails = () => {
 
     const params = useParams();
     const { list } = useCrud('public/products')
-    const { data: fetchedProduct, isLoading: isProductLoading } = useShow('public/products', params.productId as string);
-
+    const { list: singleProductQuery } = useCrud(`public/products/${params.productId}`);
+    const isProductLoading = singleProductQuery.isLoading;
+    const rawData = singleProductQuery.data as any;
+    const product: Product | undefined = rawData?.result || rawData?.data || rawData as Product | undefined;
+    console.log(product)
     const itemInCart = items.find((it: any) => it.id === params.productId);
     const local = useLocale()
 
@@ -52,7 +56,7 @@ const ProductDetails = () => {
                 await navigator.share({
                     title: local === 'en' ? product.productNameEn : product.productNameAr,
                     text: local === 'en' ? product.productDescriptionEn : product.productDescriptionAr,
-                    url: `${process.env.NEXT_PUBLIC_SITE_URL}/${product._id}`,
+                    url: `${process.env.NEXT_PUBLIC_SITE_URL}/${params.productId}`,
                 });
             } catch (err) {
                 console.log("Share canceled", err);
@@ -65,16 +69,15 @@ const ProductDetails = () => {
         if (!list.data?.data) return [];
         return list.data?.data.filter((el) => el._id !== params.productId)
     }, [list.data?.data, params.productId])
-    
+
     // Use fetched product
-    const product: Product | undefined = fetchedProduct as Product | undefined;
-
-    const hasOffer = product?.productDiscount && product.productDiscount > 0 && product.productDiscount <= 100;
-
+    const discount = Number(product?.productDiscount || 0);
+    const oldPrice = Number(product?.productOldPrice || 0);
+    const hasOffer = discount > 0 && discount <= 100;
 
     const realPrice = hasOffer && product
-        ? product.productOldPrice - (product.productOldPrice * (product.productDiscount / 100))
-        : product?.productOldPrice || 0;
+        ? oldPrice - (oldPrice * (discount / 100))
+        : oldPrice;
 
     if (isProductLoading) return <Loading />
     if (!product) return <div className="h-screen flex items-center justify-center">Product not found</div>;
@@ -102,7 +105,14 @@ const ProductDetails = () => {
                 <div className='flex-1 p-4'>
 
 
-                    <Image src={product.productImage} alt={local === 'en' ? product.productDescriptionEn : product.productDescriptionAr} width={500} height={500} className='object-cover rounded-lg' />
+                    <Image
+                        onError={() => setImgError(true)}
+                        src={imgError || !product.productImage ? '/product-placeholder.png' : product.productImage}
+                        alt={(local === 'en' ? product.productDescriptionEn : product.productDescriptionAr) || 'Product Image'}
+                        width={500}
+                        height={500}
+                        className='object-cover rounded-lg'
+                    />
                     {/* <CustomCarousel> 
             {imagesUrls.map((url,index)=>
             <CarouselItem key={index}>
@@ -128,7 +138,7 @@ const ProductDetails = () => {
                             </div> */}
 
                         </div>
-                        <p className='text-primary font-bold text-2xl lg:text-3xl flex items-center gap-1'>{realPrice} <span className="text-xl icon-saudi_riyal_new"></span></p>
+                        <p className='text-primary font-bold text-2xl lg:text-3xl flex items-center gap-1'>{Number(realPrice.toFixed(2))} <span className="text-xl icon-saudi_riyal_new"></span></p>
                     </div>
 
                     <div className='w-full flex items-center justify-start gap-2'>
