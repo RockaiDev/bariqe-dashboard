@@ -209,54 +209,42 @@ export const createProductFilterGroups = (
   t: (key: string) => string,
   isRTL: boolean = false
 ) => [
-  {
-    label: t("filters.status"),
-    key: "status",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.active"), value: "active" },
-      { label: t("filters.inactive"), value: "inactive" },
-    ],
-  },
+    {
+      label: t("filters.status"),
+      key: "status",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.active"), value: "active" },
+        { label: t("filters.inactive"), value: "inactive" },
+      ],
+    },
 
-  {
-    label: t("filters.form"),
-    key: "form",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.solid"), value: "solid" },
-      { label: t("filters.liquid"), value: "liquid" },
-      { label: t("filters.gas"), value: "gas" },
-      { label: t("filters.powder"), value: "powder" },
-      { label: t("filters.granular"), value: "granular" },
-    ],
-  },
-  {
-    label: t("filters.date"),
-    key: "date",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.today"), value: "today" },
-      { label: t("filters.this_week"), value: "thisweek" },
-      { label: t("filters.this_month"), value: "thismonth" },
-      { label: t("filters.last_30_days"), value: "last30days" },
-      { label: t("filters.last_3_months"), value: "last3months" },
-    ],
-  },
-  {
-    label: t("filters.category"),
-    key: "category",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      ...categories.map((cat: any) => ({
-        label: isRTL
-          ? cat.categoryNameAr || cat.categoryName
-          : cat.categoryNameEn || cat.categoryName,
-        value: cat._id,
-      })),
-    ],
-  },
-];
+    {
+      label: t("filters.date"),
+      key: "date",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.today"), value: "today" },
+        { label: t("filters.this_week"), value: "thisweek" },
+        { label: t("filters.this_month"), value: "thismonth" },
+        { label: t("filters.last_30_days"), value: "last30days" },
+        { label: t("filters.last_3_months"), value: "last3months" },
+      ],
+    },
+    {
+      label: t("filters.category"),
+      key: "category",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        ...categories.map((cat: any) => ({
+          label: isRTL
+            ? cat.categoryNameAr || cat.categoryName
+            : cat.categoryNameEn || cat.categoryName,
+          value: cat._id,
+        })),
+      ],
+    },
+  ];
 
 // filters/orderFilters.ts
 export const handleOrderFilters: FilterHandler = (
@@ -423,39 +411,39 @@ export const handleMaterialRequestFilters: FilterHandler = (
 export const createMaterialRequestFilterGroups = (
   t: (key: string) => string
 ) => [
-  {
-    label: t("filters.status"),
-    key: "status",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.pending"), value: "pending" },
-      { label: t("filters.approved"), value: "approved" },
-      { label: t("filters.denied"), value: "denied" },
-    ],
-  },
-  {
-    label: t("filters.quantity_range"),
-    key: "quantity",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.low_quantity_range"), value: "low" },
-      { label: t("filters.medium_quantity_range"), value: "medium" },
-      { label: t("filters.high_quantity_range"), value: "high" },
-    ],
-  },
-  {
-    label: t("filters.date"),
-    key: "date",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.today"), value: "today" },
-      { label: t("filters.this_week"), value: "thisweek" },
-      { label: t("filters.this_month"), value: "thismonth" },
-      { label: t("filters.last_30_days"), value: "last30days" },
-      { label: t("filters.last_3_months"), value: "last3months" },
-    ],
-  },
-];
+    {
+      label: t("filters.status"),
+      key: "status",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.pending"), value: "pending" },
+        { label: t("filters.approved"), value: "approved" },
+        { label: t("filters.denied"), value: "denied" },
+      ],
+    },
+    {
+      label: t("filters.quantity_range"),
+      key: "quantity",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.low_quantity_range"), value: "low" },
+        { label: t("filters.medium_quantity_range"), value: "medium" },
+        { label: t("filters.high_quantity_range"), value: "high" },
+      ],
+    },
+    {
+      label: t("filters.date"),
+      key: "date",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.today"), value: "today" },
+        { label: t("filters.this_week"), value: "thisweek" },
+        { label: t("filters.this_month"), value: "thismonth" },
+        { label: t("filters.last_30_days"), value: "last30days" },
+        { label: t("filters.last_3_months"), value: "last3months" },
+      ],
+    },
+  ];
 
 // filters/categoryFilters.ts
 export const handleCategoryFilters: FilterHandler = (
@@ -751,38 +739,38 @@ export const handleConsultationRequestFilters: FilterHandler = (
 export const createConsultationRequestFilterGroups = (
   t: (key: string) => string
 ) => [
-  {
-    label: t("filters.status"),
-    key: "status",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.new"), value: "new" },
-      { label: t("filters.contacted"), value: "contacted" },
-      { label: t("filters.closed"), value: "closed" },
-    ],
-  },
-  {
-    label: t("filters.customer_status"),
-    key: "customerStatus",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.existing_customer"), value: "existing" },
-      { label: t("filters.potential_customer"), value: "potential" },
-    ],
-  },
-  {
-    label: t("filters.date"),
-    key: "date",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.today"), value: "today" },
-      { label: t("filters.this_week"), value: "thisweek" },
-      { label: t("filters.this_month"), value: "thismonth" },
-      { label: t("filters.last_30_days"), value: "last30days" },
-      { label: t("filters.last_3_months"), value: "last3months" },
-    ],
-  },
-];
+    {
+      label: t("filters.status"),
+      key: "status",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.new"), value: "new" },
+        { label: t("filters.contacted"), value: "contacted" },
+        { label: t("filters.closed"), value: "closed" },
+      ],
+    },
+    {
+      label: t("filters.customer_status"),
+      key: "customerStatus",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.existing_customer"), value: "existing" },
+        { label: t("filters.potential_customer"), value: "potential" },
+      ],
+    },
+    {
+      label: t("filters.date"),
+      key: "date",
+      options: [
+        { label: t("filters.all"), value: "all" },
+        { label: t("filters.today"), value: "today" },
+        { label: t("filters.this_week"), value: "thisweek" },
+        { label: t("filters.this_month"), value: "thismonth" },
+        { label: t("filters.last_30_days"), value: "last30days" },
+        { label: t("filters.last_3_months"), value: "last3months" },
+      ],
+    },
+  ];
 
 export const createConsultationRequestSearchHandler = (
   changeFilterFn: (queries: any[], type?: "queries" | "sorts") => void

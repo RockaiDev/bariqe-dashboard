@@ -89,13 +89,13 @@ interface Product {
   productOldPrice?: number; // Required field from backend
   productNewPrice?: number; // Optional field from backend
   productCategory:
-    | {
-        _id: string;
-        categoryNameAr: string;
-        categoryNameEn: string;
-        subCategories?: SubCategory[];
-      }
-    | string;
+  | {
+    _id: string;
+    categoryNameAr: string;
+    categoryNameEn: string;
+    subCategories?: SubCategory[];
+  }
+  | string;
   productSubCategory?: string; // ✅ إضافة SubCategory
   productImage?: string;
   productStatus: boolean;
@@ -105,7 +105,7 @@ interface Product {
   discountTiers?: DiscountTier[];
   createdAt?: string;
   updatedAt?: string;
-  amount?:number
+  amount?: number
 }
 
 interface Category {
@@ -126,22 +126,22 @@ export default function ProductsPage() {
   };
 
   // Grade and Form options based on schema
-  const GRADE_OPTIONS = [
-    {
-      label: intl.formatMessage({ id: "products.grade.technical" }),
-      value: "Technical",
-    },
-    {
-      label: intl.formatMessage({ id: "products.grade.analytical" }),
-      value: "Analytical",
-    },
-    { label: intl.formatMessage({ id: "products.grade.usp" }), value: "USP" },
-    { label: intl.formatMessage({ id: "products.grade.fcc" }), value: "FCC" },
-    {
-      label: intl.formatMessage({ id: "products.grade.cosmetic" }),
-      value: "Cosmetic Grade",
-    },
-  ];
+  // const GRADE_OPTIONS = [
+  //   {
+  //     label: intl.formatMessage({ id: "products.grade.technical" }),
+  //     value: "Technical",
+  //   },
+  //   {
+  //     label: intl.formatMessage({ id: "products.grade.analytical" }),
+  //     value: "Analytical",
+  //   },
+  //   { label: intl.formatMessage({ id: "products.grade.usp" }), value: "USP" },
+  //   { label: intl.formatMessage({ id: "products.grade.fcc" }), value: "FCC" },
+  //   {
+  //     label: intl.formatMessage({ id: "products.grade.cosmetic" }),
+  //     value: "Cosmetic Grade",
+  //   },
+  // ];
 
   const FORM_OPTIONS = [
     {
@@ -198,9 +198,9 @@ export default function ProductsPage() {
   const currentSort =
     filters.sorts?.length > 0
       ? {
-          key: filters.sorts[0].field,
-          direction: filters.sorts[0].direction,
-        }
+        key: filters.sorts[0].field,
+        direction: filters.sorts[0].direction,
+      }
       : undefined;
 
   const handleSortChange = (key?: string, direction?: "asc" | "desc") => {
@@ -286,17 +286,17 @@ export default function ProductsPage() {
   });
 
   // ✅ Function to fetch subcategories by category ID
-// ✅ Function to fetch subcategories by category ID - إصلاح الخطأ
-const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> => {
-  try {
-    const response = await axiosInstance.get(`/products/subcategories/${categoryId}`);
+  // ✅ Function to fetch subcategories by category ID - إصلاح الخطأ
+  const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> => {
+    try {
+      const response = await axiosInstance.get(`/products/subcategories/${categoryId}`);
 
-    return response as any ; 
-  } catch (error) {
-    console.error("Error fetching subcategories:", error);
-    return [];
-  }
-};
+      return response as any;
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      return [];
+    }
+  };
 
   // Function to check if product code exists
   // const checkProductCode = async (
@@ -334,10 +334,10 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
       // editForm.productCode !== editing.productCode ||
       editForm.productPrice !== getDisplayPrice(editing) ||
       editForm.productCategory !==
-        (typeof editing.productCategory === "object"
-          ? editing.productCategory._id
-          : editing.productCategory) ||
-   
+      (typeof editing.productCategory === "object"
+        ? editing.productCategory._id
+        : editing.productCategory) ||
+
       editImageFile !== null ||
       editImagePreview !== (editing.productImage || "")
     );
@@ -365,16 +365,16 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
     });
     setEditImageFile(null);
     setEditImagePreview(p.productImage || "");
-    
+
     // ✅ Fetch subcategories for the product's category
-    const categoryId = typeof p.productCategory === "object" 
-      ? p.productCategory._id 
+    const categoryId = typeof p.productCategory === "object"
+      ? p.productCategory._id
       : p.productCategory;
     if (categoryId) {
       const subs = await fetchSubCategories(categoryId);
       setEditSubCategories(subs);
     }
-    
+
     setEditOpen(true);
   };
 
@@ -515,80 +515,79 @@ const fetchSubCategories = async (categoryId: string): Promise<SubCategory[]> =>
   };
 
   // Export functions
-const handleExportProducts = async () => {
-  const loadingToast = toast.loading(
-    intl.formatMessage({ id: "products.exporting" })
-  );
+  const handleExportProducts = async () => {
+    const loadingToast = toast.loading(
+      intl.formatMessage({ id: "products.exporting" })
+    );
 
-  try {
-    // إعداد parameters للإكسبورت مع الفلاتر الحالية
-    const exportParams = {
-      // إرسال الفلاتر الحالية (بدون pagination)
-      sorts: JSON.stringify(filters.sorts),
-      queries: JSON.stringify(filters.queries),
-      search: filters.search,
-      // إزالة pagination parameters للحصول على جميع النتائج المفلترة
-      // perPage: undefined,
-      // page: undefined,
-    };
+    try {
+      // إعداد parameters للإكسبورت مع الفلاتر الحالية
+      const exportParams = {
+        // إرسال الفلاتر الحالية (بدون pagination)
+        sorts: JSON.stringify(filters.sorts),
+        queries: JSON.stringify(filters.queries),
+        search: filters.search,
+        // إزالة pagination parameters للحصول على جميع النتائج المفلترة
+        // perPage: undefined,
+        // page: undefined,
+      };
 
-    const response = await axiosInstance.get("/products/export", {
-      params: exportParams, // إرسال الفلاتر كـ query parameters
-      responseType: "blob",
-    });
+      const response = await axiosInstance.get("/products/export", {
+        params: exportParams, // إرسال الفلاتر كـ query parameters
+        responseType: "blob",
+      });
 
-    const contentType = response.headers["content-type"];
-    if (contentType && contentType.includes("application/json")) {
-      const blob = new Blob([response.data]);
-      const text = await blob.text();
-      const error = JSON.parse(text);
-      throw new Error(error.message || "Export failed");
+      const contentType = response.headers["content-type"];
+      if (contentType && contentType.includes("application/json")) {
+        const blob = new Blob([response.data]);
+        const text = await blob.text();
+        const error = JSON.parse(text);
+        throw new Error(error.message || "Export failed");
+      }
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `products_export_${new Date().toISOString().split("T")[0]
+        }.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+
+      toast.dismiss(loadingToast);
+
+      // إضافة رسالة تأكيد تتضمن عدد المنتجات المصدرة
+      const filteredCount = products?.length;
+      const totalCount = pagination.total;
+
+      if (filteredCount < totalCount) {
+        toast.success(
+          intl.formatMessage(
+            { id: "products.export_filtered_success" },
+            { count: filteredCount, total: totalCount }
+          )
+        );
+      } else {
+        toast.success(intl.formatMessage({ id: "products.export_success" }));
+      }
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        intl.formatMessage({ id: "products.export_failed" });
+      toast.error(errorMessage);
+      console.error("Export error:", error);
     }
-
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `products_export_${
-      new Date().toISOString().split("T")[0]
-    }.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }, 100);
-
-    toast.dismiss(loadingToast);
-    
-    // إضافة رسالة تأكيد تتضمن عدد المنتجات المصدرة
-    const filteredCount = products?.length;
-    const totalCount = pagination.total;
-    
-    if (filteredCount < totalCount) {
-      toast.success(
-        intl.formatMessage(
-          { id: "products.export_filtered_success" }, 
-          { count: filteredCount, total: totalCount }
-        )
-      );
-    } else {
-      toast.success(intl.formatMessage({ id: "products.export_success" }));
-    }
-  } catch (error: any) {
-    toast.dismiss(loadingToast);
-    const errorMessage =
-      error?.response?.data?.message ||
-      error?.message ||
-      intl.formatMessage({ id: "products.export_failed" });
-    toast.error(errorMessage);
-    console.error("Export error:", error);
-  }
-};
+  };
 
   const handleDownloadTemplate = async () => {
     const loadingToast = toast.loading(
@@ -739,9 +738,8 @@ const handleExportProducts = async () => {
 
   return (
     <div
-      className={`p-6 space-y-4 !font-tajawal ${
-        isRTL ? "rtl" : "ltr"
-      } relative min-h-screen overflow-x-hidden`}
+      className={`p-6 space-y-4 !font-tajawal ${isRTL ? "rtl" : "ltr"
+        } relative min-h-screen overflow-x-hidden`}
     >
       <div className="flex justify-between items-center mb-3 md:flex-row flex-col gap-3">
         <Title
@@ -784,189 +782,189 @@ const handleExportProducts = async () => {
             isLoading={create.isPending}
             categories={activeCategories}
             // checkProductCode={checkProductCode}
-            gradeOptions={GRADE_OPTIONS}
+            // gradeOptions={GRADE_OPTIONS}
             formOptions={FORM_OPTIONS}
             fetchSubCategories={fetchSubCategories} // ✅ Pass fetchSubCategories
           />
         </div>
       </div>
 
-  <DataTable
-  title={intl.formatMessage({ id: "products.management_title" })}
-  icon={Package}
-  loading={list.isLoading}
-  isEmpty={!products?.length}
-  columnCount={12}
-  pagination={pagination}
-  dateFilterAble={true}
-  sort={currentSort}
-  onSortChange={handleSortChange}
-  onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
-  onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
-  searchProps={{
-    placeholder: intl.formatMessage({
-      id: "products.search_placeholder",
-    }),
-    onKeyDown: createProductSearchHandler(ChangeFilter),
-  }}
-  filterGroups={createProductFilterGroups(
-    activeCategories,
-    (key: string) => intl.formatMessage({ id: key }),
-    isRTL
-  )}
-  onFiltersApply={(filters, dateFilter) => {
-    if (dateFilter) handleCustomDateRange(dateFilter, ChangeFilter);
-    else handleCustomDateRange(null, ChangeFilter);
+      <DataTable
+        title={intl.formatMessage({ id: "products.management_title" })}
+        icon={Package}
+        loading={list.isLoading}
+        isEmpty={!products?.length}
+        columnCount={12}
+        pagination={pagination}
+        dateFilterAble={true}
+        sort={currentSort}
+        onSortChange={handleSortChange}
+        onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
+        onPerPageChange={(perPage) => setFilters((f) => ({ ...f, perPage, page: 1 }))}
+        searchProps={{
+          placeholder: intl.formatMessage({
+            id: "products.search_placeholder",
+          }),
+          onKeyDown: createProductSearchHandler(ChangeFilter),
+        }}
+        filterGroups={createProductFilterGroups(
+          activeCategories,
+          (key: string) => intl.formatMessage({ id: key }),
+          isRTL
+        )}
+        onFiltersApply={(filters, dateFilter) => {
+          if (dateFilter) handleCustomDateRange(dateFilter, ChangeFilter);
+          else handleCustomDateRange(null, ChangeFilter);
 
-    Object.entries(filters).forEach(([key, val]) => {
-      handleProductFilters(key, val, ChangeFilter);
-    });
-  }}
-  RenderHead={({ sort, onSortChange }) => (
-    <>
-      <TableHead className="text-center w-10">#</TableHead>
+          Object.entries(filters).forEach(([key, val]) => {
+            handleProductFilters(key, val, ChangeFilter);
+          });
+        }}
+        RenderHead={({ sort, onSortChange }) => (
+          <>
+            <TableHead className="text-center w-10">#</TableHead>
 
-      <TableHead className="px-4 py-2 text-center">
-        {intl.formatMessage({ id: "products.table.image" })}
-      </TableHead>
+            <TableHead className="px-4 py-2 text-center">
+              {intl.formatMessage({ id: "products.table.image" })}
+            </TableHead>
 
-      <SortableTH
-        sortKey={isRTL ? "productNameAr" : "productNameEn"}
-        label={intl.formatMessage({ id: "products.table.name" })}
-        sort={sort}
-        onSortChange={onSortChange}
-        className="px-4 py-2 text-center"
-      />
+            <SortableTH
+              sortKey={isRTL ? "productNameAr" : "productNameEn"}
+              label={intl.formatMessage({ id: "products.table.name" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2 text-center"
+            />
 
-      <SortableTH
-        sortKey="productCategory"
-        label={intl.formatMessage({ id: "products.table.category" })}
-        sort={sort}
-        onSortChange={onSortChange}
-        className="px-4 py-2 text-center"
-      />
+            <SortableTH
+              sortKey="productCategory"
+              label={intl.formatMessage({ id: "products.table.category" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2 text-center"
+            />
 
-      <SortableTH
-        sortKey="productOldPrice"
-        label={intl.formatMessage({ id: "products.table.price" })}
-        sort={sort}
-        onSortChange={onSortChange}
-        className="px-4 py-2 text-center"
-      />
+            <SortableTH
+              sortKey="productOldPrice"
+              label={intl.formatMessage({ id: "products.table.price" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2 text-center"
+            />
 
-      {/* ⭐ عمود الخصم */}
-      <SortableTH
-        sortKey="amount"
-        label={intl.formatMessage({ id: "products.form.amount" })}
-        sort={sort}
-        onSortChange={onSortChange}
-        className="px-4 py-2 text-center"
-      />
+            {/* ⭐ عمود الخصم */}
+            <SortableTH
+              sortKey="amount"
+              label={intl.formatMessage({ id: "products.form.amount" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2 text-center"
+            />
 
-      <SortableTH
-        sortKey="createdAt"
-        label={intl.formatMessage({ id: "products.table.date" })}
-        sort={sort}
-        onSortChange={onSortChange}
-        className="px-4 py-2 text-center"
-      />
+            <SortableTH
+              sortKey="createdAt"
+              label={intl.formatMessage({ id: "products.table.date" })}
+              sort={sort}
+              onSortChange={onSortChange}
+              className="px-4 py-2 text-center"
+            />
 
-      <TableHead className="px-4 py-2 text-center">
-        {intl.formatMessage({ id: "common.actions" })}
-      </TableHead>
-    </>
-  )}
-  RenderBody={({ getRowColor }) => (
-    <>
-      {products?.map((p, i) => (
-        <TableRow
-          key={p._id}
-          className={`
+            <TableHead className="px-4 py-2 text-center">
+              {intl.formatMessage({ id: "common.actions" })}
+            </TableHead>
+          </>
+        )}
+        RenderBody={({ getRowColor }) => (
+          <>
+            {products?.map((p, i) => (
+              <TableRow
+                key={p._id}
+                className={`
             ${getRowColor(i)}
             hover:bg-blue-50 transition-colors duration-150
             border-b border-gray-200
           `}
-          onClick={() => handleView(p)}
-        >
-          <TableCell className="text-center w-10 font-semibold">{i + 1}</TableCell>
-
-          <TableCell>
-            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 mx-auto shadow-sm">
-              <img
-                src={p.productImage || productImage}
-                alt={isRTL ? p.productNameAr : p.productNameEn}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </TableCell>
-
-          <TableCell className="font-medium text-black text-center">
-            {isRTL ? p.productNameAr : p.productNameEn}
-          </TableCell>
-
-          <TableCell className="text-center text-gray-700">
-            {getCategoryName(p.productCategory)}
-          </TableCell>
-
-          <TableCell className="font-bold text-center">
-            {getDisplayPrice(p)?.toFixed(2)} SAR
-          </TableCell>
-
-          {/* ⭐ عرض قيمة الخصم */}
-          <TableCell className="font-bold text-center text-green-600">
-            {p.amount
-              ? Number(p.amount)
-              : "0"}
-          </TableCell>
-
-          <TableCell className="text-center text-gray-500">
-            {p.createdAt
-              ? new Date(p.createdAt).toLocaleDateString(
-                  isRTL ? "ar-EG" : "en-US",
-                  {
-                    year: "2-digit",
-                    month: "short",
-                    day: "numeric",
-                  }
-                )
-              : "N/A"}
-          </TableCell>
-
-          <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEdit(p);
-                }}
-                className="shadow-sm"
+                onClick={() => handleView(p)}
               >
-                <Pen className="w-4 h-4" />
-              </Button>
+                <TableCell className="text-center w-10 font-semibold">{i + 1}</TableCell>
 
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setToDelete(p);
-                  setDeleteOpen(true);
-                }}
-                className="shadow-sm"
-              >
-                <Trash className="w-4 h-4 text-white" />
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-      ))}
-    </>
-  )}
-/>
+                <TableCell>
+                  <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 mx-auto shadow-sm">
+                    <img
+                      src={p.productImage || productImage}
+                      alt={isRTL ? p.productNameAr : p.productNameEn}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </TableCell>
 
-      
+                <TableCell className="font-medium text-black text-center">
+                  {isRTL ? p.productNameAr : p.productNameEn}
+                </TableCell>
+
+                <TableCell className="text-center text-gray-700">
+                  {getCategoryName(p.productCategory)}
+                </TableCell>
+
+                <TableCell className="font-bold text-center">
+                  {getDisplayPrice(p)?.toFixed(2)} SAR
+                </TableCell>
+
+                {/* ⭐ عرض قيمة الخصم */}
+                <TableCell className="font-bold text-center text-green-600">
+                  {p.amount
+                    ? Number(p.amount)
+                    : "0"}
+                </TableCell>
+
+                <TableCell className="text-center text-gray-500">
+                  {p.createdAt
+                    ? new Date(p.createdAt).toLocaleDateString(
+                      isRTL ? "ar-EG" : "en-US",
+                      {
+                        year: "2-digit",
+                        month: "short",
+                        day: "numeric",
+                      }
+                    )
+                    : "N/A"}
+                </TableCell>
+
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(p);
+                      }}
+                      className="shadow-sm"
+                    >
+                      <Pen className="w-4 h-4" />
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setToDelete(p);
+                        setDeleteOpen(true);
+                      }}
+                      className="shadow-sm"
+                    >
+                      <Trash className="w-4 h-4 text-white" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </>
+        )}
+      />
+
+
 
       {/* View Details Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
@@ -993,9 +991,8 @@ const handleExportProducts = async () => {
                     {intl.formatMessage({ id: "products.form.image" })}
                   </Label>
                   <div
-                    className={`flex items-center gap-4 ${
-                      isRTL ? "flex-row-reverse" : ""
-                    }`}
+                    className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""
+                      }`}
                   >
                     <div className="w-32 h-32 bg-gray-50 rounded-md border overflow-hidden">
                       <img
@@ -1096,7 +1093,7 @@ const handleExportProducts = async () => {
                 </div>
 
                 {/* ✅ إضافة عرض SubCategory */}
-              
+
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
@@ -1195,7 +1192,7 @@ const handleExportProducts = async () => {
               </div>
 
               {/* General Discount */}
-              {viewing.productDiscount && viewing.productDiscount !=="" && (
+              {viewing.productDiscount && viewing.productDiscount !== "" && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-600">
                     {intl.formatMessage({
@@ -1257,11 +1254,11 @@ const handleExportProducts = async () => {
                     <p className="text-sm">
                       {viewing.createdAt
                         ? new Date(viewing.createdAt).toLocaleString(
-                            isRTL ? "ar-EG" : "en-US"
-                          )
+                          isRTL ? "ar-EG" : "en-US"
+                        )
                         : intl.formatMessage({
-                            id: "products.view.not_available",
-                          })}
+                          id: "products.view.not_available",
+                        })}
                     </p>
                   </div>
                 </div>
@@ -1274,11 +1271,11 @@ const handleExportProducts = async () => {
                     <p className="text-sm">
                       {viewing.updatedAt
                         ? new Date(viewing.updatedAt).toLocaleString(
-                            isRTL ? "ar-EG" : "en-US"
-                          )
+                          isRTL ? "ar-EG" : "en-US"
+                        )
                         : intl.formatMessage({
-                            id: "products.view.not_available",
-                          })}
+                          id: "products.view.not_available",
+                        })}
                     </p>
                   </div>
                 </div>
@@ -1350,8 +1347,8 @@ const handleExportProducts = async () => {
                 !editForm.productDescriptionAr ||
                 !editForm.productDescriptionEn ||
                 !editForm.productCategory ||
-               // ✅ Add subcategory validation
-                editForm.productPrice <= 0 
+                // ✅ Add subcategory validation
+                editForm.productPrice <= 0
               ) {
                 toast.error(
                   intl.formatMessage({
@@ -1451,9 +1448,8 @@ const handleExportProducts = async () => {
                 {intl.formatMessage({ id: "products.form.image" })}
               </Label>
               <div
-                className={`flex items-center gap-4 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""
+                  }`}
               >
                 <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
                   {editImagePreview ? (
@@ -1464,11 +1460,11 @@ const handleExportProducts = async () => {
                     />
                   ) : (
                     <img
-                        src={productImage}
-                        alt={isRTL ? editForm.productNameAr : editForm.productNameEn}
-                        className="w-full h-full object-cover"
-                      
-                      />
+                      src={productImage}
+                      alt={isRTL ? editForm.productNameAr : editForm.productNameEn}
+                      className="w-full h-full object-cover"
+
+                    />
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -1568,8 +1564,8 @@ const handleExportProducts = async () => {
                 <Select
                   value={editForm.productCategory}
                   onValueChange={async (value) => {
-                    setEditForm((f) => ({ 
-                      ...f, 
+                    setEditForm((f) => ({
+                      ...f,
                       productCategory: value,
                       productSubCategory: "" // ✅ Reset subcategory when category changes
                     }));
@@ -1588,9 +1584,9 @@ const handleExportProducts = async () => {
                   <SelectContent>
                     {activeCategories?.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
-                           {isRTL
-                          ? category.categoryNameAr 
-                          : category.categoryNameEn }
+                        {isRTL
+                          ? category.categoryNameAr
+                          : category.categoryNameEn}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1645,7 +1641,7 @@ const handleExportProducts = async () => {
                 required
               />
 
-          
+
 
               {/* <FormField
                 id="edit_productDiscount"
@@ -1716,7 +1712,7 @@ const handleExportProducts = async () => {
             </div>
 
             {/* Discount Tiers Section */}
-         
+
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
                 <Label htmlFor="edit_productMoreSale">
@@ -1753,12 +1749,12 @@ const handleExportProducts = async () => {
                   !editForm.productDescriptionAr ||
                   !editForm.productDescriptionEn ||
                   !editForm.productCategory ||
-                
-                  editForm.productPrice <= 0 
-              
+
+                  editForm.productPrice <= 0
+
                 }
               >
-                {  update.isPending ? (
+                {update.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {intl.formatMessage({ id: "products.updating" })}
@@ -1931,7 +1927,7 @@ function AddProduct({
   isLoading: boolean;
   categories: Category[];
   // checkProductCode: (code: string) => Promise<boolean>;
-  gradeOptions: { label: string; value: string }[];
+  // gradeOptions: { label: string; value: string }[];
   formOptions: { label: string; value: string }[];
   fetchSubCategories: (categoryId: string) => Promise<SubCategory[]>; // ✅ Add type
 }) {
@@ -2048,8 +2044,8 @@ function AddProduct({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ( isLoading) return;
-  
+    if (isLoading) return;
+
 
     // Clean up form data - remove empty strings and filter valid tiers
     const cleanForm = {
@@ -2143,9 +2139,8 @@ function AddProduct({
                 {intl.formatMessage({ id: "products.form.image" })}
               </Label>
               <div
-                className={`flex items-center gap-4 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""
+                  }`}
               >
                 <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden flex items-center justify-center">
                   {imagePreview ? (
@@ -2155,12 +2150,12 @@ function AddProduct({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                  <img
-                        src={productImage}
-                        alt={isRTL ? form.productNameAr : form.productNameEn}
-                        className="w-full h-full object-cover"
-                      
-                      />
+                    <img
+                      src={productImage}
+                      alt={isRTL ? form.productNameAr : form.productNameEn}
+                      className="w-full h-full object-cover"
+
+                    />
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -2255,8 +2250,8 @@ function AddProduct({
                 <Select
                   value={form.productCategory}
                   onValueChange={async (value) => {
-                    setForm((f) => ({ 
-                      ...f, 
+                    setForm((f) => ({
+                      ...f,
                       productCategory: value,
                       productSubCategory: "" // ✅ Reset subcategory when category changes
                     }));
@@ -2276,8 +2271,8 @@ function AddProduct({
                     {categories?.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
                         {isRTL
-                          ? category.categoryNameAr 
-                          : category.categoryNameEn }
+                          ? category.categoryNameAr
+                          : category.categoryNameEn}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2308,8 +2303,8 @@ function AddProduct({
                     {subCategories?.map((subCategory) => (
                       <SelectItem key={subCategory._id} value={subCategory._id}>
                         {isRTL
-                          ? subCategory.subCategoryNameAr 
-                          : subCategory.subCategoryNameEn }
+                          ? subCategory.subCategoryNameAr
+                          : subCategory.subCategoryNameEn}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2379,7 +2374,7 @@ function AddProduct({
                 </Select>
               </div> */}
 
-             <FormField
+              <FormField
                 id="productDiscount"
                 label={intl.formatMessage({ id: "products.form.general_discount_percent" })}
                 value={form.productDiscount}
@@ -2429,7 +2424,7 @@ function AddProduct({
               />
             </div>
 
-      
+
 
             <div className="col-span-full flex items-center justify-between border rounded-md p-3">
               <div>
