@@ -3,7 +3,7 @@ import ApiError from "../../../utils/errors/ApiError";
 import MongooseFeatures from "../../../services/mongodb/features";
 
 export default class CustomerProfileService extends MongooseFeatures {
-  
+
   public async getProfile(customerId: string) {
     const customer = await CustomerModel.findById(customerId);
     if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
@@ -18,17 +18,17 @@ export default class CustomerProfileService extends MongooseFeatures {
       customerPhone: body.phone, // Care: unique constraint
       avatar: body.avatar
     };
-    
+
     // Check if phone/email is being updated and conflicts
     // Reuse logic from CustomerService.EditOneCustomer if needed or rely on database unique index error
-    
+
     const customer = await CustomerModel.findByIdAndUpdate(customerId, updateData, { new: true, runValidators: true });
     if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
     return customer;
   }
 
   // === Addresses ===
-  
+
   public async addAddress(customerId: string, addressData: any) {
     const customer = await CustomerModel.findById(customerId);
     if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
@@ -51,7 +51,7 @@ export default class CustomerProfileService extends MongooseFeatures {
     if (!address) throw new ApiError("NOT_FOUND", "Address not found");
 
     if (addressData.isDefault && !address.isDefault) {
-       customer.addresses.forEach((a: any) => a.isDefault = false);
+      customer.addresses.forEach((a: any) => a.isDefault = false);
     }
 
     Object.assign(address, addressData);
@@ -65,7 +65,7 @@ export default class CustomerProfileService extends MongooseFeatures {
 
     const addressIndex = customer.addresses.findIndex((a: any) => a._id.toString() === addressId);
     if (addressIndex === -1) throw new ApiError("NOT_FOUND", "Address not found");
-    
+
     customer.addresses.splice(addressIndex, 1);
     await customer.save();
     return customer.addresses;
@@ -108,7 +108,10 @@ export default class CustomerProfileService extends MongooseFeatures {
   // === Orders ===
   public async getMyOrders(customerId: string) {
     const OrderModel = require("../../../models/orderSchema").default; // Late require to avoid circular dependency if any
-    const orders = await OrderModel.find({ customer: customerId })
+    const orders = await OrderModel.find({
+      customer: customerId,
+      orderStatus: { $ne: "pending" }
+    })
       .populate("products.product", "productNameAr productNameEn productImage productCode")
       .sort({ createdAt: -1 });
     return orders;
