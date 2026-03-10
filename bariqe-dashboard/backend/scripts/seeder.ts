@@ -219,6 +219,7 @@ async function seed() {
             minPoolSize: 5,
             retryWrites: true,
             w: "majority" as const,
+            dbName: "Bariqe",
         };
         await mongoose.connect(process.env.MONGO_URI, options);
         console.log("✅ Connected to MongoDB\n");

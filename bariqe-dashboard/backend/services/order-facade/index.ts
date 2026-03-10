@@ -45,7 +45,15 @@ export interface OrderInput {
   callbackUrl?: string; // Optional: override the default PayLink callback URL
 }
 
-// Safely resolve the first URL from FRONTEND_URL env var (may be comma-separated)
+const parseDiscountPercent = (discount: any): number => {
+  if (discount === undefined || discount === null) return 0;
+  if (typeof discount === "number") return discount;
+  const match = String(discount)
+    .replace(",", ".")
+    .match(/-?\d+(\.\d+)?/);
+  return match ? parseFloat(match[0]) || 0 : 0;
+};
+
 const resolveFrontendUrl = (): string => {
   const raw = process.env.FRONTEND_URL || "http://localhost:3000";
   return raw.split(',')[0].trim();
@@ -111,19 +119,37 @@ class OrderFacade {
           throw new ApiError("NOT_FOUND", `Product ${item.product} not found`);
         }
 
-        const price = (product as any).productNewPrice || (product as any).productOldPrice || 0;
-        const itemTotal = price * item.quantity;
+        const basePrice =
+          (product as any).productOldPrice ||
+          (product as any).productNewPrice ||
+          0;
+        const discountPercent = parseDiscountPercent(
+          (product as any).productDiscount
+        );
+        const unitPrice =
+          basePrice > 0 && discountPercent > 0
+            ? Math.round(basePrice * (1 - discountPercent / 100) * 100) / 100
+            : ((product as any).productNewPrice || basePrice);
+
+        const itemTotal = unitPrice * item.quantity;
         subtotal += itemTotal;
 
         populatedProducts.push({
           product: item.product,
           quantity: item.quantity,
           itemDiscount: item.itemDiscount || 0,
-          // Store for PayLink
           _productData: {
-            name: (product as any).productNameEn || (product as any).productNameAr || "Product",
-            price: price,
-          }
+            name:
+              (product as any).productNameEn ||
+              (product as any).productNameAr ||
+              "Product",
+            price: unitPrice,
+            productOldPrice: (product as any).productOldPrice,
+            productDiscount: (product as any).productDiscount,
+            productDescriptionEn: (product as any).productDescriptionEn,
+            productDescriptionAr: (product as any).productDescriptionAr,
+            productImage: (product as any).productImage,
+          },
         });
       }
 

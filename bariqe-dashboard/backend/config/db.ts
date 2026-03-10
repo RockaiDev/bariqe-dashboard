@@ -15,10 +15,11 @@ export const connectDB = async () => {
       minPoolSize: 5, // Maintain at least 5 socket connections
       retryWrites: true,
       w: 'majority' as const,
+      dbName: process.env.DB_NAME || 'test',
     };
 
     const conn = await mongoose.connect(process.env.MONGO_URI, options);
-    
+
     console.log(
       `======================MongoDB Connected 🚀🚀🚀🚀======================`
     );
@@ -36,7 +37,7 @@ export const connectDB = async () => {
         if (collections.length > 0) {
           const customersCollection = db.collection('customers');
           const indexes = await customersCollection.indexes();
-          
+
           // Drop customerPhone_1 index if it exists (we don't want unique on phone)
           const phoneIndex = indexes.find((idx: any) => idx.name === 'customerPhone_1');
           if (phoneIndex) {
@@ -68,7 +69,7 @@ export const connectDB = async () => {
 
   } catch (error: any) {
     console.error("❌ MongoDB connection error:", error);
-    
+
     // Provide helpful error messages
     if (error.name === 'MongooseServerSelectionError') {
       console.error('\n📋 Troubleshooting Steps:');
@@ -84,7 +85,7 @@ export const connectDB = async () => {
       console.error('   - Check your MongoDB username and password');
       console.error('   - Verify the user has proper database access\n');
     }
-    
+
     // Don't exit in development - allow server to start and retry
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);

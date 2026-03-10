@@ -53,7 +53,34 @@ async function withRetry<T>(
   throw lastError;
 }
 
-// ─── Service class ────────────────────────────────────────────────────────────
+const parseDiscountPercent = (discount: any): number => {
+  if (discount === undefined || discount === null) return 0;
+  if (typeof discount === "number") return discount;
+  const match = String(discount)
+    .replace(",", ".")
+    .match(/-?\d+(\.\d+)?/);
+  return match ? parseFloat(match[0]) || 0 : 0;
+};
+
+const getDiscountedUnitPrice = (product: any): number => {
+  if (!product) return 0;
+  const basePrice =
+    (product as any).productOldPrice ??
+    (product as any).productNewPrice ??
+    (product as any).price ??
+    0;
+  const discountPercent = parseDiscountPercent(
+    (product as any).productDiscount ?? (product as any).discount
+  );
+  if (basePrice > 0 && discountPercent > 0) {
+    const discounted = basePrice * (1 - discountPercent / 100);
+    return Math.round(discounted * 100) / 100;
+  }
+  const explicit =
+    (product as any).productNewPrice ?? (product as any).price ?? basePrice;
+  return explicit || 0;
+};
+
 export class PayLinkService {
   /**
    * Authenticates with PayLink and returns a bearer token.
@@ -143,6 +170,12 @@ export class PayLinkService {
     try {
       const token = await this.getAuthHeader();
 
+      const resolveProductData = (item: any) => {
+        if (item?._productData) return item._productData;
+        if (item?.product && typeof item.product === "object") return item.product;
+        return {};
+      };
+
       // ✅ Resolve customer info (Auth Customer OR Shipping Address for guests)
       const customerName =
         customer?.customerName || order.shippingAddress?.fullName || "Customer";
@@ -166,12 +199,8 @@ export class PayLinkService {
       let orderTotal = order.total || order.orderTotal || 0;
       if (!orderTotal && order.products?.length > 0) {
         orderTotal = order.products.reduce((sum: number, p: any) => {
-          const product = p.product || p._productData || {};
-          const price =
-            product.productNewPrice ||
-            product.productOldPrice ||
-            product.price ||
-            0;
+          const product = resolveProductData(p);
+          const price = getDiscountedUnitPrice(product);
           const qty = p.quantity || 1;
           return sum + price * qty;
         }, 0);
@@ -184,23 +213,21 @@ export class PayLinkService {
 
       // ✅ Map products to PayLink format
       const paylinkProducts = (order.products || []).map((p: any) => {
-        const product = p.product || p._productData || {};
-        const price =
-          product.productNewPrice ||
-          product.productOldPrice ||
-          product.price ||
-          0;
+        const product = resolveProductData(p);
+        const price = getDiscountedUnitPrice(product);
         return {
           title:
-            product.productNameEn ||
-            product.productNameAr ||
-            product.name ||
+            (product as any).productNameEn ||
+            (product as any).productNameAr ||
+            (product as any).name ||
             "Product",
           description:
-            product.productDescriptionEn || product.productDescriptionAr || "",
+            (product as any).productDescriptionEn ||
+            (product as any).productDescriptionAr ||
+            "",
           price: price,
           qty: p.quantity || 1,
-          imageSrc: product.productImage || "",
+          imageSrc: (product as any).productImage || "",
           isDigital: false,
           productCost: 0,
           specificVat: 0,
