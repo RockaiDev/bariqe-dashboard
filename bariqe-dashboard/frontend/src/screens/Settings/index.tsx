@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl';
 import GeneralTab from "./GeneralTab";
 import EventsLogsTab from "./EventsLogsTab";
 import useAuth from "@/hooks/useAuth";
-import { User, Settings, Calendar, ChevronRight, Shield, Mail } from "lucide-react";
+import { User, Settings, ChevronRight, Shield, Mail } from "lucide-react";
 
 export default function SystemSettings() {
   const intl = useIntl();
@@ -17,12 +17,12 @@ export default function SystemSettings() {
       icon: Settings,
       description: intl.formatMessage({ id: "system_settings.general_description" })
     },
-    { 
-      key: "events", 
-      label: intl.formatMessage({ id: "system_settings.events_logs" }),
-      icon: Calendar,
-      description: intl.formatMessage({ id: "system_settings.events_logs_description" })
-    },
+    // { 
+    //   key: "events", 
+    //   label: intl.formatMessage({ id: "system_settings.events_logs" }),
+    //   icon: Calendar,
+    //   description: intl.formatMessage({ id: "system_settings.events_logs_description" })
+    // },
   ];
 
   const activeTab = tabs.find(tab => tab.key === active);

@@ -8,7 +8,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
 
@@ -25,13 +24,13 @@ import {
   Eye,
   Users,
   Pen,
-  Plus,
+
   Trash,
   Download,
   Calendar,
   SquareArrowUpRight,
   MapPin,
-  Navigation, // ✅ إضافة أيقونة للموقع الحالي
+ 
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ interface LocationData {
 
 export default function CustomersPage() {
   const intl = useIntl();
- const { isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
   // Customer source options
   const customerSources = [
     { value: "order", label: intl.formatMessage({ id: "customers.source_order" }) },
@@ -96,7 +95,7 @@ export default function CustomersPage() {
     search: "",
   });
 
-  const { list, create, update, del } = useCrud("customers", filters);
+  const { list, update, del } = useCrud("customers", filters);
 
   const ChangeFilter = (
     newQueries: any[],
@@ -187,7 +186,7 @@ export default function CustomersPage() {
     };
     setEditForm(formData);
     setOriginalEditForm(formData);
-    
+
     // ✅ Parse existing location if available
     if (c.customerLocation) {
       parseLocationString(c.customerLocation, setEditLocationData);
@@ -200,7 +199,7 @@ export default function CustomersPage() {
         stateCode: "",
       });
     }
-    
+
     setEditOpen(true);
   };
 
@@ -282,7 +281,7 @@ export default function CustomersPage() {
         const [city, stateCode, countryCode] = parts;
         const country = Country.getCountryByCode(countryCode);
         const state = State.getStateByCodeAndCountry(stateCode, countryCode);
-        
+
         if (country) {
           setLocationData({
             country: country.name,
@@ -323,14 +322,14 @@ export default function CustomersPage() {
         response.data instanceof Blob
           ? response.data
           : new Blob([response.data], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `customers_export_${
         new Date().toISOString().split("T")[0]
-      }.xlsx`;
+        }.xlsx`;
       document.body.appendChild(a);
       a.click();
       setTimeout(() => {
@@ -366,9 +365,9 @@ export default function CustomersPage() {
   const currentSort =
     filters.sorts.length > 0
       ? {
-          key: filters.sorts[0].field,
-          direction: filters.sorts[0].direction,
-        }
+        key: filters.sorts[0].field,
+        direction: filters.sorts[0].direction,
+      }
       : undefined;
 
   const handleSortChange = (key?: string, direction?: "asc" | "desc") => {
@@ -401,7 +400,7 @@ export default function CustomersPage() {
             {intl.formatMessage({ id: "customers.export_customers" })}
           </Button>
 
-          <AddCustomer create={create} isLoading={create.isPending} />
+          {/* <AddCustomer create={create} isLoading={create.isPending} /> */}
         </div>
       </div>
 
@@ -527,14 +526,14 @@ export default function CustomersPage() {
                   <div className="flex items-center gap-1 text-sm text-gray-600 text-center">
                     <Calendar className="w-3 h-3" />
                     {c.createdAt
-                      ? new Date(c.createdAt).toLocaleDateString(    isRTL ? "ar-EG" : "en-US",
+                      ? new Date(c.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US",
                         {
                           year: "2-digit",
                           month: "short",
                           day: "numeric",
                         }
                       )
-                    : "N/A"}
+                      : "N/A"}
                   </div>
                 </TableCell>
                 <TableCell className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap text-center">
@@ -689,13 +688,13 @@ export default function CustomersPage() {
                     <p className="text-sm">
                       {viewing.createdAt
                         ? new Date(viewing.createdAt).toLocaleString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "2-digit",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
+                          isRTL ? "ar-EG" : "en-US",
+                          {
+                            year: "2-digit",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
                         : intl.formatMessage({ id: "customers.not_available" })}
                     </p>
                   </div>
@@ -710,13 +709,13 @@ export default function CustomersPage() {
                     <p className="text-sm">
                       {viewing.updatedAt
                         ? new Date(viewing.updatedAt).toLocaleString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "2-digit",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )
+                          isRTL ? "ar-EG" : "en-US",
+                          {
+                            year: "2-digit",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
                         : intl.formatMessage({ id: "customers.not_available" })}
                     </p>
                   </div>
@@ -818,7 +817,7 @@ export default function CustomersPage() {
                   onError: (error: any) => {
                     toast.error(
                       error?.response?.data?.message ||
-                        intl.formatMessage({ id: "customers.failed_to_update_customer" })
+                      intl.formatMessage({ id: "customers.failed_to_update_customer" })
                     );
                   },
                 }
@@ -847,7 +846,7 @@ export default function CustomersPage() {
               id="edit_customerPhone"
               label={intl.formatMessage({ id: "customers.phone_required" })}
               value={editForm.customerPhone}
-              onChange={() => {}}
+              onChange={() => { }}
               onPhoneChange={handleEditPhoneChange}
               variant="phone"
               placeholder={intl.formatMessage({ id: "customers.enter_phone_number" })}
@@ -1009,7 +1008,7 @@ export default function CustomersPage() {
   );
 }
 
-// ✅ Add Customer Component مع Location Selector
+/* // ✅ Add Customer Component مع Location Selector
 function AddCustomer({
   create,
   isLoading,
@@ -1312,113 +1311,105 @@ function AddCustomer({
               />
             </div>
 
-            {/* ✅ Location Selector */}
-            <div className="col-span-full space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {intl.formatMessage({ id: "customers.location" })}
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={getCurrentLocation}
-                  className="flex items-center gap-2"
-                >
-                  <Navigation className="w-4 h-4" />
-                  {intl.formatMessage({ id: "customers.get_current_location" })}
-                </Button>
-              </div>
+            {/* ✅ Location Selector */
+//             <><div className="col-span-full space-y-4">
+//   <div className="flex items-center justify-between">
+//     <Label className="flex items-center gap-2">
+//       <MapPin className="w-4 h-4" />
+//       {intl.formatMessage({ id: "customers.location" })}
+//     </Label>
+//     <Button
+//       type="button"
+//       variant="outline"
+//       size="sm"
+//       onClick={getCurrentLocation}
+//       className="flex items-center gap-2"
+//     >
+//       <Navigation className="w-4 h-4" />
+//       {intl.formatMessage({ id: "customers.get_current_location" })}
+//     </Button>
+//   </div>
 
-              <LocationSelector
-                locationData={locationData}
-                setLocationData={setLocationData}
-                setForm={setForm}
-                intl={intl}
-              />
-            </div>
+//   <LocationSelector
+//     locationData={locationData}
+//     setLocationData={setLocationData}
+//     setForm={setForm}
+//     intl={intl} />
+// </div><div className="col-span-full">
+//     <Label htmlFor="customerNotes">{intl.formatMessage({ id: "customers.notes" })}</Label>
+//     <Textarea
+//       id="customerNotes"
+//       value={form.customerNotes}
+//       onChange={(e) => setForm((f) => ({ ...f, customerNotes: e.target.value }))}
+//       rows={3}
+//       className="mt-1"
+//       placeholder={intl.formatMessage({ id: "customers.notes_placeholder" })} />
+//   </div><DialogFooter className="mt-4 col-span-full">
+//     <Button
+//       type="button"
+//       variant="outline"
+//       onClick={() => handleOpenChange(false)}
+//     >
+//       {intl.formatMessage({ id: "customers.cancel" })}
+//     </Button>
+//     <Button
+//       type="submit"
+//       className="text-white"
+//       disabled={!canSubmit}
+//     >
+//       {isLoading ? intl.formatMessage({ id: "customers.creating" }) : intl.formatMessage({ id: "customers.create_customer" })}
+//     </Button>
+//   </DialogFooter></>
+//           </form>
+//         </DialogContent>
+//       </Dialog>
 
-            <div className="col-span-full">
-              <Label htmlFor="customerNotes">{intl.formatMessage({ id: "customers.notes" })}</Label>
-              <Textarea
-                id="customerNotes"
-                value={form.customerNotes}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, customerNotes: e.target.value }))
-                }
-                rows={3}
-                className="mt-1"
-                placeholder={intl.formatMessage({ id: "customers.notes_placeholder" })}
-              />
-            </div>
-
-            <DialogFooter className="mt-4 col-span-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
-                {intl.formatMessage({ id: "customers.cancel" })}
-              </Button>
-              <Button
-                type="submit"
-                className="text-white"
-                disabled={!canSubmit}
-              >
-                {isLoading ? intl.formatMessage({ id: "customers.creating" }) : intl.formatMessage({ id: "customers.create_customer" })}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog التأكيد */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent
-          className="sm:max-w-[425px]"
-          aria-describedby="add-confirm-dialog-description"
-        >
-          <DialogHeader>
-            <DialogTitle>{intl.formatMessage({ id: "customers.confirm_close" })}</DialogTitle>
-            <DialogDescription id="add-confirm-dialog-description">
-              {intl.formatMessage({ id: "customers.unsaved_data_warning" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              {intl.formatMessage({ id: "customers.unsaved_changes_question" })}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={cancelClose}>
-              {intl.formatMessage({ id: "customers.continue_adding" })}
-            </Button>
-            <Button
-              variant="destructive"
-              className="text-white"
-              onClick={confirmClose}
-            >
-              {intl.formatMessage({ id: "customers.close_without_saving" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
+//       {/* Dialog التأكيد */}
+//       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+//     <DialogContent
+//       className="sm:max-w-[425px]"
+//       aria-describedby="add-confirm-dialog-description"
+//     >
+//       <DialogHeader>
+//         <DialogTitle>{intl.formatMessage({ id: "customers.confirm_close" })}</DialogTitle>
+//         <DialogDescription id="add-confirm-dialog-description">
+//           {intl.formatMessage({ id: "customers.unsaved_data_warning" })}
+//         </DialogDescription>
+//       </DialogHeader>
+//       <div className="py-4">
+//         <p className="text-sm text-muted-foreground">
+//           {intl.formatMessage({ id: "customers.unsaved_changes_question" })}
+//         </p>
+//       </div>
+//       <DialogFooter>
+//         <Button variant="outline" onClick={cancelClose}>
+//           {intl.formatMessage({ id: "customers.continue_adding" })}
+//         </Button>
+//         <Button
+//           variant="destructive"
+//           className="text-white"
+//           onClick={confirmClose}
+//         >
+//           {intl.formatMessage({ id: "customers.close_without_saving" })}
+//         </Button>
+//       </DialogFooter>
+//     </DialogContent>
+//       </Dialog>
+//     </>
+//   );
+// }
 
 // ✅ Location Selector Component
-function LocationSelector({ 
-  locationData, 
-  setLocationData, 
-  setForm, 
-  intl 
-}: { 
-  locationData: LocationData; 
-  setLocationData: (data: LocationData) => void; 
-  setForm: any; 
-  intl: any; 
+function LocationSelector({
+  locationData,
+  setLocationData,
+  setForm,
+  intl
+}: {
+  locationData: LocationData;
+  setLocationData: (data: LocationData) => void;
+  setForm: any;
+  intl: any;
 }) {
   const [countries] = useState(() => Country.getAllCountries());
   const [states, setStates] = useState<any[]>([]);
@@ -1429,7 +1420,7 @@ function LocationSelector({
     if (locationData.countryCode) {
       const countryStates = State.getStatesOfCountry(locationData.countryCode);
       setStates(countryStates);
-      
+
       // Reset state and city if country changed
       if (locationData.stateCode && !countryStates.find(s => s.isoCode === locationData.stateCode)) {
         setLocationData({
@@ -1451,7 +1442,7 @@ function LocationSelector({
     if (locationData.countryCode && locationData.stateCode) {
       const stateCities = City.getCitiesOfState(locationData.countryCode, locationData.stateCode);
       setCities(stateCities);
-      
+
       // Reset city if state changed
       if (locationData.city && !stateCities.find(c => c.name === locationData.city)) {
         setLocationData({
@@ -1481,7 +1472,7 @@ function LocationSelector({
       <div className="space-y-2">
         <Label>{intl.formatMessage({ id: "customers.country" })}</Label>
         <Select
-        
+
           value={locationData.countryCode}
           onValueChange={(value) => {
             const country = countries.find(c => c.isoCode === value);
