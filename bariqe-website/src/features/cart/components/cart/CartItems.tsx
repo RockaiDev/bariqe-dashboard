@@ -15,6 +15,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Minus, Plus, Trash } from 'lucide-react';
 import { Card } from '@/shared/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface CartItemsProps {
   items: any[];
@@ -26,6 +27,7 @@ interface CartItemsProps {
 export const CartItems = ({ items, onInc, onDec, onRemove }: CartItemsProps) => {
   const t = useTranslations('cart.items');
   const local = useLocale();
+  const [imageError, setImageError] = useState(false);
   return (
     <Table>
 
@@ -41,7 +43,14 @@ export const CartItems = ({ items, onInc, onDec, onRemove }: CartItemsProps) => 
         {items.map((item: any) => (
           <TableRow key={item.id}>
             <TableCell className='max-w-[200px] flex items-center gap-4'>
-              <Image className='rounded-lg' src={item.product?.productImage} alt="Product" width={100} height={100} />
+               <Image
+                                  src={!item.product?.productImage || imageError ? '/product-placeholder.png' : item.product?.productImage}
+                                  alt={local === 'en' ? item.product?.productNameEn : item.product?.productNameAr}
+                                  width={100}
+                                  height={100}
+                                  className="rounded-xl sm:rounded-2xl hover:scale-105 duration-500 w-full h-full object-cover"
+                                  onError={() => setImageError(true)}
+                              />
               <div className='flex h-auto items-center justify-center flex-col w-xs'>
                 <p className='text-action-hover w-[130px] md:max-w-[200px] whitespace-normal break-words  font-semibold h-auto'>{local === 'en' ? item.product?.productNameEn : item.product?.productNameAr || 'Product'}</p>
                 <p className='body-small text-icon-tertiary'>{item.quantity} {t('productUnit')}</p>

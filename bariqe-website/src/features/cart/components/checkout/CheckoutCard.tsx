@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { CircleX } from 'lucide-react';
 import { useCart } from '@/shared/hooks/useCart';
-
+import { useState } from 'react';
 interface CheckoutCardProps {
     id: string;
     image: string;
@@ -17,19 +17,22 @@ interface CheckoutCardProps {
 export const CheckoutCard = ({ id, name, price, quantity, discount, image }: CheckoutCardProps) => {
     const t = useTranslations('checkout');
     const { removeItem } = useCart();
-
+    const [imageError, setImageError] = useState(false);
     const itemSubtotal = quantity * price;
     const discountAmount = (itemSubtotal * discount) / 100;
     const itemTotal = itemSubtotal - discountAmount;
     return (
         <div className='px-6 flex justify-between  gap-4 border-b py-2'>
+           
+
             <Image
-                src={image}
-                width={100}
-                height={100}
-                className='object-cover rounded-lg'
-                alt={name}
-            />
+                                              src={!image || imageError ? '/product-placeholder.png' : image}
+                                              alt={name}
+                                              width={50}
+                                              height={50}
+                                              className="rounded-xl sm:rounded-2xl "
+                                              onError={() => setImageError(true)}
+                                          />
             <div className='flex-1 max-w-[200px]'>
                 <p className='text-text-secondary-2 body-meduim font-medium'>{name}</p>
                 <p className='text-text-secondary text-sm'>Qty: {quantity}</p>
