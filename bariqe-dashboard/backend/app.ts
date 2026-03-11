@@ -40,6 +40,7 @@ const corsOptions = {
       "https://attractive-happiness-production-a8a5.up.railway.app",
       "https://attractive-happiness-production-4918.up.railway.app",
       "https://bariqe-dashboard-production.up.railway.app",
+      "https://appleid.apple.com",
       // Regex for preview environments
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*\.railway\.app$/,
@@ -47,7 +48,7 @@ const corsOptions = {
     ];
 
     // Check if origin matches any allowed origin (string or regex)
-    const isAllowed = !origin || origin.includes('localhost') || allowedOrigins.some((allowedOrigin) => {
+    const isAllowed = !origin || origin.includes('localhost') || origin.includes('appleid.apple.com') ||  allowedOrigins.some((allowedOrigin) => {
       if (typeof allowedOrigin === "string") {
         return origin === allowedOrigin;
       } else if (allowedOrigin instanceof RegExp) {
