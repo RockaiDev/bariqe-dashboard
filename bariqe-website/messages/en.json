@@ -47,7 +47,11 @@
       "address": "Riyadh, Saudi Arabia",
       "email": "info@bariqeeltamioz.com"
     },
-    "copyright": " 2025 Bariqe Al-Tamyoz. All rights reserved. | Manufactured in Saudi Arabia | Licensed by the Ministry of Commerce | CR: 4610109764"
+    "copyright": " 2025 Bariqe Al-Tamyoz. All rights reserved. | Manufactured in Saudi Arabia",
+    "commerceLicense": "Licensed by the Ministry of Commerce",
+    "commerceLicenseNumber": "CR: 4610109764",
+    "industrialLicense": "Licensed by the Ministry of Industry and Mineral Resources",
+    "industrialLicenseNumber": "Industrial License No: 4610109764"
   },
   "hero": {
     "btn": "Shop Now",

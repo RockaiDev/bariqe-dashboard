@@ -71,16 +71,62 @@ const Footer = () => {
 
         </div>
 
-        <div className='h-0.5 w-full bg-text-secondary mb-8' />
-        <div className='w-full text-center flex flex-col md:flex-col items-center justify-center gap-2 text-white pb-4'>
-          <p className='max-w-xl text-sm sm:text-lg'>
+        <div className='h-0.5 w-full bg-white/10 mb-8' />
+        <div className='w-full text-center flex flex-col items-center justify-center gap-6 text-white pb-4'>
+          {/* Primary Copyright */}
+          <p className='max-w-xl text-sm sm:text-lg opacity-90'>
             {t('siteFooter.copyright', { year: new Date().getFullYear() })}
           </p>
-          <p className='text-xs sm:text-sm text-text-secondary'>
-            {locale === 'en' ? 'National Address:' : 'العنوان المختصر:'} <span className='font-bold text-white'>AQGA2589</span>
-          </p>
-          <p className={`text-sm  flex items-center gap-1 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-            Developed by <Link href="https://www.rockaidev.com" target="_blank" className="font-bold hover:text-white/80 transition-colors underline decoration-dotted underline-offset-4">Rockai Dev</Link>
+
+          {/* Info Badges Container */}
+          <div className='flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm'>
+            {/* Commerce License Badge */}
+            <div className='flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 border border-white/10 group cursor-default'>
+              <svg className="w-4 h-4 text-[#CBD5E1] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <div className='flex items-center gap-1.5'>
+                <span className='opacity-80'>{t('siteFooter.commerceLicense')}</span>
+                <span className='opacity-30'>•</span>
+                <span className='font-bold text-white'>{t('siteFooter.commerceLicenseNumber')}</span>
+              </div>
+            </div>
+
+            {/* Industrial License Badge */}
+            <div className='flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 border border-white/10 group cursor-default'>
+              <svg className="w-4 h-4 text-[#CBD5E1] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <div className='flex items-center gap-1.5'>
+                <span className='opacity-80'>{t('siteFooter.industrialLicense')}</span>
+                <span className='opacity-30'>•</span>
+                <span className='font-bold text-white'>{t('siteFooter.industrialLicenseNumber')}</span>
+              </div>
+            </div>
+
+            {/* National Address Badge */}
+            <div className='flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 border border-white/10 group cursor-default'>
+              <svg className="w-4 h-4 text-[#CBD5E1] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div className='flex items-center gap-1.5'>
+                <span className='opacity-80'>{locale === 'en' ? 'Short Address:' : 'العنوان المختصر:'}</span>
+                <span className='font-mono font-bold text-white tracking-widest'>AQGA2589</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Developer Credits */}
+          <p className={`text-sm flex items-center gap-1 ${locale === 'ar' ? 'flex-row-reverse' : ''} text-white/70`}>
+            {locale === 'en' ? 'Developed by' : 'تم التطوير بواسطة'} 
+            <Link 
+              href="https://www.rockaidev.com" 
+              target="_blank" 
+              className="font-bold text-white hover:text-blue-400 transition-colors underline decoration-blue-400/30 underline-offset-4"
+            >
+              Rockai Dev
+            </Link>
           </p>
         </div>
       </div>
