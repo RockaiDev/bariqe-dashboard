@@ -112,40 +112,34 @@ class OrderFacade {
       // 4. Calculate Order Totals
       let subtotal = 0;
       const populatedProducts: any[] = [];
-
       for (const item of body.products) {
         const product = await ProductModel.findById(item.product);
         if (!product) {
           throw new ApiError("NOT_FOUND", `Product ${item.product} not found`);
         }
 
-        const basePrice =
-          (product as any).productOldPrice ||
-          (product as any).productNewPrice ||
-          0;
-        const discountPercent = parseDiscountPercent(
-          (product as any).productDiscount
-        );
-        const unitPrice =
-          basePrice > 0 && discountPercent > 0
-            ? Math.round(basePrice * (1 - discountPercent / 100) * 100) / 100
-            : ((product as any).productNewPrice || basePrice);
-
-        const itemTotal = unitPrice * item.quantity;
+        const originalPrice = (product as any).productOldPrice || 0;
+        const itemDiscount = item.itemDiscount || 0;
+        const basePrice = itemDiscount > 0 
+          ? originalPrice 
+          : ((product as any).productNewPrice || originalPrice);
+        
+        const unitPriceAfterItemDiscount = basePrice * (1 - itemDiscount / 100);
+        const itemTotal = unitPriceAfterItemDiscount * item.quantity;
         subtotal += itemTotal;
 
         populatedProducts.push({
           product: item.product,
           quantity: item.quantity,
-          itemDiscount: item.itemDiscount || 0,
+          itemDiscount: itemDiscount,
           _productData: {
             name:
               (product as any).productNameEn ||
               (product as any).productNameAr ||
               "Product",
-            price: unitPrice,
-            productOldPrice: (product as any).productOldPrice,
-            productDiscount: (product as any).productDiscount,
+            price: unitPriceAfterItemDiscount,
+            productOldPrice: originalPrice,
+            productDiscount: itemDiscount > 0 ? itemDiscount : (product as any).productDiscount,
             productDescriptionEn: (product as any).productDescriptionEn,
             productDescriptionAr: (product as any).productDescriptionAr,
             productImage: (product as any).productImage,

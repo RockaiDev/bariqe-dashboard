@@ -68,23 +68,22 @@ export default class DashboardAdminController extends BaseApi {
        const data = shipment.data || shipment; 
        const trackingNo = data.billCode || data.logisticId || shipment.billCode || shipment.logisticId;
 
-       // Update Order with tracking info
-       if (trackingNo) {
-          // Initialize with required 'carrier' to satisfy TS
-          if (!order.shipping) {
-            order.shipping = { carrier: "jt_express" };
-          }
-          
-          order.shipping.carrier = "jt_express";
-          order.shipping.trackingNumber = trackingNo;
-          order.shipping.status = "shipped";
-          order.shipping.labelUrl = data.waybillURL || data.labelUrl || ""; 
-          order.orderStatus = "shipped";
-          
-          await order.save();
-       } else {
-         console.warn("Shipment created but no tracking number found in response:", shipment);
-       }
+        // Update Order with tracking info using EditOneOrder for centralized stock management
+        if (trackingNo) {
+           const update = {
+             shipping: {
+               carrier: "jt_express",
+               trackingNumber: trackingNo,
+               status: "shipped",
+               labelUrl: data.waybillURL || data.labelUrl || ""
+             },
+             orderStatus: "shipped"
+           };
+           
+           await orderService.EditOneOrder(orderId, update);
+        } else {
+          console.warn("Shipment created but no tracking number found in response:", shipment);
+        }
 
        super.send(res, shipment);
      } catch (error) {

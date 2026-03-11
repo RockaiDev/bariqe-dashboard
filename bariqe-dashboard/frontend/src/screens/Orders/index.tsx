@@ -259,22 +259,9 @@ export default function OrdersPage() {
   };
 
   const calculateOrderTotal = (order: Order) => {
-    let subtotal = 0;
-    order.products.forEach((item) => {
-      // Add null/undefined check for product and price fields
-      if (!item.product || (item.product.productOldPrice === undefined && item.product.productNewPrice === undefined)) {
-        return; // Skip this item if product or price is missing
-      }
-      const basePrice = (item.itemDiscount > 0)
-        ? (item.product.productOldPrice || 0)
-        : (item.product.productNewPrice ?? item.product.productOldPrice ?? 0);
-      const itemTotal = item.quantity * basePrice;
-      // Use non-compounding logic: apply the higher of item or order discount
-      const effectiveDiscount = Math.max(item.itemDiscount || 0, order.orderDiscount || 0);
-      const afterDiscount = itemTotal * (1 - effectiveDiscount / 100);
-      subtotal += afterDiscount;
-    });
-    return subtotal;
+    const subtotal = calculateSubtotal(order);
+    const orderDiscount = order.orderDiscount || 0;
+    return subtotal * (1 - orderDiscount / 100);
   };
 
   const calculateSubtotal = (order: Order) => {
@@ -288,11 +275,36 @@ export default function OrdersPage() {
         ? (item.product.productOldPrice || 0)
         : (item.product.productNewPrice ?? item.product.productOldPrice ?? 0);
       const itemTotal = item.quantity * basePrice;
-      const effectiveDiscount = Math.max(item.itemDiscount || 0, order.orderDiscount || 0);
-      const afterDiscount = itemTotal * (1 - effectiveDiscount / 100);
-      subtotal += afterDiscount;
+      const afterItemDiscount = itemTotal * (1 - (item.itemDiscount || 0) / 100);
+      subtotal += afterItemDiscount;
     });
     return subtotal;
+  };
+
+  const calculateEffectiveDiscountPercentage = (order: Order) => {
+    let originalTotal = 0;
+    
+    order.products.forEach((item) => {
+      // Add null/undefined check for product and price fields
+      if (!item.product || item.product.productOldPrice === undefined) {
+        return; // Skip this item if product or price is missing
+      }
+      
+      // Always compare against the real original price to capture storefront discounts
+      const basePrice = item.product.productOldPrice || 0;
+      originalTotal += basePrice * item.quantity;
+    });
+
+    if (originalTotal === 0) return 0;
+
+    // Use backend total if available (for precise past orders), else recalculate
+    const finalTotal = (order as any).total !== undefined ? (order as any).total : calculateOrderTotal(order);
+    const discountAmount = originalTotal - finalTotal;
+    
+    // Prevent negative discount or NaN
+    if (discountAmount <= 0) return 0;
+    
+    return Math.round((discountAmount / originalTotal) * 100);
   };
 
   const getProductById = (productId: string) => {
@@ -902,9 +914,9 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell className="font-medium">{totalItems}</TableCell>
                   <TableCell className="font-medium">
-                    {calculateOrderTotal(order).toFixed(2)} SAR
+                    {((order as any).total !== undefined ? (order as any).total : calculateOrderTotal(order)).toFixed(2)} SAR
                   </TableCell>
-                  <TableCell>{order.orderDiscount}%</TableCell>
+                  <TableCell>{calculateEffectiveDiscountPercentage(order)}%</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {editingOrderId === order._id ? (
                       <div
@@ -1600,7 +1612,10 @@ export default function OrdersPage() {
                         .reduce((sum, item) => {
                           const product = getProductById(item.productId);
                           if (!product) return sum;
-                          return sum + (product.productOldPrice || 0) * item.quantity;
+                          const basePrice = (item.itemDiscount > 0)
+                            ? (product.productOldPrice || 0)
+                            : (product.productNewPrice ?? product.productOldPrice ?? 0);
+                          return sum + basePrice * item.quantity;
                         }, 0)
                         .toFixed(2)}{" "}
                       SAR
@@ -1617,10 +1632,17 @@ export default function OrdersPage() {
                         .reduce((sum, item) => {
                           const product = getProductById(item.productId);
                           if (!product) return sum;
-                          const base = product.productOldPrice || 0;
-                          const originalTotal = base * item.quantity;
-                          const effectiveDiscount = Math.max(item.itemDiscount || 0, orderForm.orderDiscount || 0);
-                          return sum + (originalTotal * effectiveDiscount) / 100;
+                          const basePrice = (item.itemDiscount > 0)
+                            ? (product.productOldPrice || 0)
+                            : (product.productNewPrice ?? product.productOldPrice ?? 0);
+                          const itemTotal = basePrice * item.quantity;
+                          const itemDiscountAmount = (itemTotal * (item.itemDiscount || 0)) / 100;
+                          
+                          // Calculate order discount on top of the subtotal (sequential)
+                          const afterItemDiscount = itemTotal - itemDiscountAmount;
+                          const orderDiscountAmount = (afterItemDiscount * (orderForm.orderDiscount || 0)) / 100;
+                          
+                          return sum + itemDiscountAmount + orderDiscountAmount;
                         }, 0)
                         .toFixed(2)}{" "}
                       SAR
@@ -1636,10 +1658,13 @@ export default function OrdersPage() {
                         .reduce((sum, item) => {
                           const product = getProductById(item.productId);
                           if (!product) return sum;
-                          const base = product.productOldPrice || 0;
-                          const originalTotal = base * item.quantity;
-                          const effectiveDiscount = Math.max(item.itemDiscount || 0, orderForm.orderDiscount || 0);
-                          return sum + (originalTotal * (1 - effectiveDiscount / 100));
+                          const basePrice = (item.itemDiscount > 0)
+                            ? (product.productOldPrice || 0)
+                            : (product.productNewPrice ?? product.productOldPrice ?? 0);
+                          const itemTotal = basePrice * item.quantity;
+                          const afterItemDiscount = itemTotal * (1 - (item.itemDiscount || 0) / 100);
+                          const finalPrice = afterItemDiscount * (1 - (orderForm.orderDiscount || 0) / 100);
+                          return sum + finalPrice;
                         }, 0)
                         .toFixed(2)}{" "}
                       SAR
@@ -1912,10 +1937,12 @@ export default function OrdersPage() {
                     <tbody>
                       {viewing.products.map((item, index) => {
                         const product = item.product;
-                        const basePrice = product?.productOldPrice || 0;
-                        const effectiveDiscount = Math.max(item.itemDiscount || 0, viewing.orderDiscount || 0);
+                        const basePrice = (item.itemDiscount > 0)
+                          ? (product?.productOldPrice || 0)
+                          : (product?.productNewPrice ?? product?.productOldPrice ?? 0);
                         const itemSubtotal = basePrice * item.quantity;
-                        const itemTotal = itemSubtotal * (1 - effectiveDiscount / 100);
+                        const afterItemDiscount = itemSubtotal * (1 - (item.itemDiscount || 0) / 100);
+                        const itemTotal = afterItemDiscount * (1 - (viewing.orderDiscount || 0) / 100);
 
                         return (
                           <tr key={index} className="hover:bg-gray-50 border-t">
@@ -1980,7 +2007,7 @@ export default function OrdersPage() {
                       :
                     </span>
                     <span className="font-medium">
-                      {calculateSubtotal(viewing).toFixed(2)} SAR
+                      {((viewing as any).subtotal !== undefined ? (viewing as any).subtotal : calculateSubtotal(viewing)).toFixed(2)} SAR
                     </span>
                   </div>
                   {viewing.orderDiscount > 0 && (
@@ -1992,7 +2019,7 @@ export default function OrdersPage() {
                       <span className="font-medium">
                         -
                         {(
-                          calculateSubtotal(viewing) *
+                          ((viewing as any).subtotal !== undefined ? (viewing as any).subtotal : calculateSubtotal(viewing)) *
                           (viewing.orderDiscount / 100)
                         ).toFixed(2)}{" "}
                         SAR
@@ -2003,7 +2030,7 @@ export default function OrdersPage() {
                   <div className="flex justify-between text-lg font-bold">
                     <span>{intl.formatMessage({ id: "orders.total" })}:</span>
                     <span className="text-green-600">
-                      {calculateOrderTotal(viewing).toFixed(2)} SAR
+                      {((viewing as any).total !== undefined ? (viewing as any).total : calculateOrderTotal(viewing)).toFixed(2)} SAR
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600 pt-2 border-t">

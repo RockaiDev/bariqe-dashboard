@@ -19,6 +19,7 @@ export default class OrderService extends MongooseFeatures {
       "orderDiscount",
       "orderStatus",
       "shippingAddress",
+      "shipping",
       "nationalAddress",
       "region"
     ];
@@ -303,9 +304,8 @@ export default class OrderService extends MongooseFeatures {
             const originalPrice = prod.productOldPrice || 0;
             const qty = item.quantity || 0;
             const subtotal = originalPrice * qty;
-            const effectiveDiscount = Math.max(itemDiscount, orderLevelDiscount);
-            const finalAmount = subtotal * (1 - effectiveDiscount / 100);
-            const afterItemDiscount = subtotal * (1 - itemDiscount / 100); // For display in email if needed
+            const afterItemDiscount = subtotal * (1 - itemDiscount / 100); 
+            const finalAmount = afterItemDiscount * (1 - orderLevelDiscount / 100);
             mailOrder.products.push({
               product: {
                 name:
@@ -373,10 +373,12 @@ export default class OrderService extends MongooseFeatures {
       // ✅ Stock Management: Adjust product quantities on status transitions
       if (newStatus && newStatus !== oldStatus) {
         const orderProducts = currentOrder.products || [];
+        
+        const isFulfilled = (s: string) => s === "shipped" || s === "delivered";
 
-        // DECREMENT stock when order is delivered (fulfilled)
-        if (newStatus === "delivered" && oldStatus !== "delivered") {
-          console.log(`[OrderService] Order ${id} fulfilled → decrementing stock`);
+        // DECREMENT stock when order moves to a fulfilled state for the first time
+        if (isFulfilled(newStatus) && !isFulfilled(oldStatus)) {
+          console.log(`[OrderService] Order ${id} reached fulfilled state (${newStatus}) → decrementing stock`);
           for (const item of orderProducts) {
             const productId = item.product;
             const qty = item.quantity || 0;
@@ -393,23 +395,20 @@ export default class OrderService extends MongooseFeatures {
           }
         }
 
-        // RESTORE stock when order is cancelled (from a non-cancelled state)
-        if (newStatus === "cancelled" && oldStatus !== "cancelled") {
-          // Only restore if the order was previously delivered (stock was already decremented)
-          if (oldStatus === "delivered") {
-            console.log(`[OrderService] Order ${id} cancelled (was delivered) → restoring stock`);
-            for (const item of orderProducts) {
-              const productId = item.product;
-              const qty = item.quantity || 0;
-              if (productId && qty > 0) {
-                const result = await ProductModel.findByIdAndUpdate(
-                  productId,
-                  { $inc: { amount: qty } },
-                  { new: true }
-                );
-                if (result) {
-                  console.log(`  ✅ Product ${productId}: stock restored by ${qty} → new stock: ${result.amount}`);
-                }
+        // RESTORE stock when order is cancelled from a fulfilled state
+        if (newStatus === "cancelled" && isFulfilled(oldStatus)) {
+          console.log(`[OrderService] Order ${id} cancelled (was ${oldStatus}) → restoring stock`);
+          for (const item of orderProducts) {
+            const productId = item.product;
+            const qty = item.quantity || 0;
+            if (productId && qty > 0) {
+              const result = await ProductModel.findByIdAndUpdate(
+                productId,
+                { $inc: { amount: qty } },
+                { new: true }
+              );
+              if (result) {
+                console.log(`  ✅ Product ${productId}: stock restored by ${qty} → new stock: ${result.amount}`);
               }
             }
           }
@@ -459,8 +458,8 @@ export default class OrderService extends MongooseFeatures {
           const orderDiscount = order.orderDiscount || 0;
 
           const subtotal = originalPrice * quantity;
-          const effectiveDiscount = Math.max(itemDiscount, orderDiscount);
-          const finalAmount = subtotal * (1 - effectiveDiscount / 100);
+          const afterItemDiscount = subtotal * (1 - itemDiscount / 100);
+          const finalAmount = afterItemDiscount * (1 - orderDiscount / 100);
 
           formattedOrders.push({
             orderNumber: order._id.toString(),
