@@ -7,6 +7,8 @@ export interface Product {
   productDescriptionAr: string;
   productDescriptionEn: string;
   productPrice: number;
+  productOldPrice?: number;
+  productNewPrice?: number;
   productImage: string;
   productCategory: Category;
   productSubCategory: string;
@@ -16,8 +18,9 @@ export interface Product {
   productForm?: string;
   productDiscount?: number;
   productCode?: string;
-  discountTiers?: any[];
+  discountTiers?: Array<{ quantity: number; discount: number }>;
   productQuantity?: number;
+  productMoreSale?: boolean;
   createdAt: string;
   updatedAt: string;
 }

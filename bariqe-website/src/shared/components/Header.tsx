@@ -1,7 +1,7 @@
 "use client";
 import { navigationLinks } from "@/lib/data";
 import Image from "next/image";
-import { ShoppingCart, ChevronLeft, Menu, Globe, Check, ChevronRight, User } from "lucide-react";
+import { ShoppingCart, ChevronLeft, Menu, Globe, Check, ChevronRight, User, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -10,6 +10,7 @@ import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { Languages } from "@/shared/constants/enums";
 import { useCart } from "@/shared/hooks/useCart";
 import { useProfile } from "@/shared/hooks/useProfile";
+import { useLogout } from "@/shared/hooks/useAuth";
 
 import CustomButton from "./CustomButton";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/components/ui/sheet";
@@ -25,8 +26,11 @@ export default function Header() {
   const locale = useLocale();
   const { items } = useCart();
   const [langOpen, setLangOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const langRef = useRef<HTMLDivElement | null>(null);
+  const profileRef = useRef<HTMLDivElement | null>(null);
   const { data: userProfile, isLoading: isProfileLoading } = useProfile();
+  const { mutate: logout, isPending: isLogoutPending } = useLogout();
   const isAuthenticated = !!userProfile;
 
 
@@ -48,11 +52,17 @@ export default function Header() {
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
         setLangOpen(false);
       }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
     }
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setLangOpen(false);
+      if (e.key === 'Escape') {
+        setLangOpen(false);
+        setProfileOpen(false);
+      }
     }
-    if (langOpen) {
+    if (langOpen || profileOpen) {
       document.addEventListener('mousedown', onClickOutside);
       document.addEventListener('keydown', onKeyDown);
     }
@@ -60,7 +70,7 @@ export default function Header() {
       document.removeEventListener('mousedown', onClickOutside);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [langOpen]);
+  }, [langOpen, profileOpen]);
 
 
   const CartButton = ({ className = "" }) => (
@@ -199,16 +209,44 @@ export default function Header() {
             {isProfileLoading ? (
                <Skeleton className="hidden lg:block h-10 w-24 rounded-md" />
             ) : isAuthenticated ? (
-              <CustomButton 
-                onClick={() => router.push('/profile')} 
-                className="hidden bg-[#004e6e] hover:bg-[#003b53] shadow-md text-white 
-                lg:flex items-center justify-center gap-1 px-4" 
-              >
-                <User className="size-5" />
-                <p>{t('profile.btn') || "Profile"}</p>
-                <ChevronLeft className="ltr:hidden" />
-                <ChevronRight className="rtl:hidden" />
-              </CustomButton>
+              <div className="relative" ref={profileRef}>
+                <CustomButton 
+                  onClick={() => setProfileOpen(!profileOpen)} 
+                  className="hidden bg-[#004e6e] hover:bg-[#003b53] shadow-md text-white 
+                  lg:flex items-center justify-center gap-1 px-4" 
+                >
+                  <User className="size-5" />
+                  <p>{t('profile.btn') || "Profile"}</p>
+                  <ChevronLeft className="ltr:hidden" />
+                  <ChevronRight className="rtl:hidden" />
+                </CustomButton>
+                {profileOpen && (
+                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border rounded-md shadow-lg z-50 overflow-hidden`}>
+                    <button
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-accent/20 text-text-secondary-2"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        router.push('/profile');
+                      }}
+                    >
+                      <User className="size-4" />
+                      <span>{t('profile.btn') || "Profile"}</span>
+                    </button>
+                    <Separator className="my-1" />
+                    <button
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-50 text-red-600"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        logout();
+                      }}
+                      disabled={isLogoutPending}
+                    >
+                      <LogOut className="size-4" />
+                      <span>{t('auth.messages.logout') || "Logout"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <CustomButton onClick={() => router.push('/login')} className="hidden  bg-action hover:bg-action-hover shadow-[0px_1px_10.2px_5px_#175A7E66]  text-text-primary 
               lg:flex items-center justify-center gap-1 px-4
@@ -252,6 +290,7 @@ const MobilleNav = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   const t = useTranslations('');
   const searchParams = useSearchParams();
   const p = usePathname();
+  const { mutate: logout, isPending: isLogoutPending } = useLogout();
 
   return (
     <nav>
@@ -277,21 +316,57 @@ const MobilleNav = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
             </li>
           )
         })}
-        <li className="w-full">
-          <SheetClose asChild>
-            <Link
-              className={`w-full px-6 py-4 flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30 text-text-secondary-2`}
-              href={isAuthenticated ? '/profile' : '/login'}
-            >
-              <div className="flex items-center gap-2">
-                <User className="size-5" />
-                {isAuthenticated ? (t('profile.btn') || "Profile") : t('login.btn')}
-              </div>
-              <ChevronRight className="size-5 rtl:rotate-180" />
-            </Link>
-          </SheetClose>
-          <Separator className="bg-text-secondary h-1" />
-        </li>
+        {isAuthenticated ? (
+          <>
+            <li className="w-full">
+              <SheetClose asChild>
+                <Link
+                  className="w-full px-6 py-4 flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30 text-text-secondary-2"
+                  href="/profile"
+                >
+                  <div className="flex items-center gap-2">
+                    <User className="size-5" />
+                    {t('profile.btn') || "Profile"}
+                  </div>
+                  <ChevronRight className="size-5 rtl:rotate-180" />
+                </Link>
+              </SheetClose>
+              <Separator className="bg-text-secondary h-1" />
+            </li>
+            <li className="w-full">
+              <SheetClose asChild>
+                <button
+                  className="w-full px-6 py-4 flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-red-50 text-red-600"
+                  onClick={() => logout()}
+                  disabled={isLogoutPending}
+                >
+                  <div className="flex items-center gap-2">
+                    <LogOut className="size-5" />
+                    {t('auth.messages.logout') || "Logout"}
+                  </div>
+                  <ChevronRight className="size-5 rtl:rotate-180" />
+                </button>
+              </SheetClose>
+              <Separator className="bg-text-secondary h-1" />
+            </li>
+          </>
+        ) : (
+          <li className="w-full">
+            <SheetClose asChild>
+              <Link
+                className={`w-full px-6 py-4 flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30 text-text-secondary-2`}
+                href="/login"
+              >
+                <div className="flex items-center gap-2">
+                  <User className="size-5" />
+                  {t('login.btn')}
+                </div>
+                <ChevronRight className="size-5 rtl:rotate-180" />
+              </Link>
+            </SheetClose>
+            <Separator className="bg-text-secondary h-1" />
+          </li>
+        )}
       </ul>
 
 

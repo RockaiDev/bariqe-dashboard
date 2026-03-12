@@ -12,7 +12,7 @@ import { useProfile } from '@/shared/hooks/useProfile';
 
 export const useCheckoutForm = () => {
     const t = useTranslations('checkout');
-    const { items, total, clearCart } = useCart();
+    const { items } = useCart();
     const { data: profile } = useProfile();
     const locale = useLocale();
 
@@ -69,10 +69,13 @@ export const useCheckoutForm = () => {
         try {
             const fullPhone = `${data.countryCode}${data.phoneNumber}`;
 
+            // Get customer ID from profile (fetched from backend via cookies)
+            const customerId = profile?._id;
+
             // Build checkout data for PayLink integration
             const checkoutData: CheckoutData = {
                 paymentMethod: "paylink",
-                customer: profile?._id,
+                customer: customerId,
                 customerData: {
                     customerName: data.name,
                     customerEmail: data.email || undefined,

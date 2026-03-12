@@ -63,9 +63,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
             productNameEn: product.productNameEn,
             productNameAr: product.productNameAr,
             productImage: product.productImage,
-            productPrice: realPrice,
-            productDiscount: 0,
-            discountTiers: [],
+            productPrice: oldPrice || product.productPrice, // Store original price for backend calculation
+            productDiscount: discount, // Store the discount percentage
+            discountTiers: product.discountTiers || [],
         } as unknown as StoreProduct;
         addItem(mapped, quantity);
         toast.success(tCard('added'));

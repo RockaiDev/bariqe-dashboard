@@ -1184,6 +1184,7 @@
       "passwordResetSuccess": "Password reset successfully",
       "otpResentSuccess": "OTP resent successfully",
       "logoutSuccess": "Logged out successfully",
+      "logout": "Logout",
       "emailVerifiedLogin": "Email verified successfully! Please log in.",
       "emailRequired": "Email address is required"
     }
