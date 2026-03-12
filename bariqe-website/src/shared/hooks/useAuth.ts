@@ -6,6 +6,7 @@ import { AuthResponse } from "@/shared/types/auth";
 import { profileKeys } from "@/shared/hooks/useProfile";
 
 import { useFavoritesStore } from "@/shared/hooks/useFavoritesStore";
+import { useCart } from "@/shared/hooks/useCart";
 import { useTranslations } from "next-intl";
 
 export const useLogin = () => {
@@ -180,6 +181,7 @@ export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const t = useTranslations("auth.messages");
+  const { clearCart } = useCart();
 
   return useMutation({
     mutationFn: authService.logout,
@@ -187,29 +189,28 @@ export const useLogout = () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("favorites");
         window.dispatchEvent(new Event("auth-change"));
       }
 
-      // Clear all queries from the cache
       queryClient.clear();
-
-      // Reset favorites auth state
       useFavoritesStore.getState().setAuthenticated(false);
+      clearCart();
 
       toast.success(t("logoutSuccess"));
       router.push("/");
     },
     onError: (error: any) => {
-      // Even if server error, we clear local state
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("favorites");
         window.dispatchEvent(new Event("auth-change"));
       }
-      queryClient.clear();
 
-      // Reset favorites auth state
+      queryClient.clear();
       useFavoritesStore.getState().setAuthenticated(false);
+      clearCart();
 
       router.push("/");
     }
