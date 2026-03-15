@@ -56,7 +56,7 @@ const ProductDetails = () => {
                 await navigator.share({
                     title: local === 'en' ? product.productNameEn : product.productNameAr,
                     text: local === 'en' ? product.productDescriptionEn : product.productDescriptionAr,
-                    url: `${process.env.NEXT_PUBLIC_SITE_URL}/${params.productId}`,
+                    url: `${window.location.origin}/${local}/${params.productId}`,
                 });
             } catch (err) {
                 console.log("Share canceled", err);

@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'aboutPage' });
   const brand = locale === 'ar' ? 'بريق التميز' : 'Bariqe Al-Tamyoz';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bariqeeltamioz.com';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bariqealtamyoz.com';
 
   const title = `${brand} | ${t('breadcrumb')}`;
   const description = locale === 'ar'
