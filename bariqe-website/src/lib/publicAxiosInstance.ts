@@ -66,10 +66,13 @@ publicAxiosInstance.interceptors.response.use(
       // Handle 401 Unauthorized - clear auth state
       if (error.response.status === 401) {
         if (typeof window !== "undefined") {
+          // Only dispatch auth-change if a token was actually present (avoids infinite loop)
+          const hadToken = !!localStorage.getItem("token");
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          // Dispatch auth-change event so all listeners know about logout
-          window.dispatchEvent(new Event("auth-change"));
+          if (hadToken) {
+            window.dispatchEvent(new Event("auth-change"));
+          }
         }
       }
 

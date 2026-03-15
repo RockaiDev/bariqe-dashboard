@@ -256,6 +256,7 @@ export const handleOrderFilters: FilterHandler = (
     case "status":
       const statusMap: Record<string, string> = {
         pending: "pending",
+        confirmed: "confirmed",
         shipped: "shipped",
         delivered: "delivered",
         cancelled: "cancelled",
@@ -323,6 +324,7 @@ export const createOrderFilterGroups = (t: (key: string) => string) => [
     options: [
       { label: t("filters.all"), value: "all" },
       { label: t("filters.pending"), value: "pending" },
+      { label: t("filters.confirmed"), value: "confirmed" },
       { label: t("filters.shipped"), value: "shipped" },
       { label: t("filters.delivered"), value: "delivered" },
       { label: t("filters.cancelled"), value: "cancelled" },

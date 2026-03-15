@@ -61,7 +61,7 @@ export interface CreateOrderData {
 
 // ========== CHECKOUT TYPES (PayLink Integration) ==========
 export interface CheckoutData {
-  paymentMethod: "paylink",
+  paymentMethod: "paylink" | "cod",
   customer?: string; // Optional customer ID for authenticated orders
   customerData: {
     customerName: string;

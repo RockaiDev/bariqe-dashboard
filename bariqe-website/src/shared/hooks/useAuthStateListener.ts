@@ -20,12 +20,12 @@ export const useAuthStateListener = () => {
       const hasToken = typeof window !== "undefined" && localStorage.getItem("token");
       
       if (!hasToken) {
-        // User logged out - set profile to undefined to trigger immediate UI update
+        // User logged out - clear cached profile data to trigger immediate UI update
+        // Do NOT invalidateQueries here, as that triggers a refetch which gets 401
+        // again, causing an infinite loop (401 → auth-change → invalidate → refetch → 401)
         queryClient.setQueryData(profileKeys.profile, undefined);
-        
-        // Invalidate the query so next fetch will be a fresh one
-        queryClient.invalidateQueries({ queryKey: profileKeys.profile });
-      } else {
+        queryClient.cancelQueries({ queryKey: profileKeys.profile });
+      }else {
         // User logged in - refetch profile
         queryClient.refetchQueries({ queryKey: profileKeys.profile });
       }

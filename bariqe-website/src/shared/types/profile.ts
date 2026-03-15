@@ -32,6 +32,9 @@ export interface ProductDetails {
   productNameAr: string;
   productNameEn: string;
   productImage: string;
+  productCode?: string;
+  productNewPrice?: number;
+  productOldPrice?: number;
 }
 
 export interface OrderItem {
@@ -71,6 +74,7 @@ export interface ShippingInfo {
 
 export interface Order {
   _id: string;
+  orderNumber?: string;
   customer: string;
   shippingAddress: ShippingAddress;
   payment: PaymentInfo;
@@ -81,7 +85,7 @@ export interface Order {
   shippingCost: number;
   orderDiscount: number;
   total: number;
-  orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: string;
   updatedAt: string;
   __v: number;

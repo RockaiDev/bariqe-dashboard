@@ -245,6 +245,8 @@ export default function OrdersPage() {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-700 border border-yellow-300 rounded-lg";
+      case "confirmed":
+        return "bg-blue-100 text-blue-700 border border-blue-300 rounded-lg";
       case "processing":
         return "bg-blue-100 text-blue-700 border border-blue-300 rounded-lg";
       case "shipped":
@@ -936,6 +938,9 @@ export default function OrdersPage() {
                             <SelectItem value="pending">
                               {intl.formatMessage({ id: "orders.pending" })}
                             </SelectItem>
+                            <SelectItem value="confirmed">
+                              {intl.formatMessage({ id: "orders.confirmed" })}
+                            </SelectItem>
                             <SelectItem value="shipped">
                               {intl.formatMessage({ id: "orders.shipped" })}
                             </SelectItem>
@@ -1547,6 +1552,9 @@ export default function OrdersPage() {
                     <SelectItem value="pending">
                       {intl.formatMessage({ id: "orders.pending" })}
                     </SelectItem>
+                    <SelectItem value="confirmed">
+                      {intl.formatMessage({ id: "orders.confirmed" })}
+                    </SelectItem>
                     <SelectItem value="shipped">
                       {intl.formatMessage({ id: "orders.shipped" })}
                     </SelectItem>
@@ -1741,6 +1749,9 @@ export default function OrdersPage() {
                         <SelectContent>
                           <SelectItem value="pending">
                             {intl.formatMessage({ id: "orders.pending" })}
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            {intl.formatMessage({ id: "orders.confirmed" })}
                           </SelectItem>
                           <SelectItem value="shipped">
                             {intl.formatMessage({ id: "orders.shipped" })}

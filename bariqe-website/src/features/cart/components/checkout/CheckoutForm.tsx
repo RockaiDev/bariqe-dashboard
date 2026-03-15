@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import FadeUpReval from '@/shared/animations/FadUpReval';
 import { ContactInfoSection } from './sections/ContactInfoSection';
 import { DeliveryAddressSection } from './sections/DeliveryAddressSection';
+import { PaymentMethodSection } from './sections/PaymentMethodSection';
 import { CheckoutActions } from './CheckoutActions';
 import { OrderSummary } from './OrderSummary';
 import { useCheckoutForm } from './hooks/useCheckoutForm';
@@ -43,6 +44,9 @@ export const CheckoutForm = () => {
 
                             {/* Delivery Address Section */}
                             <DeliveryAddressSection control={form.control} setValue={form.setValue} />
+
+                            {/* Payment Method Section */}
+                            <PaymentMethodSection control={form.control} />
                         </FieldGroup>
                     </Card>
 

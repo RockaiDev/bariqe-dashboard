@@ -114,6 +114,7 @@ export const useOrders = () => {
   return useQuery<Order[]>({
     queryKey: profileKeys.orders,
     queryFn: profileService.getOrders,
+    staleTime: 0,
   });
 };
 

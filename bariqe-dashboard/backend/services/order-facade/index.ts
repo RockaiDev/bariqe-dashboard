@@ -242,7 +242,11 @@ class OrderFacade {
         };
       }
 
-      // COD - No payment URL needed
+      // COD - No payment URL needed, mark as confirmed immediately
+      await OrderModel.findByIdAndUpdate(order._id, {
+        orderStatus: "confirmed",
+      });
+
       const populatedOrder = await OrderModel.findById(order._id)
         .populate("customer", "customerName customerEmail customerPhone")
         .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");

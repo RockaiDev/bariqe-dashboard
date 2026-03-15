@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/routing";
@@ -26,8 +26,14 @@ export default function CheckoutSuccessPage() {
   const [status, setStatus] = useState<PaymentStatus>("loading");
   const [orderInfo, setOrderInfo] = useState<OrderInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isCodOrder, setIsCodOrder] = useState(false);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    // Guard against React Strict Mode double-firing (which clears sessionStorage on first run)
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const verifyPayment = async () => {
       try {
         // Get order info from sessionStorage (saved before redirect)
@@ -41,8 +47,17 @@ export default function CheckoutSuccessPage() {
         let orderData: OrderInfo | null = null;
 
         if (pendingOrderStr) {
-          orderData = JSON.parse(pendingOrderStr);
+          const parsed = JSON.parse(pendingOrderStr);
+          orderData = { orderId: parsed.orderId, orderNumber: parsed.orderNumber || "" };
           sessionStorage.removeItem("pendingOrder");
+
+          // COD orders: show success immediately without payment verification
+          if (parsed.isCod) {
+            setOrderInfo(orderData);
+            setIsCodOrder(true);
+            setStatus("success");
+            return;
+          }
         } else if (orderId) {
           orderData = { orderId, orderNumber: "" };
         }
@@ -119,7 +134,7 @@ export default function CheckoutSuccessPage() {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
                 <CardTitle className="text-xl text-green-700">
-                  {t("paymentStatus.success")}
+                  {isCodOrder ? t("paymentStatus.codSuccess") : t("paymentStatus.success")}
                 </CardTitle>
               </>
             )}
@@ -154,7 +169,9 @@ export default function CheckoutSuccessPage() {
 
             {status === "success" && (
               <>
-                <p className="text-gray-600">{t("paymentStatus.successMessage")}</p>
+                <p className="text-gray-600">
+                  {isCodOrder ? t("paymentStatus.codSuccessMessage") : t("paymentStatus.successMessage")}
+                </p>
                 {orderInfo?.orderNumber && (
                   <div className="bg-gray-50 rounded-lg p-4 mt-4">
                     <p className="text-sm text-gray-500">{t("paymentStatus.orderNumber")}</p>

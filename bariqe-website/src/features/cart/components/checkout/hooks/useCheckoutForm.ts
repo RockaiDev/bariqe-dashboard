@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from 'react-hot-toast';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
 import { useCart } from '@/shared/hooks/useCart';
 import { useCheckoutSchema, CheckoutFormValues } from '@/features/cart/schemas/checkout.schema';
 import { publicApiService, CheckoutData } from '@/lib/publicApiService';
@@ -12,9 +13,10 @@ import { useProfile } from '@/shared/hooks/useProfile';
 
 export const useCheckoutForm = () => {
     const t = useTranslations('checkout');
-    const { items } = useCart();
+    const { items, clearCart } = useCart();
     const { data: profile } = useProfile();
     const locale = useLocale();
+    const router = useRouter();
 
     const formSchema = useCheckoutSchema();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +35,7 @@ export const useCheckoutForm = () => {
             floor: '',
             blockNumber: '',
             nationalAddress: '',
+            paymentMethod: 'cod',
         },
     });
 
@@ -53,6 +56,7 @@ export const useCheckoutForm = () => {
                 blockNumber: defaultAddress?.building || '',
                 nationalAddress: defaultAddress?.nationalAddress || '',
                 floor: '', // Not usually in Address type
+                paymentMethod: 'cod',
             });
         }
     }, [profile, form]);
@@ -72,9 +76,9 @@ export const useCheckoutForm = () => {
             // Get customer ID from profile (fetched from backend via cookies)
             const customerId = profile?._id;
 
-            // Build checkout data for PayLink integration
+            // Build checkout data
             const checkoutData: CheckoutData = {
-                paymentMethod: "paylink",
+                paymentMethod: data.paymentMethod || "cod",
                 customer: customerId,
                 customerData: {
                     customerName: data.name,
@@ -105,23 +109,38 @@ export const useCheckoutForm = () => {
             // Call the checkout endpoint
             const response = await publicApiService.checkout(checkoutData);
             console.log("Checkout response:", response);
-            if (response.status === 200 && response.result?.paymentUrl) {
-                // Store order info in sessionStorage for the success page
-                sessionStorage.setItem('pendingOrder', JSON.stringify({
-                    orderId: response.result.order._id,
-                    orderNumber: response.result.order.orderNumber || "",
-                }));
 
-                toast.success(t('success.redirectingToPayment'));
+            // Extract order info (handle both response shapes)
+            const order = response?.result?.order || response?.order;
+            const orderId = order?._id || order?.id;
+            const orderNumber = order?.orderNumber || "";
 
-                // Clear the cart before redirecting
-                // clearCart();
-                // form.reset();
+            if (!orderId) {
+                throw new Error(response?.message || response?.result?.message || t('errors.checkoutFailed'));
+            }
 
-                // Redirect to PayLink payment page
-                window.location.href = response.result.paymentUrl;
+            // Store order info for the success page
+            sessionStorage.setItem('pendingOrder', JSON.stringify({
+                orderId,
+                orderNumber,
+                isCod: data.paymentMethod === "cod",
+            }));
+
+            if (data.paymentMethod === "cod") {
+                // COD: clear cart and navigate to success page (no full refresh)
+                clearCart();
+                toast.success(t('success.orderCreated'));
+                router.push('/checkout/success');
             } else {
-                throw new Error(response.message || t('errors.checkoutFailed'));
+                const paymentUrl = response?.result?.paymentUrl || response?.paymentUrl;
+                if (paymentUrl) {
+                    clearCart();
+                    toast.success(t('success.redirectingToPayment'));
+                    // Redirect to PayLink payment page
+                    window.location.href = paymentUrl;
+                } else {
+                    throw new Error(t('errors.checkoutFailed'));
+                }
             }
 
         } catch (error: any) {

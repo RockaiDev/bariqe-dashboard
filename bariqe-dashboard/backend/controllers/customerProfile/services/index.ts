@@ -112,7 +112,7 @@ export default class CustomerProfileService extends MongooseFeatures {
       customer: customerId,
       orderStatus: { $ne: "pending" }
     })
-      .populate("products.product", "productNameAr productNameEn productImage productCode")
+      .populate("products.product", "productNameAr productNameEn productImage productCode productNewPrice productOldPrice")
       .sort({ createdAt: -1 });
     return orders;
   }
