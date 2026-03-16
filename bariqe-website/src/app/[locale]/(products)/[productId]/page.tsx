@@ -19,7 +19,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCart } from '@/shared/hooks/useCart';
 import type { Product as StoreProduct } from '@/lib/publicApiService';
 import toast from 'react-hot-toast';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useCrud, useShow } from '@/shared/hooks/useCrud';
 import Loading from '@/app/loading';
 

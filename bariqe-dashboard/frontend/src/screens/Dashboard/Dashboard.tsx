@@ -190,15 +190,6 @@ export default function Dashboard() {
             bgIcon="bg-[#021031]"
           />
           <DashCard
-            title={intl.formatMessage({ id: "Consultation Requests" })}
-            value={displayData.summary.consultationRequests}
-            change={displayData.summary.consultationsChange}
-            period={intl.formatMessage({ id: "from last month" })}
-            changeColor="text-green-500"
-            bgIcon="bg-[#0D52F2]"
-            icon={MessageCircleMore}
-          />
-          <DashCard
             title={intl.formatMessage({ id: "New Customers" })}
             value={displayData.summary.newCustomers}
             change={displayData.summary.customersChange}
