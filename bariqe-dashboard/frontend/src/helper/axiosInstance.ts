@@ -19,6 +19,11 @@ let isRedirecting = false;
 // متغير لحفظ دالة navigate
 let navigateFunction: ((path: string) => void) | null = null;
 
+// Reset redirect flag — call after successful login
+export const resetRedirecting = () => {
+  isRedirecting = false;
+};
+
 // دالة لتعيين navigate function
 export const setNavigate = (navigate: (path: string) => void) => {
   navigateFunction = navigate;
@@ -27,19 +32,15 @@ export const setNavigate = (navigate: (path: string) => void) => {
 // 🟢 Request Interceptor
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig<AxiosRequestConfig>) => {
-    let token = useAuthStore.getState().token;
+    const token = useAuthStore.getState().token;
+    const isAuthEndpoint = request.url?.startsWith('/auth/');
 
-    // Fallback: Check localStorage directly if store isn't ready or hydrated
-    if (!token) {
-      try {
-        const stored = localStorage.getItem('auth-storage');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          token = parsed?.state?.token;
-        }
-      } catch (err) {
-        console.warn("Failed to parse auth-storage from localStorage", err);
-      }
+    // If no token and not an auth endpoint, cancel the request
+    if (!token && !isAuthEndpoint) {
+      const controller = new AbortController();
+      request.signal = controller.signal;
+      controller.abort('No auth token available');
+      return request;
     }
 
     if (token) {
@@ -52,12 +53,9 @@ axiosInstance.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-// 🟢 Response Interceptor المحسن
+// 🟢 Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Reset redirect flag on successful response
-    isRedirecting = false;
-
     // Skip transforming blob responses
     if (response.config.responseType === 'blob') {
       return response;
@@ -67,27 +65,29 @@ axiosInstance.interceptors.response.use(
     return result;
   },
   (error) => {
-    if (error.response) {
-      const isAuthCheck = error.config?.url?.includes('/auth/me') || error.config?.url?.includes('/auth/signin');
+    // Silently reject aborted requests (e.g. no-token guard)
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
 
-      // Authentication errors
-      if (error.response.status === 401 && !isRedirecting && !isAuthCheck) {
+    if (error.response) {
+      const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
+
+      // Handle 401 — clear auth and redirect once
+      if (error.response.status === 401 && !isRedirecting && !isAuthEndpoint) {
         isRedirecting = true;
 
-        // Clear auth state immediately
         useAuthStore.getState().clearAuth();
 
-        // Navigate to login
-        if (navigateFunction && !window.location.pathname.includes('/login')) {
-          navigateFunction('/login');
-        } else if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+        if (!window.location.pathname.includes('/login')) {
+          if (navigateFunction) {
+            navigateFunction('/login');
+          } else {
+            window.location.href = '/login';
+          }
         }
 
-        // Reset redirect flag after a delay
-        setTimeout(() => {
-          isRedirecting = false;
-        }, 3000); // Increased delay
+        // isRedirecting stays true until a fresh login succeeds
       }
 
       return Promise.reject(error.response.data);
