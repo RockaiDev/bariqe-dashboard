@@ -51,7 +51,7 @@ export const OrderSummary = ({ items, total }: OrderSummaryProps) => {
                     <div className='p-4 space-y-3 border-t'>
                         <div className='flex justify-between items-center text-sm'>
                             <span className='text-gray-500'>{t('subtotal')}</span>
-                            <span className='font-medium'>{subtotal.toFixed(2)} <span className="icon-saudi_riyal_new text-lg"></span></span>
+                            <span className='font-medium whitespace-nowrap'>{subtotal.toFixed(2)} <span className="icon-saudi_riyal_new text-sm"></span></span>
                         </div>
                         <div className='flex justify-between items-center text-sm'>
                             <span className='text-gray-500'>{t('shipping')}</span>
@@ -63,7 +63,7 @@ export const OrderSummary = ({ items, total }: OrderSummaryProps) => {
                         {discount > 0 && (
                             <div className='flex justify-between items-center text-sm'>
                                 <span className='text-gray-500'>{t('discount')}</span>
-                                <span className='text-green-600 font-medium'>-{discount.toFixed(2)} <span className="icon-saudi_riyal_new text-lg"></span></span>
+                                <span className='text-green-600 font-medium whitespace-nowrap'>-{discount.toFixed(2)} <span className="icon-saudi_riyal_new text-sm"></span></span>
                             </div>
                         )}
                     </div>
@@ -71,8 +71,8 @@ export const OrderSummary = ({ items, total }: OrderSummaryProps) => {
                     {/* Total */}
                     <div className='flex justify-between items-center p-4 bg-primary/5 border-t'>
                         <span className='text-primary font-bold text-lg'>{t('total')}</span>
-                        <span className='text-primary font-bold text-xl'>
-                            {total.toFixed(2)} <span className="icon-saudi_riyal_new text-2xl"></span>
+                        <span className='text-primary font-bold text-xl whitespace-nowrap'>
+                            {total.toFixed(2)} <span className="icon-saudi_riyal_new text-lg"></span>
                         </span>
                     </div>
 

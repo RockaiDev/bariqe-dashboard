@@ -112,7 +112,7 @@ export default function Header() {
 
                   quality={100}
                   priority
-                  className="cover ltr:hidden"
+                  className="cover ltr:hidden w-[120px] sm:w-[160px] md:w-[200px] h-auto"
 
                 />
 
@@ -125,7 +125,7 @@ export default function Header() {
 
                   quality={100}
                   priority
-                  className="cover rtl:hidden"
+                  className="cover rtl:hidden w-[120px] sm:w-[140px] md:w-[180px] h-auto"
 
                 />
 

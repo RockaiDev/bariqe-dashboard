@@ -41,15 +41,15 @@ export const CheckoutCard = ({ id, name, price, quantity, discount, image }: Che
                 )}
             </div>
 
-            <div className='flex flex-col items-end gap-1'>
+            <div className='flex flex-col items-end gap-1 shrink-0'>
                 {discount > 0 && (
-                    <p className='text-xs text-gray-400 line-through'>
+                    <p className='text-xs text-gray-400 line-through whitespace-nowrap'>
                         {itemSubtotal.toFixed(2)} <span style={{ fontSize: '12px' }} className="icon-saudi_riyal_new"></span>
                     </p>
                 )}
-                <p>
+                <p className='whitespace-nowrap'>
                     <span className='text-icon-tertiary font-semibold'>{itemTotal.toFixed(2)}</span>
-                    <span className='text-sm'> <span style={{ fontSize: '18px' }} className="icon-saudi_riyal_new"></span></span>
+                    <span className='text-sm'> <span style={{ fontSize: '16px' }} className="icon-saudi_riyal_new"></span></span>
                 </p>
             </div>
 

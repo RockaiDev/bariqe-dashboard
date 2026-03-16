@@ -241,7 +241,7 @@ const AllProducts = () => {
         </div>
 
         {/* Product Grid - Responsive Columns */}
-        <div className="min-h-[50vh] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+        <div className="min-h-[50vh] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-6 lg:gap-8">
           {products.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
               <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">

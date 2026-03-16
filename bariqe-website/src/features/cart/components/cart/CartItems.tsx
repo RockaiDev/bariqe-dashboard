@@ -52,15 +52,15 @@ export const CartItems = ({ items, onInc, onDec, onRemove }: CartItemsProps) => 
                                   onError={() => setImageError(true)}
                               />
               <div className='flex h-auto items-center justify-center flex-col w-xs'>
-                <p className='text-action-hover w-[130px] md:max-w-[200px] whitespace-normal break-words  font-semibold h-auto'>{local === 'en' ? item.product?.productNameEn : item.product?.productNameAr || 'Product'}</p>
+                <p className='text-action-hover max-w-[100px] sm:max-w-[130px] md:max-w-[200px] whitespace-normal break-words  font-semibold h-auto'>{local === 'en' ? item.product?.productNameEn : item.product?.productNameAr || 'Product'}</p>
                 <p className='body-small text-icon-tertiary'>{item.quantity} {t('productUnit')}</p>
               </div>
             </TableCell>
-            <TableCell className='body-medium text-icon-tertiary hidden md:table-cell'>{item.price} <span style={{ fontSize: '28px' }} className=" icon-saudi_riyal_new"></span></TableCell>
+            <TableCell className='body-medium text-icon-tertiary hidden md:table-cell whitespace-nowrap'>{item.price} <span style={{ fontSize: '20px' }} className=" icon-saudi_riyal_new"></span></TableCell>
             <TableCell className='max-w-[180px]'>
 
               <div className=' flex md:hidden items-center justify-between my-2 px-4'>
-                <p className='text-xs sm:text-sm text-icon-tertiary'>{item.price} <span style={{ fontSize: '28px' }} className=" icon-saudi_riyal_new"></span></p>
+                <p className='text-xs sm:text-sm text-icon-tertiary whitespace-nowrap'>{item.price} <span style={{ fontSize: '16px' }} className=" icon-saudi_riyal_new"></span></p>
                 <Button variant={'ghost'} onClick={() => onRemove(item.id)}><Trash className='text-destructive' /></Button>
               </div>
               <Card className={cn('max-w-[180px] p-1 sm:p-2 rounded-full flex flex-row items-center justify-between gap-2')}>

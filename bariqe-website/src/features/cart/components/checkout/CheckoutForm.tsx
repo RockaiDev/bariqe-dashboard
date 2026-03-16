@@ -37,7 +37,7 @@ export const CheckoutForm = () => {
                         </h2>
                     </div>
 
-                    <Card className="p-5 md:p-6 space-y-6">
+                    <Card className="p-3 sm:p-5 md:p-6 space-y-6">
                         <FieldGroup className='w-full space-y-5'>
                             {/* Contact Information Section */}
                             <ContactInfoSection control={form.control} />

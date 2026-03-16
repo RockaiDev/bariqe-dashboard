@@ -20,11 +20,11 @@ export const CartDetails = ({ items, total }: CartDetailsProps) => {
     const discount = Math.max(0, safeSubtotal - safeTotal);
 
     return (
-        <Card className=' lg:px-12 flex px-4 flex-col gap-5' >
+        <Card className='px-3 sm:px-4 lg:px-12 flex flex-col gap-5' >
             <h2 className='body-large text-primary font-semibold'>{t('orderSummary')}</h2>
             <div className='flex justify-between items-center py-2'>
                 <p className='body-medium text-icon-tertiary'>{t('subtotal')}</p>
-                <p className='body-large text-primary font-semibold'>{safeSubtotal.toFixed(2)} <span style={{ fontSize: '20px' }} className="icon-saudi_riyal_new"></span></p>
+                <p className='body-large text-primary font-semibold whitespace-nowrap'>{safeSubtotal.toFixed(2)} <span style={{ fontSize: '16px' }} className="icon-saudi_riyal_new"></span></p>
             </div>
             <div className='flex justify-between items-center py-2'>
                 <p className='body-medium text-icon-tertiary'>{t('shipping')}</p>
@@ -35,12 +35,12 @@ export const CartDetails = ({ items, total }: CartDetailsProps) => {
             </div>
             <div className='flex justify-between items-center py-2'>
                 <p className='body-medium text-icon-tertiary'>{t('discount')}</p>
-                <p className='body-large text-primary font-semibold'>-{discount.toFixed(2)} <span style={{ fontSize: '20px' }} className="icon-saudi_riyal_new"></span></p>
+                <p className='body-large text-primary font-semibold whitespace-nowrap'>-{discount.toFixed(2)} <span style={{ fontSize: '16px' }} className="icon-saudi_riyal_new"></span></p>
             </div>
             <div className='h-0.5 w-full bg-text-secondary' />
             <div className='flex justify-between items-center'>
                 <p className='body-large text-primary font-bold'>{t('total')}</p>
-                <p className='body-large text-primary font-semibold'>{safeTotal.toFixed(2)} <span style={{ fontSize: '28px' }} className=" icon-saudi_riyal_new"></span></p>
+                <p className='body-large text-primary font-semibold whitespace-nowrap'>{safeTotal.toFixed(2)} <span style={{ fontSize: '20px' }} className=" icon-saudi_riyal_new"></span></p>
             </div>
 
             <Link href={'/checkout'}>

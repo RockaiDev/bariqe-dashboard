@@ -12,11 +12,21 @@ oauth2Client.setCredentials({
 
 const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
+// RFC 2047 encode subject to handle emojis and non-ASCII characters
+const encodeSubject = (subject: string): string => {
+  // Check if subject contains non-ASCII characters
+  if (/[^\x00-\x7F]/.test(subject)) {
+    const encoded = Buffer.from(subject, 'utf-8').toString('base64');
+    return `=?UTF-8?B?${encoded}?=`;
+  }
+  return subject;
+};
+
 const createMimeMessage = (to: string, subject: string, html: string, from: string) => {
   const message = [
     `From: ${from}`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    `Subject: ${encodeSubject(subject)}`,
     `MIME-Version: 1.0`,
     `Content-Type: text/html; charset=utf-8`,
     ``,
