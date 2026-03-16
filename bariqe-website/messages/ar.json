@@ -979,6 +979,7 @@
       "nameRequired": "الاسم مطلوب",
       "phoneRequired": "رقم الهاتف مطلوب",
       "phoneInvalid": "رقم الهاتف يجب أن يكون 10 أرقام على الأقل",
+      "phoneFormatInvalid": "الرجاء إدخال رقم هاتف صحيح (مثال: 5XXXXXXXX للسعودية)",
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "الرجاء إدخال بريد إلكتروني صحيح",
       "cityRequired": "المدينة مطلوبة",

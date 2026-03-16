@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   FieldLabel,
 } from "@/shared/components/ui/field"
-import { Controller, Control } from "react-hook-form"
+import { Controller, Control, useWatch } from "react-hook-form"
 import { useTranslations } from 'next-intl';
 import { CheckoutFormValues } from '@/features/cart/schemas/checkout.schema';
 import { CheckoutInput } from '../CheckoutInput';
@@ -17,8 +17,20 @@ interface ContactInfoSectionProps {
   control: Control<CheckoutFormValues>;
 }
 
+// Strip country code prefix and leading zero from phone input
+function normalizePhone(value: string, countryCode: string): string {
+    const code = countryCode.replace('+', '');
+    let v = value.replace(/[^0-9]/g, '');
+    // Strip full country code prefix (e.g. "966" from "966512345678")
+    if (code && v.startsWith(code)) v = v.slice(code.length);
+    // Strip leading zero (e.g. "0512345678" → "512345678")
+    if (v.startsWith('0')) v = v.slice(1);
+    return v;
+}
+
 export const ContactInfoSection = ({ control }: ContactInfoSectionProps) => {
     const t = useTranslations('checkout');
+    const countryCode = useWatch({ control, name: 'countryCode' });
 
     return (
         <div className='space-y-4'>
@@ -79,8 +91,7 @@ export const ContactInfoSection = ({ control }: ContactInfoSectionProps) => {
                                         autoComplete="tel"
                                         type='tel'
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(/[^0-9]/g, '');
-                                            field.onChange(value);
+                                            field.onChange(normalizePhone(e.target.value, countryCode));
                                         }}
                                     />
                                     {fieldState.invalid && (

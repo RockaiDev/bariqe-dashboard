@@ -1053,6 +1053,7 @@
       "nameRequired": "Name is required",
       "phoneRequired": "Phone number is required",
       "phoneInvalid": "Phone number must be at least 10 digits",
+      "phoneFormatInvalid": "Please enter a valid phone number (e.g. 5XXXXXXXX for Saudi)",
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
       "cityRequired": "City is required",
