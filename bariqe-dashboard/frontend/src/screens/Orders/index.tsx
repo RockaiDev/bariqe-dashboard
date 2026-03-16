@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -22,6 +23,7 @@ import {
   MapPin,
   Trash2,
   ShoppingCart,
+  Info,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -131,6 +133,7 @@ export default function OrdersPage() {
 
   // Dialog States
   const [addOpen, setAddOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [createNewCustomer, setCreateNewCustomer] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -749,6 +752,15 @@ export default function OrdersPage() {
         />
 
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setInfoOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Info className="w-4 h-4" />
+            {intl.formatMessage({ id: "orders.order_info" })}
+          </Button>
+
           <Button
             variant="outline"
             onClick={handleExportOrders}
@@ -2135,6 +2147,59 @@ export default function OrdersPage() {
         onCancel={editConfirmDialog.handleCancel}
         isDestructive={true}
       />
+
+      {/* Order Info Modal */}
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="sm:max-w-lg" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>{intl.formatMessage({ id: "orders.order_info_title" })}</DialogTitle>
+            <DialogDescription>{intl.formatMessage({ id: "orders.order_info_description" })}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">{intl.formatMessage({ id: "orders.info_status_flow" })}</h4>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-yellow-100 text-yellow-800 mt-0.5 shrink-0">Pending</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_pending" })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-blue-100 text-blue-800 mt-0.5 shrink-0">Confirmed</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_confirmed" })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-orange-100 text-orange-800 mt-0.5 shrink-0">Processing</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_processing" })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-purple-100 text-purple-800 mt-0.5 shrink-0">Shipped</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_shipped" })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-green-100 text-green-800 mt-0.5 shrink-0">Delivered</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_delivered" })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge className="bg-red-100 text-red-800 mt-0.5 shrink-0">Cancelled</Badge>
+                  <span>{intl.formatMessage({ id: "orders.info_cancelled" })}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="border-t pt-3">
+              <h4 className="font-semibold mb-1">{intl.formatMessage({ id: "orders.info_stock_title" })}</h4>
+              <p className="text-muted-foreground">{intl.formatMessage({ id: "orders.info_stock_desc" })}</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{intl.formatMessage({ id: "orders.info_close" })}</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

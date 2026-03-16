@@ -425,6 +425,30 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Delete order
   public async DeleteOneOrder(id: string) {
     try {
+      // Check if order was in a fulfilled state — restore stock before deleting
+      const order = await OrderModel.findById(id);
+      if (order) {
+        const status = (order as any).orderStatus;
+        if (status === "shipped" || status === "delivered") {
+          console.log(`[OrderService] Deleting fulfilled order ${id} (${status}) → restoring stock`);
+          const orderProducts = (order as any).products || [];
+          for (const item of orderProducts) {
+            const productId = item.product;
+            const qty = item.quantity || 0;
+            if (productId && qty > 0) {
+              const result = await ProductModel.findByIdAndUpdate(
+                productId,
+                { $inc: { amount: qty } },
+                { new: true }
+              );
+              if (result) {
+                console.log(`  ✅ Product ${productId}: stock restored by ${qty} → new stock: ${result.amount}`);
+              }
+            }
+          }
+        }
+      }
+
       const deleted = await super.deleteDocument(OrderModel, id);
       return deleted;
     } catch (error) {

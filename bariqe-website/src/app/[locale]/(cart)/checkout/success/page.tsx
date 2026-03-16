@@ -7,7 +7,6 @@ import { useRouter } from "@/i18n/routing";
 import { CheckCircle, XCircle, Loader2, Package, ArrowRight} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { publicApiService } from "@/lib/publicApiService";
 import FadeUpReval from "@/shared/animations/FadUpReval";
 
 type PaymentStatus = "loading" | "success" | "failed" | "pending";
@@ -82,20 +81,9 @@ export default function CheckoutSuccessPage() {
           return;
         }
 
-        // Verify payment status with backend
-        const response = await publicApiService.verifyPayment(orderData.orderId);
-
-        if (response.success) {
-          setStatus("success");
-          if (response.order?.orderNumber) {
-            setOrderInfo((prev) => ({
-              ...prev!,
-              orderNumber: response.order.orderNumber,
-            }));
-          }
-        } else {
-          setStatus("pending");
-        }
+        // If no explicit status from PayLink URL params, payment is still processing
+        // (The PayLink webhook will update the order status on the backend)
+        setStatus("pending");
       } catch (error: any) {
         console.error("Payment verification error:", error);
         setStatus("failed");

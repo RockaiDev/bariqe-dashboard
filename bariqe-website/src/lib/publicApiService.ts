@@ -843,19 +843,6 @@ class PublicApiService {
     }
   }
 
-  /**
-   * Verify payment status after PayLink callback
-   * This is typically called after user returns from payment gateway
-   */
-  async verifyPayment(orderId: string): Promise<{ success: boolean; order: any }> {
-    try {
-      const response = await publicAxiosInstance.get(`/public/orders/${orderId}/verify-payment`);
-      return response.data || response;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async verifyPaylinkWebhook(orderNumber: string, transactionNo: string) {
     try {
       // Allow calling the webhook endpoint directly from frontend

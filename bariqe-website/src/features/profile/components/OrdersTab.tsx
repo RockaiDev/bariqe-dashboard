@@ -5,9 +5,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useOrders, useCancelOrder } from "@/shared/hooks/useProfile";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2, Package, Calendar, MapPin, CreditCard, ShoppingBag, Truck, Receipt, ChevronDown } from "lucide-react";
+import { Loader2, Package, Calendar, MapPin, CreditCard, ShoppingBag, Truck, Receipt, ChevronDown, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/shared/components/ui/collapsible";
 import CancelOrderDialog from "./CancelOrderDialog";
 import { cn } from "@/lib/utils";
@@ -259,6 +260,21 @@ const OrdersTab = () => {
                                                 <p className="text-xs text-gray-500 mt-1">{order.shipping.status}</p>
                                             )}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Cancel button for cancellable orders */}
+                                {['pending', 'confirmed', 'processing'].includes(order.orderStatus) && (
+                                    <div className="pt-2 border-t">
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => setSelectedOrderId(order._id)}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <XCircle className="h-4 w-4" />
+                                            {t("cancel")}
+                                        </Button>
                                     </div>
                                 )}
                             </CardContent>

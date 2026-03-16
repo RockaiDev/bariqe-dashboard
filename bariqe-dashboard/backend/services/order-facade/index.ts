@@ -20,6 +20,9 @@ import PayLinkService from "../paylink";
 import JTExpressService from "../shipping/jt-express";
 import { sendOrderConfirmation, sendShipmentNotification } from "../email";
 import ApiError from "../../utils/errors/ApiError";
+import OrderService from "../mongodb/orders";
+
+const orderService = new OrderService();
 
 // ============================================================================
 // TYPES
@@ -392,22 +395,16 @@ class OrderFacade {
         console.warn("[OrderFacade] Shipment created but no tracking number received");
       }
 
-      // 5. Update order with shipping info
-      const updatedOrder = await OrderModel.findByIdAndUpdate(
-        orderId,
-        {
-          shipping: {
-            carrier: "jt_express",
-            trackingNumber,
-            status: "shipped",
-            labelUrl,
-          },
-          orderStatus: "shipped",
+      // 5. Update order with shipping info (via EditOneOrder for centralized stock management)
+      const updatedOrder = await orderService.EditOneOrder(orderId, {
+        shipping: {
+          carrier: "jt_express",
+          trackingNumber,
+          status: "shipped",
+          labelUrl,
         },
-        { new: true }
-      )
-        .populate("customer", "customerName customerEmail customerPhone")
-        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
+        orderStatus: "shipped",
+      });
 
       // 6. Send shipment notification email
       const customerEmail = (updatedOrder as any)?.customer?.customerEmail;
