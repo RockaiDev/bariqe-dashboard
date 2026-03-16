@@ -32,6 +32,11 @@ export const useLogin = () => {
         return;
       }
 
+      // Store token for Authorization header
+      if (token && typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(customer));
+      }
 
       toast.success(data.message || t("loginSuccess"));
       queryClient.invalidateQueries({ queryKey: profileKeys.profile });
@@ -91,8 +96,15 @@ export const useForgotPassword = () => {
 export const useVerifyOTP = () => {
   return useMutation({
     mutationFn: authService.verifyOTP,
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(data.message);
+      // Store token after OTP verification
+      const token = data.token || data.result?.token;
+      const customer = data.customer || data.result?.customer;
+      if (token && typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+        if (customer) localStorage.setItem("user", JSON.stringify(customer));
+      }
     },
     onError: (error: any) => {
       toast.error(error.message);

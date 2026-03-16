@@ -21,5 +21,6 @@ customerRouter.delete("/favorites/:productId", profileController.removeFavorite.
 
 // === Orders ===
 customerRouter.get("/orders", profileController.getMyOrders.bind(profileController));
+customerRouter.post("/orders/:id/cancel", profileController.cancelOrder.bind(profileController));
 
 export default customerRouter;

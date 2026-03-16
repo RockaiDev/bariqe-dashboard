@@ -113,4 +113,15 @@ export default class CustomerProfileController extends BaseApi {
       next(error);
     }
   }
+
+  public async cancelOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const customerId = (req as any).user.id;
+      const orderId = req.params.id;
+      const result = await profileService.cancelOrder(customerId, orderId);
+      super.send(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

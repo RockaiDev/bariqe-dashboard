@@ -59,8 +59,8 @@ const handleOAuthSuccess = (req: Request, res: Response) => {
 
   const token = generateCustomerToken(customer);
 
-  // Set accessToken cookie using same COOKIE_OPTIONS as local login
-  res.cookie("accessToken", token, { ...COOKIE_OPTIONS, httpOnly: true });
+  // Set customerAccessToken cookie for customer OAuth
+  res.cookie("customerAccessToken", token, { ...COOKIE_OPTIONS, httpOnly: true });
 
   // Redirect to frontend
   res.redirect(`${FRONTEND_URL}`);
@@ -182,7 +182,7 @@ authRouter.get("/logout", (req: Request, res: Response) => {
     }
   });
   
-  res.clearCookie("accessToken", COOKIE_OPTIONS as any);
+  res.clearCookie("customerAccessToken", COOKIE_OPTIONS as any);
 
   res.redirect(`${FRONTEND_URL}/login`);
 });
@@ -236,8 +236,8 @@ authRouter.post("/set-token", async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: "Invalid token" });
     }
 
-    // Set the cookie using same COOKIE_OPTIONS as local login
-    res.cookie("accessToken", token, { ...COOKIE_OPTIONS, httpOnly: true });
+    // Set the cookie
+    res.cookie("customerAccessToken", token, { ...COOKIE_OPTIONS, httpOnly: true });
 
     res.json({ 
       success: true, 

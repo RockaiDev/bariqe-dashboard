@@ -116,4 +116,19 @@ export default class CustomerProfileService extends MongooseFeatures {
       .sort({ createdAt: -1 });
     return orders;
   }
+
+  public async cancelOrder(customerId: string, orderId: string) {
+    const OrderModel = require("../../../models/orderSchema").default;
+    const order = await OrderModel.findOne({ _id: orderId, customer: customerId });
+    if (!order) throw new ApiError("NOT_FOUND", "Order not found");
+
+    const cancellableStatuses = ["confirmed", "processing"];
+    if (!cancellableStatuses.includes(order.orderStatus)) {
+      throw new ApiError("BAD_REQUEST", `Cannot cancel order with status "${order.orderStatus}"`);
+    }
+
+    const OrderService = require("../../../services/mongodb/orders").default;
+    const orderService = new OrderService();
+    return orderService.EditOneOrder(orderId, { orderStatus: "cancelled" });
+  }
 }
