@@ -116,10 +116,10 @@ const LoginPage = () => {
               text={t("googleLogin")}
               onClick={() => googleLogin(undefined)}
             />
-            <AppleAuthButton
+            {/* <AppleAuthButton
               text={t("appleLogin")}
               onClick={() => appleLogin()}
-            />
+            /> */}
           </div>
 
           <div className="text-center text-sm text-gray-500">
