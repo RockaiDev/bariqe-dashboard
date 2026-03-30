@@ -48,7 +48,7 @@ export const DeliveryAddressSection = ({ control, setValue }: DeliveryAddressSec
             </h3>
 
             {/* National Address Search */}
-            <div className='flex items-end gap-2'>
+            {/* <div className='flex items-end gap-2'>
                 <div className='flex-1'>
                     <CheckoutInput
                         control={control}
@@ -69,7 +69,7 @@ export const DeliveryAddressSection = ({ control, setValue }: DeliveryAddressSec
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                     <span className='ms-2 hidden md:inline'>{t('buttons.search') || 'Search'}</span>
                 </Button>
-            </div>
+            </div> */}
 
             {/* Region and City */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

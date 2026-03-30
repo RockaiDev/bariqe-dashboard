@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Loader2, Package, ArrowRight} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import FadeUpReval from "@/shared/animations/FadUpReval";
+import { useProfile } from "@/shared/hooks/useProfile";
 
 type PaymentStatus = "loading" | "success" | "failed" | "pending";
 
@@ -27,7 +28,8 @@ export default function CheckoutSuccessPage() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isCodOrder, setIsCodOrder] = useState(false);
   const hasRun = useRef(false);
-
+  const {data:userData} = useProfile();
+ 
   useEffect(() => {
     // Guard against React Strict Mode double-firing (which clears sessionStorage on first run)
     if (hasRun.current) return;
@@ -169,9 +171,9 @@ export default function CheckoutSuccessPage() {
                   </div>
                 )}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-                  <Button onClick={handleViewOrders} variant="default">
+                  {userData && <Button onClick={handleViewOrders} variant="default">
                     {t("paymentStatus.viewOrders")}
-                  </Button>
+                  </Button>}
                   <Button onClick={handleContinueShopping} variant="outline">
                     {t("paymentStatus.continueShopping")}
                     <ArrowRight className="w-4 h-4 ml-2" />

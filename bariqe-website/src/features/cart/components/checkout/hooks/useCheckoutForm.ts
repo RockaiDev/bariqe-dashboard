@@ -35,7 +35,6 @@ export const useCheckoutForm = () => {
             floor: '',
             blockNumber: '',
             nationalAddress: '',
-            paymentMethod: 'cod',
         },
     });
 
@@ -56,7 +55,6 @@ export const useCheckoutForm = () => {
                 blockNumber: defaultAddress?.building || '',
                 nationalAddress: defaultAddress?.nationalAddress || '',
                 floor: '', // Not usually in Address type
-                paymentMethod: 'cod',
             });
         }
     }, [profile, form]);
@@ -78,7 +76,7 @@ export const useCheckoutForm = () => {
 
             // Build checkout data
             const checkoutData: CheckoutData = {
-                paymentMethod: data.paymentMethod || "cod",
+                paymentMethod: "cod",
                 customer: customerId,
                 customerData: {
                     customerName: data.name,
@@ -111,7 +109,7 @@ export const useCheckoutForm = () => {
             console.log("Checkout response:", response);
 
             // Extract order info (handle both response shapes)
-            const order = response?.result?.order || response?.order;
+            const order = response?.result?.order ;
             const orderId = order?._id || order?.id;
             const orderNumber = order?.orderNumber || "";
 
@@ -123,25 +121,13 @@ export const useCheckoutForm = () => {
             sessionStorage.setItem('pendingOrder', JSON.stringify({
                 orderId,
                 orderNumber,
-                isCod: data.paymentMethod === "cod",
+                isCod: true,
             }));
 
-            if (data.paymentMethod === "cod") {
-                // COD: clear cart and navigate to success page (no full refresh)
-                clearCart();
-                toast.success(t('success.orderCreated'));
-                router.push('/checkout/success');
-            } else {
-                const paymentUrl = response?.result?.paymentUrl || response?.paymentUrl;
-                if (paymentUrl) {
-                    clearCart();
-                    toast.success(t('success.redirectingToPayment'));
-                    // Redirect to PayLink payment page
-                    window.location.href = paymentUrl;
-                } else {
-                    throw new Error(t('errors.checkoutFailed'));
-                }
-            }
+            // COD: clear cart and navigate to success page (no full refresh)
+            clearCart();
+            toast.success(t('success.orderCreated'));
+            router.push('/checkout/success');
 
         } catch (error: any) {
             console.error('Checkout error:', error);

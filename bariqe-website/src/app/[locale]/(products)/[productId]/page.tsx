@@ -162,44 +162,54 @@ const ProductDetails = () => {
                         <p className='text-primary body-large'>{tProd('addQuantity')}</p>
 
                         <Card className={cn('w-[260px] p-2 rounded-full flex flex-row items-center justify-between gap-2')}>
-                            <Button onClick={() => setQuantity(q => q + 1)} className={cn('rounded-full bg-text-secondary-2/30 text-icon-on-action hover:text-white')}><Plus /></Button>
+                            <Button disabled={product.amount === 0} onClick={() => setQuantity(q => q + 1)} className={cn('rounded-full bg-text-secondary-2/30 text-icon-on-action hover:text-white')}><Plus /></Button>
                             <p className='text-text-secondary-2 font-medium'>{quantity}</p>
-                            <Button onClick={() => setQuantity(q => Math.max(1, q - 1))} className={cn('rounded-full bg-text-secondary-2/30 text-icon-on-action hover:text-white')}><Minus /></Button>
+                            <Button disabled={product.amount === 0} onClick={() => setQuantity(q => Math.max(1, q - 1))} className={cn('rounded-full bg-text-secondary-2/30 text-icon-on-action hover:text-white')}><Minus /></Button>
 
                         </Card>
                     </div>
 
                     <Card className={cn('w-full border-none  shadow-none sm:border-2 border-text-secondary lg:px-18')}>
                         <CustomButton
+                            disabled={product.amount === 0}
                             onClick={() => {
+                                if (product.amount === 0) {
+                                    toast.error(local === 'en' ? 'Out of stock' : 'نفذت الكمية');
+                                    return;
+                                }
                                 const mapped: StoreProduct = {
                                     _id: product._id,
                                     productNameEn: product.productNameEn,
                                     productNameAr: product.productNameAr,
                                     productImage: product.productImage,
-                                    productPrice: oldPrice || product.productPrice, // Store original price for backend calculation
+                                    productPrice: oldPrice,  // Store original price for backend calculation
                                     productDiscount: discount, // Store the discount percentage
-                                    discountTiers: product.discountTiers || [],
+                                    // discountTiers: product.discountTiers || [],
                                 } as unknown as StoreProduct;
                                 addItem(mapped, quantity);
                                 router.push('/cart');
                             }}
-                            className='bg-primary hover:bg-secondary w-full text-white py-2 px-4 sm:w-'><CreditCard /> <span>{tProd('buyNow')}</span> </CustomButton>
+                            className={`w-full py-2 px-4 sm:w- ${product.amount === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary hover:bg-secondary text-white'}`}><CreditCard /> <span>{product.amount === 0 ? (local === 'en' ? 'Out of Stock' : 'نفذت الكمية') : tProd('buyNow')}</span> </CustomButton>
                         <CustomButton
+                            disabled={product.amount === 0}
                             onClick={() => {
+                                if (product.amount === 0) {
+                                    toast.error(local === 'en' ? 'Out of stock' : 'نفذت الكمية');
+                                    return;
+                                }
                                 const mapped: StoreProduct = {
                                     _id: product._id,
                                     productNameEn: product.productNameEn,
                                     productNameAr: product.productNameAr,
                                     productImage: product.productImage,
-                                    productPrice: oldPrice || product.productPrice, // Store original price for backend calculation
+                                    productPrice: oldPrice, // Store original price for backend calculation
                                     productDiscount: discount, // Store the discount percentage
-                                    discountTiers: product.discountTiers || [],
+                                    // discountTiers: product.discountTiers || [],
                                 } as unknown as StoreProduct;
                                 addItem(mapped, quantity);
                                 toast.success(tProd('addedToCart') || 'Added to cart');
                             }}
-                            className='border border-primary hover:bg-primary w-full text-primary hover:text-white py-2 px-4 sm:w-'><ShoppingCart /> <span>{tProd('addToCart')}</span> </CustomButton>
+                            className={`w-full py-2 px-4 sm:w- ${product.amount === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-none' : 'border border-primary hover:bg-primary text-primary hover:text-white'}`}><ShoppingCart /> <span>{product.amount === 0 ? (local === 'en' ? 'Out of Stock' : 'نفذت الكمية') : tProd('addToCart')}</span> </CustomButton>
 
 
                     </Card>

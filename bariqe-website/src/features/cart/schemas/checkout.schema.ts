@@ -43,7 +43,6 @@ export const useCheckoutSchema = () => {
 
     blockNumber: z.string().optional(),
     nationalAddress: z.string().optional(),
-    paymentMethod: z.enum(["paylink", "cod"]).default("cod"),
   }).refine((data) => {
     const rule = phoneRules[data.countryCode];
     // Normalize: strip country code prefix and leading zero

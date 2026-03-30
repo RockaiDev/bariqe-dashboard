@@ -58,14 +58,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (product.amount === 0) {
+            toast.error(local === 'en' ? 'Out of stock' : 'نفذت الكمية');
+            return;
+        }
         const mapped: StoreProduct = {
             _id: String(product._id),
             productNameEn: product.productNameEn,
             productNameAr: product.productNameAr,
             productImage: product.productImage,
-            productPrice: oldPrice || product.productPrice, // Store original price for backend calculation
+            productPrice: oldPrice, // Store original price for backend calculation
             productDiscount: discount, // Store the discount percentage
-            discountTiers: product.discountTiers || [],
+            // discountTiers: product.di || [],
         } as unknown as StoreProduct;
         addItem(mapped, quantity);
         toast.success(tCard('added'));
@@ -149,8 +153,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     {/* Quantity Selector - Compact on mobile */}
                     <div className="flex items-center justify-between bg-white border border-gray-200 rounded-full w-24 sm:w-32 h-8 sm:h-10 px-1 shadow-sm">
                         <button
+                        disabled={product.amount === 0}
                             onClick={handleIncrement}
-                            className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+                            className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary/90 transition-colors ${product.amount === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20'}`}
                         >
                             <Plus size={14} className="sm:w-4 sm:h-4" />
                         </button>
@@ -170,10 +175,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 <div className="flex items-center gap-2 sm:gap-4 pt-1">
                     <button
                         onClick={handleAddToCart}
-                        className="flex-1 bg-primary text-white h-9 sm:h-11 rounded-lg sm:rounded-xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95 text-xs sm:text-sm"
+                        disabled={product.amount === 0}
+                        className={`flex-1 h-9 sm:h-11 rounded-lg sm:rounded-xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all active:scale-95 text-xs sm:text-sm ${
+                            product.amount === 0
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20'
+                        }`}
                     >
                         <ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        <span>{tCard('addToCart')}</span>
+                        <span>{product.amount === 0 ? (local === 'en' ? 'Out of Stock' : 'نفذت الكمية') : tCard('addToCart')}</span>
                     </button>
 
                     <Link
