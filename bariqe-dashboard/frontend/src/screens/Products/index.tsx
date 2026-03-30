@@ -250,6 +250,7 @@ export default function ProductsPage() {
     productDescriptionEn: "",
     // productCode: "",
     productPrice: 0,
+    amount: 0,
     productCategory: "",
     // productSubCategory: "", // ✅ إضافة SubCategory
     productImage: "",
@@ -333,6 +334,7 @@ export default function ProductsPage() {
       editForm.productDescriptionEn !== editing.productDescriptionEn ||
       // editForm.productCode !== editing.productCode ||
       editForm.productPrice !== getDisplayPrice(editing) ||
+      editForm.amount !== (editing.amount ?? 0) ||
       editForm.productCategory !==
       (typeof editing.productCategory === "object"
         ? editing.productCategory._id
@@ -354,6 +356,7 @@ export default function ProductsPage() {
       productDescriptionEn: p.productDescriptionEn,
       // productCode: p.productCode,
       productPrice: displayPrice,
+      amount: p.amount ?? 0,
       productCategory:
         typeof p.productCategory === "object"
           ? p.productCategory._id
@@ -1636,6 +1639,22 @@ export default function ProductsPage() {
                   setEditForm((f) => ({
                     ...f,
                     productPrice: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                required
+              />
+
+              <FormField
+                id="edit_amount"
+                label={intl.formatMessage({ id: "products.form.amount" })}
+                type="number"
+                step="1"
+                min="0"
+                value={editForm.amount}
+                onChange={(e) =>
+                  setEditForm((f) => ({
+                    ...f,
+                    amount: parseFloat(e.target.value) || 0,
                   }))
                 }
                 required
