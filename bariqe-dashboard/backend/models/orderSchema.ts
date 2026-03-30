@@ -57,7 +57,6 @@ const orderSchema = new Schema(
     payment: {
       method: {
         type: String,
-        enum: ["paylink", "cod"],
         default: "cod"
       },
       status: {
@@ -65,21 +64,9 @@ const orderSchema = new Schema(
         enum: ["pending", "paid", "failed", "refunded"],
         default: "pending"
       },
-      transactionId: String,
       paidAt: Date,
-      paymentUrl: String,   // PayLink checkout URL
-      invoiceId: String,    // PayLink invoice ID
     },
 
-    // === Shipping Info (J&T Express) ===
-    shipping: {
-      carrier: { type: String, default: "jt_express" },
-      trackingNumber: String,
-      status: String,
-      shippingCost: Number,
-      estimatedDelivery: Date,
-      labelUrl: String, // PDF label from J&T
-    },
 
     // === Order Totals ===
     orderQuantity: { // Total item count

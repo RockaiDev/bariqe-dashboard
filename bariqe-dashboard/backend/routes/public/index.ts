@@ -96,18 +96,7 @@ publicRouter.post(
   orderController.initiateCheckout.bind(orderController)
 );
 
-// ✅ NEW: PayLink Webhook Callback
-// Called by PayLink when payment is completed/failed
-publicRouter.post(
-  "/orders/webhook/paylink",
-  orderController.handlePaylinkWebhookFacade.bind(orderController)
-);
 
-// ✅ PayLink GET Callback (PayLink redirects the user back via GET with query params)
-publicRouter.get(
-  "/orders/webhook/paylink",
-  orderController.handlePaylinkWebhookFacade.bind(orderController)
-);
 
 // Get order by ID (customer can track order with ID)
 publicRouter.get(

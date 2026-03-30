@@ -5,7 +5,7 @@ import OrderModel from "../../../models/orderSchema";
 import CustomerModel from "../../../models/customerSchema";
 import ProductModel from "../../../models/productSchema";
 import { pick } from "lodash";
-import { sendNewOrderEmail } from "../../../services/email";
+import { sendNewOrderEmail, sendOrderConfirmation } from "../../../services/email";
 
 export default class OrderService extends MongooseFeatures {
   public keys: string[];
@@ -258,6 +258,16 @@ export default class OrderService extends MongooseFeatures {
 
       const order = await super.addDocument(OrderModel, newOrderData);
 
+      // Decrement product amounts immediately upon order creation
+      for (const item of newOrderData.products) {
+        if (item.product && item.quantity > 0) {
+          await ProductModel.findByIdAndUpdate(
+            item.product,
+            { $inc: { amount: -item.quantity } }
+          ).catch(e => console.error("Failed to decrement stock:", e));
+        }
+      }
+
       const populatedOrder = await OrderModel.findById(order._id)
         .populate(
           "customer",
@@ -329,6 +339,13 @@ export default class OrderService extends MongooseFeatures {
         await sendNewOrderEmail(mailOrder).catch((e) => {
           console.error("Failed to send new order email:", e);
         });
+
+        // ✅ 3. Send Order Confirmation to Customer
+        if (emailCustomerEmail && emailCustomerEmail !== "N/A") {
+          sendOrderConfirmation(emailCustomerEmail, populatedOrder).catch((e) => {
+            console.error("Failed to send order confirmation to customer:", e);
+          });
+        }
       } catch (e) {
         console.error("Error triggering new order email:", e);
       }
@@ -373,12 +390,10 @@ export default class OrderService extends MongooseFeatures {
       // ✅ Stock Management: Adjust product quantities on status transitions
       if (newStatus && newStatus !== oldStatus) {
         const orderProducts = currentOrder.products || [];
-        
-        const isFulfilled = (s: string) => s === "shipped" || s === "delivered";
 
-        // DECREMENT stock when order moves to a fulfilled state for the first time
-        if (isFulfilled(newStatus) && !isFulfilled(oldStatus)) {
-          console.log(`[OrderService] Order ${id} reached fulfilled state (${newStatus}) → decrementing stock`);
+        // DECREMENT stock when order moves from cancelled back to any active state
+        if (oldStatus === "cancelled" && newStatus !== "cancelled") {
+          console.log(`[OrderService] Order ${id} reactivated (was ${oldStatus}) → decrementing stock again`);
           for (const item of orderProducts) {
             const productId = item.product;
             const qty = item.quantity || 0;
@@ -395,8 +410,8 @@ export default class OrderService extends MongooseFeatures {
           }
         }
 
-        // RESTORE stock when order is cancelled from a fulfilled state
-        if (newStatus === "cancelled" && isFulfilled(oldStatus)) {
+        // RESTORE stock when order is cancelled from any active state
+        if (newStatus === "cancelled" && oldStatus !== "cancelled") {
           console.log(`[OrderService] Order ${id} cancelled (was ${oldStatus}) → restoring stock`);
           for (const item of orderProducts) {
             const productId = item.product;
@@ -425,12 +440,12 @@ export default class OrderService extends MongooseFeatures {
   // 🟢 Delete order
   public async DeleteOneOrder(id: string) {
     try {
-      // Check if order was in a fulfilled state — restore stock before deleting
+      // Check if order was active (not cancelled) — restore stock before deleting
       const order = await OrderModel.findById(id);
       if (order) {
         const status = (order as any).orderStatus;
-        if (status === "shipped" || status === "delivered") {
-          console.log(`[OrderService] Deleting fulfilled order ${id} (${status}) → restoring stock`);
+        if (status !== "cancelled") {
+          console.log(`[OrderService] Deleting active order ${id} (${status}) → restoring stock`);
           const orderProducts = (order as any).products || [];
           for (const item of orderProducts) {
             const productId = item.product;
@@ -638,6 +653,17 @@ export default class OrderService extends MongooseFeatures {
         } else {
           // Create new order
           const newOrder = await OrderModel.create(newOrderData);
+          
+          // Decrement product amounts immediately for imported orders
+          for (const item of newOrderData.products) {
+            if (item.product && item.quantity > 0) {
+              await ProductModel.findByIdAndUpdate(
+                item.product,
+                { $inc: { amount: -item.quantity } }
+              ).catch(e => console.error("Failed to decrement stock for imported order:", e));
+            }
+          }
+
           const populatedOrder = await OrderModel.findById(newOrder._id)
             .populate(
               "customer",

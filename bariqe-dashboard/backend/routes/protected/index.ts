@@ -828,30 +828,14 @@ const dashboardAdminController = new DashboardAdminController();
 // Payments
 protectedRouter.get("/payments", dashboardAdminController.getAllPayments.bind(dashboardAdminController));
 protectedRouter.get("/payments/stats", dashboardAdminController.getPaymentStats.bind(dashboardAdminController));
-protectedRouter.get("/payments/:id", dashboardAdminController.getPaymentDetails.bind(dashboardAdminController));
 
 // Shipping
 protectedRouter.get("/shipments", dashboardAdminController.getAllShipments.bind(dashboardAdminController));
 protectedRouter.post("/orders/:orderId/ship", dashboardAdminController.shipOrder.bind(dashboardAdminController));
-protectedRouter.get("/shipping/track/:trackingNumber", dashboardAdminController.trackShipment.bind(dashboardAdminController)); // Public or Admin? Plan said public usually, placing here for admin dashboard use too.
 
 // Order Fulfillment (Enhancement over existing order routes)
 protectedRouter.patch("/orders/:id/status", dashboardAdminController.updateOrderStatus.bind(dashboardAdminController));
 
-/* ==============================
-   PAYLINK DIAGNOSTIC ROUTES
-================================ */
-import PayLinkService from "../../services/paylink";
 
-/**
- * GET /paylink/test
- * Admin-only: test connectivity + credentials from the VPS to PayLink.
- * Returns latency, base URL, and whether auth succeeded.
- */
-protectedRouter.get("/paylink/test", async (req, res) => {
-  const result = await PayLinkService.testConnection();
-  const statusCode = result.success ? 200 : 503;
-  res.status(statusCode).json(result);
-});
 
 export default protectedRouter;

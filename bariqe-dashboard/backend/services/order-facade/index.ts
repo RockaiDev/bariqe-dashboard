@@ -16,9 +16,7 @@
 import OrderModel from "../../models/orderSchema";
 import CustomerModel from "../../models/customerSchema";
 import ProductModel from "../../models/productSchema";
-import PayLinkService from "../paylink";
-import JTExpressService from "../shipping/jt-express";
-import { sendOrderConfirmation, sendShipmentNotification } from "../email";
+import { sendOrderConfirmation, sendShipmentNotification, sendNewOrderEmail } from "../email";
 import ApiError from "../../utils/errors/ApiError";
 import OrderService from "../mongodb/orders";
 
@@ -42,7 +40,7 @@ export interface OrderInput {
     country?: string;
   };
   customerEmail?: string; // For guest orders
-  paymentMethod?: "paylink" | "cod";
+  paymentMethod?: "cod";
   orderDiscount?: number;
   notes?: string;
   callbackUrl?: string; // Optional: override the default PayLink callback URL
@@ -64,14 +62,11 @@ const resolveFrontendUrl = (): string => {
 
 export interface InitiateOrderResult {
   order: any;
-  paymentUrl?: string; // Only for PayLink payments
   message: string;
 }
 
 export interface ShipOrderResult {
   order: any;
-  trackingNumber: string;
-  labelUrl?: string;
   message: string;
 }
 
@@ -187,72 +182,85 @@ class OrderFacade {
       createdOrderId = order._id.toString();
       console.log(`[OrderFacade] Order created: ${createdOrderId}`);
 
-      // 6. Handle Payment Method
-      if (body.paymentMethod === "paylink") {
-        // Create PayLink Invoice
-        const customerData = customerId
-          ? await CustomerModel.findById(customerId)
-          : null;
-
-        // ✅ Use the frontend-supplied callbackUrl if provided;
-        // otherwise fallback to the backend webhook URL so PayLink POSTs back to us.
-        const frontendUrl = resolveFrontendUrl();
-        const callbackUrl = body.callbackUrl
-          ? body.callbackUrl
-          : `${frontendUrl}/checkout/success`;
-
-        console.log(`[OrderFacade] PayLink callbackUrl: ${callbackUrl}`);
-
-        let invoiceResult;
-        try {
-          invoiceResult = await PayLinkService.createInvoice(
-            {
-              ...order.toObject(),
-              products: populatedProducts,
-              total
-            },
-            customerData,
-            callbackUrl
-          );
-        } catch (paymentError: any) {
-          // ⚠️ ROLLBACK: PayLink failed — delete the orphaned order
-          console.error(`[OrderFacade] PayLink invoice failed, rolling back order ${createdOrderId}:`, paymentError.message);
-          if (createdOrderId) {
-            await OrderModel.findByIdAndDelete(createdOrderId);
-            createdOrderId = null;
-          }
-          throw new ApiError(
-            "BAD_REQUEST",
-            `Payment initiation failed: ${paymentError.message || "Payment gateway error"}. Order was not created.`
-          );
-        }
-
-        // Update order with payment info
-        await OrderModel.findByIdAndUpdate(order._id, {
-          "payment.transactionId": invoiceResult.transactionNo,
-          "payment.paymentUrl": invoiceResult.url,
-          "payment.invoiceId": invoiceResult.transactionNo,
-        });
-
-        const updatedOrder = await OrderModel.findById(order._id)
-          .populate("customer", "customerName customerEmail customerPhone")
-          .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
-
-        return {
-          order: updatedOrder,
-          paymentUrl: invoiceResult.url,
-          message: "Order created. Please complete payment.",
-        };
-      }
-
-      // COD - No payment URL needed, mark as confirmed immediately
+      // Mark as confirmed immediately
       await OrderModel.findByIdAndUpdate(order._id, {
         orderStatus: "confirmed",
       });
 
+      // 🔄 Decrement stock for the ordered products immediately
+      for (const item of orderData.products) {
+        if (item.product && item.quantity > 0) {
+          await ProductModel.findByIdAndUpdate(item.product, {
+            $inc: { amount: -item.quantity }
+          }).catch(e => console.error("[OrderFacade] Failed to decrement stock:", e));
+        }
+      }
+
       const populatedOrder = await OrderModel.findById(order._id)
         .populate("customer", "customerName customerEmail customerPhone")
         .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
+
+      const customerEmail = (populatedOrder as any)?.customer?.customerEmail || body.customerEmail;
+      
+      // ✅ 1. Send Order Confirmation to Customer
+      if (customerEmail) {
+        sendOrderConfirmation(customerEmail, populatedOrder).catch(e => {
+          console.error("[OrderFacade] Failed to send order confirmation to customer:", e);
+        });
+      }
+
+      // ✅ 2. Send New Order Notification to Admin
+      try {
+        const po: any = populatedOrder as any;
+        const emailCustomerName = po?.customer?.customerName || po?.shippingAddress?.fullName || "Guest";
+        const emailCustomerPhone = po?.customer?.customerPhone || po?.shippingAddress?.phone || "N/A";
+        const emailCustomerAddress = po?.customer?.customerAddress || po?.shippingAddress?.street || "N/A";
+
+        const mailOrder: any = {
+          _id: po?._id,
+          status: po?.orderStatus || po?.status || "pending",
+          createdAt: po?.createdAt,
+          notes: po?.notes,
+          customer: {
+            name: emailCustomerName,
+            email: customerEmail || "N/A",
+            phone: emailCustomerPhone,
+            address: emailCustomerAddress,
+          },
+          products: [],
+          totalAmount: 0,
+        };
+
+        const orderLevelDiscount = po?.orderDiscount || 0;
+        if (Array.isArray(po?.products)) {
+          for (const item of po.products) {
+            const prod: any = item.product || {};
+            const itemDiscount = item.itemDiscount || 0;
+            const originalPrice = prod.productOldPrice || 0;
+            const qty = item.quantity || 0;
+            const subtotal = originalPrice * qty;
+            const afterItemDiscount = subtotal * (1 - itemDiscount / 100); 
+            const finalAmount = afterItemDiscount * (1 - orderLevelDiscount / 100);
+            mailOrder.products.push({
+              product: {
+                name: prod.productNameEn || prod.productNameAr || prod.name || prod.productName || "N/A",
+              },
+              quantity: qty,
+              price: originalPrice,
+              itemDiscount,
+              subtotal,
+              afterItemDiscount,
+              finalAmount,
+            });
+            mailOrder.totalAmount += finalAmount;
+          }
+        }
+        sendNewOrderEmail(mailOrder).catch((e) => {
+          console.error("[OrderFacade] Failed to send new order email to admin:", e);
+        });
+      } catch (e) {
+        console.error("[OrderFacade] Error triggering admin email:", e);
+      }
 
       return {
         order: populatedOrder,
@@ -266,82 +274,7 @@ class OrderFacade {
     }
   }
 
-  /**
-   * STEP 2: Handle Payment Callback (Webhook)
-   * 
-   * Called by PayLink when payment is completed/failed.
-   * Updates order status and sends confirmation email.
-   */
-  public async handlePaymentCallback(transactionNo: string, paymentStatus: string): Promise<any> {
-    try {
-      console.log(`[OrderFacade] Payment callback: ${transactionNo} -> ${paymentStatus}`);
 
-      // 1. Find order by transaction ID
-      const order = await OrderModel.findOne({ "payment.transactionId": transactionNo })
-        .populate("customer", "customerName customerEmail customerPhone")
-        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
-
-      if (!order) {
-        console.error(`[OrderFacade] Order not found for transaction: ${transactionNo}`);
-        throw new ApiError("NOT_FOUND", "Order not found for this transaction");
-      }
-
-      // 2. Idempotency check - already processed
-      if ((order as any).payment?.status === "paid" && paymentStatus === "paid") {
-        console.log(`[OrderFacade] Order ${order._id} already paid, skipping...`);
-        return order;
-      }
-
-      // 3. Verify payment with PayLink (security check)
-      const invoiceDetails = await PayLinkService.getInvoice(transactionNo);
-      const verifiedStatus = invoiceDetails.orderStatus?.toLowerCase() || paymentStatus;
-
-      console.log(`[OrderFacade] PayLink verified status: ${verifiedStatus} (passed: ${paymentStatus})`);
-
-      // 4. Update order based on payment status
-      const updateData: any = {};
-
-      if (verifiedStatus === "paid") {
-        updateData["payment.status"] = "paid";
-        updateData["payment.paidAt"] = new Date();
-        updateData["orderStatus"] = "confirmed";
-      } else if (verifiedStatus === "pending" || verifiedStatus === "processing") {
-        // Payment still processing — keep as pending, don't mark as failed
-        updateData["payment.status"] = "pending";
-      } else {
-        // Explicitly failed/cancelled
-        updateData["payment.status"] = "failed";
-      }
-
-      const updatedOrder = await OrderModel.findByIdAndUpdate(order._id, updateData, { new: true })
-        .populate("customer", "customerName customerEmail customerPhone")
-        .populate("products.product", "productNameAr productNameEn productNewPrice productOldPrice productImage");
-
-      // 5. Send confirmation email if paid
-      if (verifiedStatus === "paid") {
-        const customerEmail = (updatedOrder as any)?.customer?.customerEmail ||
-          (updatedOrder as any)?.shippingAddress?.email;
-
-        if (customerEmail) {
-          try {
-            await sendOrderConfirmation(customerEmail, updatedOrder);
-            console.log(`[OrderFacade] Confirmation email sent to ${customerEmail}`);
-          } catch (emailErr) {
-            console.error("[OrderFacade] Failed to send confirmation email:", emailErr);
-            // Don't fail the webhook for email errors
-          }
-        }
-      }
-
-      console.log(`[OrderFacade] Order ${order._id} payment updated to ${verifiedStatus}`);
-      return updatedOrder;
-
-    } catch (error: any) {
-      console.error("[OrderFacade] handlePaymentCallback error:", error);
-      if (error instanceof ApiError) throw error;
-      throw new ApiError("INTERNAL_SERVER_ERROR", "Failed to process payment callback");
-    }
-  }
 
   /**
    * STEP 3: Ship Order (Admin action)
@@ -383,37 +316,20 @@ class OrderFacade {
         country: address.country || "Saudi Arabia",
       };
 
-      // 4. Create shipment with J&T
-      const shipmentResult = await JTExpressService.createShipment(order, customer, shippingAddress);
-
-      // Extract tracking info from J&T response
-      const data = shipmentResult.data || shipmentResult;
-      const trackingNumber = data.billCode || data.logisticId || shipmentResult.billCode || "";
-      const labelUrl = data.waybillURL || data.labelUrl || "";
-
-      if (!trackingNumber) {
-        console.warn("[OrderFacade] Shipment created but no tracking number received");
-      }
-
-      // 5. Update order with shipping info (via EditOneOrder for centralized stock management)
+      // Update order status (via EditOneOrder for centralized stock management)
       const updatedOrder = await orderService.EditOneOrder(orderId, {
-        shipping: {
-          carrier: "jt_express",
-          trackingNumber,
-          status: "shipped",
-          labelUrl,
-        },
         orderStatus: "shipped",
       });
 
-      // 6. Send shipment notification email
+      // Send shipment notification email
       const customerEmail = (updatedOrder as any)?.customer?.customerEmail;
-      if (customerEmail && trackingNumber) {
+      if (customerEmail) {
         try {
+          // Sending generic shipment email
           await sendShipmentNotification(customerEmail, updatedOrder, {
-            carrier: "J&T Express",
-            trackingNumber,
-            trackingUrl: `https://www.jtexpress.com/track?billcode=${trackingNumber}`,
+            carrier: "Local Delivery",
+            trackingNumber: "N/A",
+            trackingUrl: "",
           });
           console.log(`[OrderFacade] Shipment notification sent to ${customerEmail}`);
         } catch (emailErr) {
@@ -421,12 +337,10 @@ class OrderFacade {
         }
       }
 
-      console.log(`[OrderFacade] Order ${orderId} shipped with tracking: ${trackingNumber}`);
+      console.log(`[OrderFacade] Order ${orderId} shipped locally.`);
 
       return {
         order: updatedOrder,
-        trackingNumber,
-        labelUrl,
         message: "Order shipped successfully",
       };
 
