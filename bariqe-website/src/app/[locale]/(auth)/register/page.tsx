@@ -10,7 +10,6 @@ import { useRegister, useGoogleLogin, useAppleLogin } from "@/shared/hooks/useAu
 import AuthCard from "@/features/auth/components/AuthCard";
 import PasswordInput from "@/features/auth/components/PasswordInput";
 import GoogleAuthButton from "@/features/auth/components/GoogleAuthButton";
-import AppleAuthButton from "@/features/auth/components/AppleAuthButton";
 import {
   Form,
   FormControl,
@@ -53,7 +52,7 @@ const RegisterPage = () => {
   return (
     <AuthCard
       title={t("title")}
-      description={t("subtitle")}
+      // description={t("subtitle")}
       // headerContent={
       //   <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-medium mb-2">
       //       {t("discountOffer")}
@@ -126,10 +125,7 @@ const RegisterPage = () => {
               text={t("googleRegister")}
               onClick={() => googleLogin(undefined)}
             />
-            <AppleAuthButton
-              text={t("appleRegister")}
-              onClick={() => appleLogin()}
-            />
+            
           </div>
 
           <div className="text-center text-sm text-gray-500 mt-4">

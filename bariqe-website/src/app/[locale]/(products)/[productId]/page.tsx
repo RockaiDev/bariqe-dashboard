@@ -1,27 +1,22 @@
 'use client';
-import CustomCarousel from '@/features/home/components/shared/CustomCarusol'
 import CustomBreadcrumb from '@/shared/components/CustomBreadcrumb'
 import CustomButton from '@/shared/components/CustomButton'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
-import { CarouselItem } from '@/shared/components/ui/carousel'
 import { cn } from '@/lib/utils'
-import { CreditCard, Dot, Minus, Plus, Share2, ShoppingCart } from 'lucide-react'
+import { CreditCard, Minus, Plus, Share2, ShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import React, { useMemo, useState } from 'react'
-import { Icon } from "@iconify/react";
 import CustomProductsCarousel from '@/features/products/components/CustomProductsCarousel'
 import { Product } from '@/shared/types'
-import { CheckmarkIcon } from 'react-hot-toast';
-import CustomerReviews from '@/features/home/components/CustomerReviews';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCart } from '@/shared/hooks/useCart';
 import type { Product as StoreProduct } from '@/lib/publicApiService';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
-import { useCrud, useShow } from '@/shared/hooks/useCrud';
+import { useCrud} from '@/shared/hooks/useCrud';
 import Loading from '@/app/loading';
 
 
@@ -31,11 +26,9 @@ const ProductDetails = () => {
     const tNav = useTranslations('navigation');
     const tProd = useTranslations('product');
     const tCard = useTranslations('productCard');
-    const tCR = useTranslations('customerReviews');
-    const [showData, setShowData] = useState(true);
     const [quantity, setQuantity] = useState<number>(1);
     const [imgError, setImgError] = useState(false);
-    const { addItem, items, removeItem } = useCart();
+    const { addItem, items } = useCart();
     const router = useRouter();
 
 
@@ -129,9 +122,12 @@ const ProductDetails = () => {
 
                     </div>
 
-                    <div className='w-full mt-4 flex items-start justify-between gap-3'>
-                        <div className='border-b pb-2'>
-                            <h2 className='text-xl lg:text-3xl font-semibold text-action-hover mb-8'>{local === 'en' ? product.productNameEn : product.productNameAr}</h2>
+                    <div className='w-full mt-4 flex justify-between gap-4'>
+                        <div className='border-b pb-4 flex-1'>
+                            <h2 className='text-xl lg:text-3xl font-semibold text-action-hover mb-2'>{local === 'en' ? product.productNameEn : product.productNameAr}</h2>
+                            <p className='text-start body-medium text-text-secondary-2 leading-relaxed mb-4'>
+                                {local === 'en' ? product.productDescriptionEn : product.productDescriptionAr}
+                            </p>
                             {/* <div className="flex items-center justify-start gap-2">
                                 <Image src='/star-fill.png' width={20} height={20} alt='star' className="text-secondary"/>
                                 <span className="text-text-secondary-2 body-small">{rate}</span>
@@ -139,7 +135,7 @@ const ProductDetails = () => {
                             </div> */}
 
                         </div>
-                        <p className='text-primary font-bold text-2xl lg:text-3xl flex items-center gap-1'>{Number(realPrice.toFixed(2))} <span className="text-xl icon-saudi_riyal_new"></span></p>
+                        <p className='text-primary font-bold text-2xl lg:text-3xl flex items-start justify-end gap-1 shrink-0'>{Number(realPrice.toFixed(2))} <span className="text-xl icon-saudi_riyal_new"></span></p>
                     </div>
 
                     <div className='w-full flex items-center justify-start gap-2'>
@@ -217,9 +213,7 @@ const ProductDetails = () => {
 
             </div>
 
-            <p className='w-full flex justify-center items-center  body-small text-text-secondary-2'>
-                {local === 'en' ? product.productDescriptionEn : product.productDescriptionAr}
-            </p>
+
             {/* featurs & reviews  */}
             {/* <div className='w-full flex justify-center items-center gap-2'>
             <CustomButton 

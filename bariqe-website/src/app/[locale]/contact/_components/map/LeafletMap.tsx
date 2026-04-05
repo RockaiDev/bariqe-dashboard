@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPin, Phone, MessageCircle, Mail, Globe, PhoneCall } from 'lucide-react';
+import { MapPin, Mail, Globe, PhoneCall } from 'lucide-react';
 import { Languages } from '@/shared/constants/enums';
 import { useTranslations } from 'next-intl';
 import { BusinessInfo } from '@/lib/publicApiService';
@@ -8,7 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { CONTACTMAIL, CONTACTPHONE } from '@/lib/data';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 // Fix Leaflet default marker icon issue in Next.js
 // This is needed because Next.js handles static assets differently
@@ -67,7 +67,7 @@ export default function LeafletMap({ businessInfo, isRTL, locale }: LeafletMapPr
     <div className="space-y-6">
       {/* Google Maps Container */}
       <div
-        className="relative w-full h-full min-h-[400px] rounded-lg overflow-hidden"
+        className="relative w-full h-full min-h-[400px] rounded-lg overflow-hidden z-0"
       >
         <MapContainer
           center={FIXED_MAP_LOCATION.center}
@@ -100,7 +100,7 @@ export default function LeafletMap({ businessInfo, isRTL, locale }: LeafletMapPr
         {/* Open in Maps Button */}
         <button
           onClick={() => openInGoogleMaps(FIXED_MAP_LOCATION.mapUrl)}
-          className={`absolute bottom-4 ${isRTL ? 'left-4' : 'right-4'} bg-primary hover:bg-action-hover text-white px-4 py-2 rounded-lg shadow-lg transition-colors z-[1000] flex items-center gap-2`}
+          className={`absolute bottom-4 ${isRTL ? 'left-4' : 'right-4'} bg-primary hover:bg-action-hover text-white px-4 py-2 rounded-lg shadow-lg transition-colors z-20 flex items-center gap-2`}
         >
           <Globe className="w-5 h-5" />
           <span>{t('openInMaps')}</span>
