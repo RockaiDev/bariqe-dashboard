@@ -99,6 +99,7 @@
   "products.form.discount_percent": "نسبة الخصم %",
   "products.form.add_discount_tier": "إضافة مستوى خصم",
   "products.form.stock_status": "حالة المخزون",
+  "products.form.more_sale": "المزيد من المبيعات",
   "products.form.stock_status_description": "قم بالتبديل لتمييز المنتج كمتوفر أو غير متوفر في المخزون",
   "products.form.status": "الحالة",
   "products.upload_image": "رفع صورة",
