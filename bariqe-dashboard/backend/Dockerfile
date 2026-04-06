@@ -26,4 +26,4 @@ COPY --from=builder --chown=nodeuser:nodebusers /app/dist ./dist
 
 USER nodeuser
 
-CMD ["node", "dist/app.js"]
+CMD ["node", "dist/app.js"] 
