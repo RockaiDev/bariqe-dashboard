@@ -454,16 +454,6 @@ export const handleCategoryFilters: FilterHandler = (
   changeFilterFn
 ) => {
   switch (filterKey) {
-    case "status":
-      if (filterValue === "active") {
-        changeFilterFn([["categoryStatus", "==", true]], "queries");
-      } else if (filterValue === "inactive") {
-        changeFilterFn([["categoryStatus", "==", false]], "queries");
-      } else {
-        changeFilterFn([], "queries");
-      }
-      break;
-
     case "date":
       handleDateFilters(filterValue, changeFilterFn);
       break;
@@ -474,15 +464,6 @@ export const handleCategoryFilters: FilterHandler = (
 };
 
 export const createCategoryFilterGroups = (t: (key: string) => string) => [
-  {
-    label: t("filters.status"),
-    key: "status",
-    options: [
-      { label: t("filters.all"), value: "all" },
-      { label: t("filters.active"), value: "active" },
-      { label: t("filters.inactive"), value: "inactive" },
-    ],
-  },
   {
     label: t("filters.date"),
     key: "date",
@@ -652,14 +633,7 @@ export const createCategorySearchHandler = (
       const searchValue = (e.target as HTMLInputElement).value.trim();
 
       if (searchValue) {
-        if (searchValue.startsWith("status:")) {
-          const status = searchValue.replace("status:", "").toLowerCase();
-          const isActive = status === "active";
-          return changeFilterFn(
-            [["categoryStatus", "==", isActive]],
-            "queries"
-          );
-        } else if (searchValue.startsWith("name:")) {
+        if (searchValue.startsWith("name:")) {
           const name = searchValue.replace("name:", "");
           return changeFilterFn(
             [["categoryName", "contains", name]],

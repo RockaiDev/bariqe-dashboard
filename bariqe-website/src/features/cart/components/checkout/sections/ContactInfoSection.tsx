@@ -12,20 +12,13 @@ import { CheckoutInput } from '../CheckoutInput';
 import { Input } from '@/shared/components/ui/input';
 import { cn } from '@/lib/utils';
 import { FieldError } from '@/shared/components/ui/field';
+import {
+    COUNTRY_PHONE_OPTIONS,
+    normalizeLocalPhoneInput,
+} from '@/features/cart/lib/phone';
 
 interface ContactInfoSectionProps {
   control: Control<CheckoutFormValues>;
-}
-
-// Strip country code prefix and leading zero from phone input
-function normalizePhone(value: string, countryCode: string): string {
-    const code = countryCode.replace('+', '');
-    let v = value.replace(/[^0-9]/g, '');
-    // Strip full country code prefix (e.g. "966" from "966512345678")
-    if (code && v.startsWith(code)) v = v.slice(code.length);
-    // Strip leading zero (e.g. "0512345678" → "512345678")
-    if (v.startsWith('0')) v = v.slice(1);
-    return v;
 }
 
 export const ContactInfoSection = ({ control }: ContactInfoSectionProps) => {
@@ -66,14 +59,11 @@ export const ContactInfoSection = ({ control }: ContactInfoSectionProps) => {
                                         <SelectValue placeholder="Code" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="+966">🇸🇦 +966</SelectItem>
-                                        <SelectItem value="+971">🇦🇪 +971</SelectItem>
-                                        <SelectItem value="+965">🇰🇼 +965</SelectItem>
-                                        <SelectItem value="+973">🇧🇭 +973</SelectItem>
-                                        <SelectItem value="+974">🇶🇦 +974</SelectItem>
-                                        <SelectItem value="+968">🇴🇲 +968</SelectItem>
-                                        <SelectItem value="+20">🇪🇬 +20</SelectItem>
-                                        <SelectItem value="+962">🇯🇴 +962</SelectItem>
+                                        {COUNTRY_PHONE_OPTIONS.map((item) => (
+                                            <SelectItem key={item.code} value={item.code}>
+                                                {item.flag} {item.code}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             )}
@@ -91,7 +81,9 @@ export const ContactInfoSection = ({ control }: ContactInfoSectionProps) => {
                                         autoComplete="tel"
                                         type='tel'
                                         onChange={(e) => {
-                                            field.onChange(normalizePhone(e.target.value, countryCode));
+                                            field.onChange(
+                                                normalizeLocalPhoneInput(e.target.value, countryCode)
+                                            );
                                         }}
                                     />
                                     {fieldState.invalid && (

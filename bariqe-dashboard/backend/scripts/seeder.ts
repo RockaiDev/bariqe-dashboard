@@ -1,297 +1,353 @@
 import dotenv from "dotenv";
 import path from "path";
 import mongoose from "mongoose";
+import { genSaltSync, hashSync } from "bcryptjs";
+
+// Models
 import Category from "../models/categorySchema";
 import Product from "../models/productSchema";
+import Admin from "../models/adminSchema";
+import BusinessInfo from "../models/businessInfoSchema";
+import Customer from "../models/customerSchema";
+import Order from "../models/orderSchema";
+import Event from "../models/eventSchema";
+import Contact from "../models/contactSchema";
+import ConsultationRequest from "../models/consultationRequestsSchema";
+import MaterialRequest from "../models/materialRequestsSchema";
 
 // Load environment variables
 const envPath = path.resolve(__dirname, "../.env");
 dotenv.config({ path: envPath });
 
 /* ================================
-   Seed Data — Home Cleaning Categories
+   1. Helper Functions
    ================================ */
+const generateHash = (password: string): string => {
+    const salt = genSaltSync(10);
+    return hashSync(password, salt);
+};
+
+/* ================================
+   2. Seed Data
+   ================================ */
+
+// ── Admin ──
+const adminData = {
+    firstName: "System Admin",
+    email: "admin@bariqe.co",
+    password: generateHash("Admin@2025"),
+    role: "admin",
+};
+
+// ── Business Info ──
+const businessInfoData = {
+    title_ar: "بريق المتخصصة",
+    title_en: "Bariqe Specialized",
+    description_ar: "حلول تنظيف وتعقيم متطورة بخبرة عالمية.",
+    description_en: "Advanced cleaning and sterilization solutions with global expertise.",
+    logo: "https://res.cloudinary.com/db152mwtg/image/upload/v1740000000/logo.png",
+    email: "info@bariqe.co",
+    phone: "+966 500 000 000",
+    whatsapp: "+966 500 000 000",
+    address_ar: "الرياض، المملكة العربية السعودية",
+    address_en: "Riyadh, Saudi Arabia",
+    facebook: "https://facebook.com/bariqe",
+    about: {
+        hero_image: "https://res.cloudinary.com/db152mwtg/image/upload/v1740000000/about-hero.jpg",
+        main_title_ar: "من نحن",
+        main_title_en: "About Us",
+        main_description_ar: "نحن شركة رائدة في مجال حلول التنظيف المتخصصة.",
+        main_description_en: "We are a leading provider of specialized cleaning solutions.",
+        sections: [
+            {
+                hero_image: "https://res.cloudinary.com/db152mwtg/image/upload/v1740000000/vision.jpg",
+                title_ar: "رؤيتنا",
+                title_en: "Our Vision",
+                description_ar: "أن نكون الخيار الأول في جودة الحلول الكيميائية.",
+                description_en: "To be the first choice in chemical solution quality.",
+                display_order: 1,
+            }
+        ]
+    },
+    is_active: true,
+};
+
+// ── Categories & Subcategories ──
 const categoriesData = [
     {
-        categoryNameAr: "منظفات الأرضيات",
-        categoryNameEn: "Floor Cleaners",
-        categoryDescriptionAr: "جميع أنواع منظفات الأرضيات للمنازل والمكاتب",
-        categoryDescriptionEn: "All types of floor cleaning products for homes and offices",
-        categoryStatus: true,
+        categoryNameAr: "حلول تعقيم المستشفيات",
+        categoryNameEn: "Hospital Sterilization",
+        categoryDescriptionAr: "منظفات مخصصة للمنشآت الصحية والطبية",
+        categoryDescriptionEn: "Sterilization solutions for health care and medical facilities",
         subCategories: [
-            {
-                subCategoryNameAr: "منظف بلاط",
-                subCategoryNameEn: "Tile Cleaner",
-                subCategoryDescriptionAr: "منظفات مخصصة للبلاط",
-                subCategoryDescriptionEn: "Specialized tile cleaning products",
-                subCategoryStatus: true,
-            },
-            {
-                subCategoryNameAr: "منظف رخام",
-                subCategoryNameEn: "Marble Cleaner",
-                subCategoryDescriptionAr: "منظفات مخصصة للرخام",
-                subCategoryDescriptionEn: "Specialized marble cleaning products",
-                subCategoryStatus: true,
-            },
+            { subCategoryNameAr: "تعقيم الأدوات", subCategoryNameEn: "Tool Sterilization" },
+            { subCategoryNameAr: "تنظيف الأرضيات الطبية", subCategoryNameEn: "Medical Floor Cleaning" }
         ],
     },
     {
-        categoryNameAr: "منظفات المطبخ",
-        categoryNameEn: "Kitchen Cleaners",
-        categoryDescriptionAr: "منظفات متخصصة للمطبخ وأدوات الطهي",
-        categoryDescriptionEn: "Specialized cleaning products for kitchens and cookware",
-        categoryStatus: true,
+        categoryNameAr: "قطاع الأغذية والمشروبات",
+        categoryNameEn: "Food & Beverage Sector",
+        categoryDescriptionAr: "أعلى معايير السلامة والنظافة للصناعات الغذائية",
+        categoryDescriptionEn: "Highest standards of safety and hygiene for food industries",
         subCategories: [
-            {
-                subCategoryNameAr: "مزيل دهون",
-                subCategoryNameEn: "Degreaser",
-                subCategoryDescriptionAr: "مزيلات الدهون والشحوم",
-                subCategoryDescriptionEn: "Grease and oil removers",
-                subCategoryStatus: true,
-            },
-            {
-                subCategoryNameAr: "منظف أفران",
-                subCategoryNameEn: "Oven Cleaner",
-                subCategoryDescriptionAr: "منظفات مخصصة للأفران والشوايات",
-                subCategoryDescriptionEn: "Specialized oven and grill cleaners",
-                subCategoryStatus: true,
-            },
+            { subCategoryNameAr: "غسيل خطوط الإنتاج", subCategoryNameEn: "Line Cleaning" },
+            { subCategoryNameAr: "منظفات المخابز", subCategoryNameEn: "Bakery Cleaners" }
         ],
     },
     {
-        categoryNameAr: "منظفات الحمامات",
-        categoryNameEn: "Bathroom Cleaners",
-        categoryDescriptionAr: "منظفات ومعطرات الحمامات",
-        categoryDescriptionEn: "Bathroom cleaning and freshening products",
-        categoryStatus: true,
+        categoryNameAr: "العناية بالمنسوجات والمغاسل",
+        categoryNameEn: "Laundry & Textile Care",
+        categoryDescriptionAr: "منظفات ومعطرات للمغاسل المركزية",
+        categoryDescriptionEn: "Detergents and fresheners for central laundries",
         subCategories: [
-            {
-                subCategoryNameAr: "مزيل ترسبات",
-                subCategoryNameEn: "Limescale Remover",
-                subCategoryDescriptionAr: "مزيلات ترسبات الكلس والجير",
-                subCategoryDescriptionEn: "Limescale and calcium deposit removers",
-                subCategoryStatus: true,
-            },
+            { subCategoryNameAr: "سائل الغسيل", subCategoryNameEn: "Liquid Detergent" },
+            { subCategoryNameAr: "منعم الأقمشة", subCategoryNameEn: "Fabric Softener" }
         ],
-    },
+    }
 ];
 
-/* ================================
-   Seed Data — Home Cleaning Products
-   (categoryIndex maps to categoriesData above)
-   ================================ */
+// ── Products ──
 const productsData = [
-    // ── Floor Cleaners (index 0) ──
     {
         categoryIndex: 0,
-        productNameAr: "منظف أرضيات متعدد الأسطح",
-        productNameEn: "Multi-Surface Floor Cleaner",
-        productDescriptionAr: "منظف أرضيات فعال لجميع أنواع الأسطح، يزيل الأوساخ والبقع بسهولة",
-        productDescriptionEn: "Effective floor cleaner for all surface types, easily removes dirt and stains",
-        productOldPrice: 25,
-        productDiscount: "10",
-        amount: 150,
-        moreSale: false,
+        productNameAr: "بريق-سيف معقم أسطح طوارئ",
+        productNameEn: "Bariqe-Safe ER Surface Sanitizer",
+        productDescriptionAr: "معقم طبي فعال يقضي على 99.9% من الفيروسات في 30 ثانية.",
+        productDescriptionEn: "Medical-grade sanitizer kills 99.9% of viruses in 30 seconds.",
+        productOldPrice: 85,
+        productDiscount: "15% OFF",
+        amount: 500,
         productMoreSale: true,
+        productOptions: [
+            { name: "5 Liters", price: 85, quantity: 1, description: "Bulk Container" },
+            { name: "1 Liter Spray", price: 25, quantity: 1, description: "Ready to use" }
+        ]
     },
-    {
-        categoryIndex: 0,
-        productNameAr: "محلول ممسحة بخار",
-        productNameEn: "Steam Mop Solution",
-        productDescriptionAr: "محلول تنظيف مخصص للممسحة البخارية، يترك رائحة منعشة",
-        productDescriptionEn: "Cleaning solution designed for steam mops, leaves a fresh scent",
-        productOldPrice: 40,
-        productDiscount: "15",
-        amount: 80,
-        moreSale: false,
-        productMoreSale: false,
-    },
-    {
-        categoryIndex: 0,
-        productNameAr: "منظف بلاط قوي المفعول",
-        productNameEn: "Heavy-Duty Tile Cleaner",
-        productDescriptionAr: "منظف بلاط قوي يزيل البقع الصعبة والأوساخ المتراكمة",
-        productDescriptionEn: "Powerful tile cleaner that removes tough stains and built-up grime",
-        productOldPrice: 35,
-        productDiscount: "5",
-        amount: 120,
-        moreSale: true,
-        productMoreSale: true,
-    },
-
-    // ── Kitchen Cleaners (index 1) ──
     {
         categoryIndex: 1,
-        productNameAr: "بخاخ مزيل دهون المطبخ",
-        productNameEn: "Kitchen Degreaser Spray",
-        productDescriptionAr: "بخاخ قوي لإزالة الدهون والشحوم من أسطح المطبخ",
-        productDescriptionEn: "Powerful spray for removing grease and oil from kitchen surfaces",
-        productOldPrice: 20,
-        productDiscount: "10",
+        productNameAr: "كلين-برو لمنظفات المخابز",
+        productNameEn: "Clean-Pro Bakery Degreaser",
+        productDescriptionAr: "مزيل دهون عالي التركيز للأفران والأسطح الغذائية.",
+        productDescriptionEn: "High-concentration degreaser for ovens and food surfaces.",
+        productOldPrice: 120,
+        productDiscount: "Special Offer",
         amount: 200,
-        moreSale: false,
         productMoreSale: true,
     },
     {
-        categoryIndex: 1,
-        productNameAr: "منظف الأفران والشوايات",
-        productNameEn: "Oven & Grill Cleaner",
-        productDescriptionAr: "منظف متخصص للأفران والشوايات، يزيل الدهون المحترقة",
-        productDescriptionEn: "Specialized oven and grill cleaner, removes burnt-on grease",
-        productOldPrice: 30,
+        categoryIndex: 2,
+        productNameAr: "لافندر رويال معطر أقمشة",
+        productNameEn: "Lavender Royal Fabric Freshener",
+        productDescriptionAr: "معطر مركز يدوم طويلاً للملابس والمفروشات.",
+        productDescriptionEn: "Concentrated long-lasting freshener for clothes and linens.",
+        productOldPrice: 45,
         productDiscount: "20",
-        amount: 60,
-        moreSale: false,
+        amount: 1000,
         productMoreSale: false,
-    },
-    {
-        categoryIndex: 1,
-        productNameAr: "منظف أسطح ستانلس ستيل",
-        productNameEn: "Stainless Steel Cleaner",
-        productDescriptionAr: "منظف وملمع للأسطح الستانلس ستيل، يمنع بصمات الأصابع",
-        productDescriptionEn: "Cleaner and polish for stainless steel surfaces, prevents fingerprints",
-        productOldPrice: 22,
-        productDiscount: "5",
-        amount: 100,
-        moreSale: false,
-        productMoreSale: true,
-    },
+    }
+];
 
-    // ── Bathroom Cleaners (index 2) ──
+// ── Customers ──
+const customersData = [
     {
-        categoryIndex: 2,
-        productNameAr: "منظف حمامات مضاد للبكتيريا",
-        productNameEn: "Anti-Bacterial Bathroom Cleaner",
-        productDescriptionAr: "منظف حمامات يقضي على 99.9% من البكتيريا والجراثيم",
-        productDescriptionEn: "Bathroom cleaner that kills 99.9% of bacteria and germs",
-        productOldPrice: 18,
-        productDiscount: "10",
-        amount: 180,
-        moreSale: true,
-        productMoreSale: true,
+        customerName: "Mohamed Ahmed",
+        customerEmail: "mohamed@example.com",
+        customerPhone: "+966512345678",
+        customerAddress: "King Fahd Road, Riyadh",
+        customerSource: "order",
+        isVerified: true,
     },
     {
-        categoryIndex: 2,
-        productNameAr: "جل مزيل ترسبات الكلس",
-        productNameEn: "Limescale Remover Gel",
-        productDescriptionAr: "جل فعال لإزالة ترسبات الكلس والجير من الحنفيات والمرايا",
-        productDescriptionEn: "Effective gel for removing limescale deposits from taps and mirrors",
-        productOldPrice: 28,
-        productDiscount: "15",
-        amount: 90,
-        moreSale: false,
-        productMoreSale: false,
-    },
+        customerName: "Sara Kalid",
+        customerEmail: "sara@example.com",
+        customerPhone: "+966587654321",
+        customerAddress: "Prince Sultan St, Jeddah",
+        customerSource: "consultation",
+        isGuest: true,
+    }
+];
+
+// ── Events ──
+const eventsData = [
     {
-        categoryIndex: 2,
-        productNameAr: "بخاخ معطر حمامات",
-        productNameEn: "Bathroom Freshener Spray",
-        productDescriptionAr: "معطر حمامات برائحة اللافندر المنعشة، يدوم طويلاً",
-        productDescriptionEn: "Lavender-scented bathroom freshener spray, long-lasting fragrance",
-        productOldPrice: 15,
-        productDiscount: "5",
-        amount: 250,
-        moreSale: false,
-        productMoreSale: true,
-    },
+        titleAr: "مؤتمر الرياض للسلامة الكيميائية",
+        titleEn: "Riyadh Chemical Safety Conference",
+        date: new Date("2025-05-15"),
+        tagsAr: ["سلامة", "كورتمر"],
+        tagsEn: ["Safety", "Conference"],
+        contentAr: "مشاركة بريق في مؤتمر السلامة الكيميائية العالمي.",
+        contentEn: "Bariqe participating in the Global Chemical Safety Conference.",
+        status: "published",
+        author: "Marketing Dept",
+    }
+];
+
+// ── Contact Inquiries ──
+const contactData = [
+    {
+        contactName: "Faisal Al-Otaibi",
+        email: "faisal@company.com",
+        phoneNumber: "+966509998887",
+        services: ["Technical Training & Consultation"],
+        message: "I need a consultation for our new chemical laboratory setup.",
+        status: false,
+    }
 ];
 
 /* ================================
-         Seeder Script
+   3. Seeder Script
    ================================ */
 async function seed() {
     try {
-        // ── Parse flags ──
         const args = process.argv.slice(2);
         const shouldClear = args.includes("--clear");
 
-        // ── Connect to MongoDB ──
         if (!process.env.MONGO_URI) {
             throw new Error("MONGO_URI environment variable is not defined!");
         }
 
         console.log("🔌 Connecting to MongoDB...");
-        const options = {
-            serverSelectionTimeoutMS: 5000,
-            socketTimeoutMS: 45000,
-            connectTimeoutMS: 10000,
-            maxPoolSize: 10,
-            minPoolSize: 5,
-            retryWrites: true,
-            w: "majority" as const,
-            dbName: "Bariqe",
-        };
-        await mongoose.connect(process.env.MONGO_URI, options);
+        await mongoose.connect(process.env.MONGO_URI, { dbName: "Bariqe" });
         console.log("✅ Connected to MongoDB\n");
 
-        // ── Clear existing data if --clear flag is passed ──
         if (shouldClear) {
-            console.log("🗑️  --clear flag detected. Removing existing data...");
-            await Category.deleteMany({});
-            await Product.deleteMany({});
-            console.log("✅ Existing categories and products deleted\n");
+            console.log("🗑️  Clearing all existing data...");
+            await Promise.all([
+                Admin.deleteMany({}),
+                BusinessInfo.deleteMany({}),
+                Category.deleteMany({}),
+                Product.deleteMany({}),
+                Customer.deleteMany({}),
+                Order.deleteMany({}),
+                Event.deleteMany({}),
+                Contact.deleteMany({}),
+                ConsultationRequest.deleteMany({}),
+                MaterialRequest.deleteMany({}),
+            ]);
+            console.log("✅ Collections cleared\n");
         }
 
-        // ── Check if data already exists ──
-        const existingCategories = await Category.countDocuments();
-        const existingProducts = await Product.countDocuments();
+        // ── 1. Admin ──
+        console.log("🔑 Seeding Admin...");
+        await Admin.create(adminData);
+        console.log("   ✅ Admin created: " + adminData.email);
 
-        if (existingCategories > 0 || existingProducts > 0) {
-            console.log(
-                `⚠️  Database already contains ${existingCategories} categories and ${existingProducts} products.`
-            );
-            console.log('   Run with --clear flag to reset: npm run seed -- --clear\n');
-            await mongoose.connection.close();
-            process.exit(0);
-        }
+        // ── 2. Business Info ──
+        console.log("🏢 Seeding Business Info...");
+        await BusinessInfo.create(businessInfoData);
+        console.log("   ✅ Business Info created");
 
-        // ── 1. Seed Categories ──
-        console.log("📂 Seeding categories...");
+        // ── 3. Categories ──
+        console.log("📂 Seeding Categories...");
         const createdCategories = await Category.insertMany(categoriesData);
-        console.log(`   ✅ ${createdCategories.length} categories created:`);
-        createdCategories.forEach((cat) => {
-            console.log(`      • ${cat.categoryNameEn} (${cat.categoryNameAr}) — ID: ${cat._id}`);
-        });
-        console.log();
+        console.log(`   ✅ ${createdCategories.length} categories created`);
 
-        // ── 2. Seed Products ──
-        console.log("📦 Seeding products...");
-        const productDocs = productsData.map((p) => {
-            const { categoryIndex, ...productFields } = p;
+        // ── 4. Products ──
+        console.log("📦 Seeding Products...");
+        const productDocs = productsData.map(p => {
+            const { categoryIndex, ...rest } = p;
             return {
-                ...productFields,
-                productCategory: createdCategories[categoryIndex]._id,
+                ...rest,
+                productCategory: createdCategories[categoryIndex]._id
             };
         });
-
         const createdProducts = await Product.insertMany(productDocs);
-        console.log(`   ✅ ${createdProducts.length} products created:`);
-        createdProducts.forEach((prod) => {
-            console.log(`      • ${prod.productNameEn} (${prod.productNameAr}) — ${prod.productOldPrice} SAR`);
+        console.log(`   ✅ ${createdProducts.length} products created`);
+
+        // ── 5. Customers ──
+        console.log("👥 Seeding Customers...");
+        const createdCustomers = await Customer.insertMany(customersData);
+        console.log(`   ✅ ${createdCustomers.length} customers created`);
+
+        // ── 6. Orders (Simulated) ──
+        console.log("🛒 Seeding Orders...");
+        const ordersData = [
+            {
+                customer: createdCustomers[0]._id,
+                products: [
+                    { product: createdProducts[0]._id, quantity: 2, itemDiscount: 0 },
+                    { product: createdProducts[1]._id, quantity: 1, itemDiscount: 10 }
+                ],
+                shippingAddress: {
+                    fullName: "Mohamed Ahmed",
+                    phone: "+966512345678",
+                    street: "King Fahd Road",
+                    city: "Riyadh",
+                    region: "Central",
+                    country: "Saudi Arabia"
+                },
+                payment: { method: "card", status: "paid", paidAt: new Date() },
+                orderQuantity: "3",
+                subtotal: 290,
+                shippingCost: 25,
+                total: 315,
+                orderStatus: "delivered"
+            },
+            {
+                products: [
+                    { product: createdProducts[2]._id, quantity: 5, itemDiscount: 5 }
+                ],
+                shippingAddress: {
+                    fullName: "Guest User",
+                    phone: "+966500000001",
+                    street: "Olaya St",
+                    city: "Riyadh",
+                    region: "Central",
+                    country: "Saudi Arabia"
+                },
+                payment: { method: "cod", status: "pending" },
+                orderQuantity: "5",
+                subtotal: 225,
+                shippingCost: 25,
+                total: 250,
+                orderStatus: "pending"
+            }
+        ];
+        await Order.insertMany(ordersData);
+        console.log("   ✅ 2 sample orders created");
+
+        // ── 7. Events ──
+        console.log("📅 Seeding Events...");
+        await Event.insertMany(eventsData);
+        console.log("   ✅ Events seeded");
+
+        // ── 8. Contact Inquiries ──
+        console.log("✉️  Seeding Contact Inquiries...");
+        await Contact.insertMany(contactData);
+        console.log("   ✅ Contact inquiries seeded");
+
+        // ── 9. Partners/Consultation Requests ──
+        console.log("🤝 Seeding Consultation Requests...");
+        await ConsultationRequest.create({
+            ParntersRequestsName: "Khalid Salman",
+            ParntersRequestsEmail: "khalid@industry.sa",
+            ParntersRequestsPhone: "+966501112223",
+            ParntersRequestsMessage: "Interest in becoming a distributor."
         });
-        console.log();
+        console.log("   ✅ Consultation request seeded");
 
-        // ── Summary ──
-        console.log("=".repeat(50));
-        console.log("🎉 Seeding complete!");
-        console.log(`   📂 Categories: ${createdCategories.length}`);
-        console.log(`   📦 Products:   ${createdProducts.length}`);
+        // ── 10. Material Requests ──
+        console.log("🧪 Seeding Material Requests...");
+        await MaterialRequest.create({
+            materialName: "Concentrated Hypochlorite",
+            materialPhone: "+966522233344",
+            materialQuantity: 10,
+            materialIntendedUse: "Water Treatment Plants",
+            materialActions: "pending"
+        });
+        console.log("   ✅ Material request seeded");
+
+        console.log("\n" + "=".repeat(50));
+        console.log("🎉 Seeding complete with comprehensive data!");
         console.log("=".repeat(50));
 
-        // ── Close connection ──
         await mongoose.connection.close();
-        console.log("\n✅ Database connection closed");
         process.exit(0);
     } catch (error: any) {
         console.error("\n❌ Seeding error:", error.message);
-        if (error.code === 11000) {
-            console.error("   Duplicate key error — some data may already exist.");
-            console.error('   Try running with --clear flag: npm run seed -- --clear');
-        }
         await mongoose.connection.close();
         process.exit(1);
     }
 }
 
-// Run
 seed();

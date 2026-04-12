@@ -10,6 +10,7 @@ import { useCart } from '@/shared/hooks/useCart';
 import { useCheckoutSchema, CheckoutFormValues } from '@/features/cart/schemas/checkout.schema';
 import { publicApiService, CheckoutData } from '@/lib/publicApiService';
 import { useProfile } from '@/shared/hooks/useProfile';
+import { parseStoredInternationalPhone } from '@/features/cart/lib/phone';
 
 export const useCheckoutForm = () => {
     const t = useTranslations('checkout');
@@ -42,12 +43,13 @@ export const useCheckoutForm = () => {
     useEffect(() => {
         if (profile) {
             const defaultAddress = profile.addresses?.find((addr: any) => addr.isDefault) || profile.addresses?.[0];
+            const { countryCode, localPhone } = parseStoredInternationalPhone(profile.customerPhone);
 
             form.reset({
                 name: profile.customerName || '',
                 email: profile.customerEmail || '',
-                phoneNumber: profile.customerPhone?.replace('+966', '') || '',
-                countryCode: profile.customerPhone?.startsWith('+') ? profile.customerPhone.substring(0, 4) : '+966',
+                phoneNumber: localPhone || '',
+                countryCode,
                 region: defaultAddress?.region || '',
                 city: defaultAddress?.city || '',
                 neighborhood: defaultAddress?.neighborhood || '',

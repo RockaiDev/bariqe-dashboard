@@ -18,7 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import {
   Eye,
@@ -152,7 +151,6 @@ export default function CategoryPage() {
     categoryNameEn: "",
     categoryDescriptionAr: "",
     categoryDescriptionEn: "",
-    categoryStatus: true,
     categoryImage: "",
     subCategories: [] as SubCategory[], // ✅ إضافة SubCategories
   });
@@ -164,7 +162,6 @@ export default function CategoryPage() {
     subCategoryNameEn: "",
     subCategoryDescriptionAr: "",
     subCategoryDescriptionEn: "",
-    subCategoryStatus: true,
   });
 
   // تحديث handleEdit
@@ -175,7 +172,6 @@ export default function CategoryPage() {
       categoryNameEn: c.categoryNameEn,
       categoryDescriptionAr: c.categoryDescriptionAr,
       categoryDescriptionEn: c.categoryDescriptionEn,
-      categoryStatus: Boolean(c.categoryStatus),
       categoryImage: c.categoryImage || "",
       subCategories: c.subCategories || [], // ✅ إضافة SubCategories
     });
@@ -193,7 +189,6 @@ export default function CategoryPage() {
       editForm.categoryNameEn !== editing.categoryNameEn ||
       editForm.categoryDescriptionAr !== editing.categoryDescriptionAr ||
       editForm.categoryDescriptionEn !== editing.categoryDescriptionEn ||
-      editForm.categoryStatus !== Boolean(editing.categoryStatus) ||
       editImageFile !== null ||
       editImagePreview !== (editing.categoryImage || "") ||
       JSON.stringify(editForm.subCategories) !== JSON.stringify(editing.subCategories || []) // ✅ فحص تغيير SubCategories
@@ -252,7 +247,6 @@ export default function CategoryPage() {
       subCategoryNameEn: subCategory.subCategoryNameEn,
       subCategoryDescriptionAr: subCategory.subCategoryDescriptionAr,
       subCategoryDescriptionEn: subCategory.subCategoryDescriptionEn,
-      subCategoryStatus: subCategory.subCategoryStatus,
     });
   };
 
@@ -545,7 +539,7 @@ export default function CategoryPage() {
         icon={Layers}
         loading={list.isLoading}
         isEmpty={!categories?.length}
-        columnCount={8} // ✅ تحديث عدد الأعمدة
+        columnCount={7} // ✅ تحديث عدد الأعمدة
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
@@ -588,13 +582,6 @@ export default function CategoryPage() {
             />
             <TableHead className="px-4 py-2">{intl.formatMessage({ id: "categories.description" })}</TableHead>
             <TableHead className="px-4 py-2">{intl.formatMessage({ id: "categories.subcategories" })}</TableHead> {/* ✅ عمود SubCategories */}
-            <SortableTH
-              sortKey="categoryStatus"
-              label={intl.formatMessage({ id: "categories.status" })}
-              sort={sort}
-              onSortChange={onSortChange}
-              className="px-4 py-2"
-            />
             <SortableTH
               sortKey="createdAt"
               label={intl.formatMessage({ id: "categories.created" })}
@@ -663,17 +650,6 @@ export default function CategoryPage() {
                   </div>
                 </TableCell>
 
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      c.categoryStatus
-                        ? "bg-green-100 text-green-700 border border-green-700 rounded-lg"
-                        : "bg-red-100 text-red-700 border border-red-700 rounded-lg"
-                    }`}
-                  >
-                    {c.categoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                  </span>
-                </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {c.createdAt
                     ? new Date(c.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
@@ -854,22 +830,6 @@ export default function CategoryPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">
-                    {intl.formatMessage({ id: "categories.status" })}
-                  </Label>
-                  <div className="p-3 bg-gray-50 rounded-md border">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        viewing.categoryStatus
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {viewing.categoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                    </span>
-                  </div>
-                </div>
               </div>
 
               {/* Descriptions */}
@@ -945,17 +905,6 @@ export default function CategoryPage() {
                               )}
                             </div>
                           )}
-                          <div className="mt-2">
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium ${
-                                sub.subCategoryStatus
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {sub.subCategoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                            </span>
-                          </div>
                         </div>
                       ))}
                     </div>
@@ -1219,22 +1168,6 @@ export default function CategoryPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between border rounded-md p-3">
-              <div>
-                <Label htmlFor="edit_categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {intl.formatMessage({ id: "categories.toggle_status" })}
-                </p>
-              </div>
-              <Switch
-                id="edit_categoryStatus"
-                checked={editForm.categoryStatus}
-                onCheckedChange={(checked) =>
-                  setEditForm((f) => ({ ...f, categoryStatus: checked }))
-                }
-              />
-            </div>
-
             {/* ✅ SubCategories Management Section */}
             <div className="space-y-4">
               <Separator />
@@ -1314,18 +1247,7 @@ export default function CategoryPage() {
                           />
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id={`subCategoryStatus_${index}`}
-                              checked={editSubCategoryForm.subCategoryStatus}
-                              onCheckedChange={(checked) =>
-                                setEditSubCategoryForm((f) => ({ ...f, subCategoryStatus: checked }))
-                              }
-                            />
-                            <Label htmlFor={`subCategoryStatus_${index}`} className="text-sm">
-                              {intl.formatMessage({ id: "categories.active" })}
-                            </Label>
-                          </div>
+                          <div />
                           <div className="flex gap-2">
                             <Button
                               type="button"
@@ -1386,16 +1308,7 @@ export default function CategoryPage() {
                             )}
                           </div>
                         )}
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              subCategory.subCategoryStatus
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {subCategory.subCategoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                          </span>
+                        <div className="flex items-center justify-end">
                           <div className="flex gap-2">
                             <Button
                               type="button"
@@ -1529,7 +1442,6 @@ function AddCategory({
     categoryNameEn: "",
     categoryDescriptionAr: "",
     categoryDescriptionEn: "",
-    categoryStatus: true,
     categoryImage: "",
     subCategories: [] as SubCategory[], // ✅ إضافة SubCategories
   });
@@ -1541,7 +1453,6 @@ function AddCategory({
     subCategoryNameEn: "",
     subCategoryDescriptionAr: "",
     subCategoryDescriptionEn: "",
-    subCategoryStatus: true,
   });
 
   // Add Dialog Confirmation
@@ -1564,7 +1475,6 @@ function AddCategory({
       form.categoryNameEn !== "" ||
       form.categoryDescriptionAr !== "" ||
       form.categoryDescriptionEn !== "" ||
-      form.categoryStatus !== true ||
       imageFile !== null ||
       imagePreview !== "" ||
       form.subCategories.length > 0 // ✅ فحص SubCategories
@@ -1587,7 +1497,6 @@ function AddCategory({
       categoryNameEn: "",
       categoryDescriptionAr: "",
       categoryDescriptionEn: "",
-      categoryStatus: true,
       categoryImage: "",
       subCategories: [], // ✅ إعادة تعيين SubCategories
     });
@@ -1631,7 +1540,6 @@ function AddCategory({
       subCategoryNameEn: subCategory.subCategoryNameEn,
       subCategoryDescriptionAr: subCategory.subCategoryDescriptionAr,
       subCategoryDescriptionEn: subCategory.subCategoryDescriptionEn,
-      subCategoryStatus: subCategory.subCategoryStatus,
     });
   };
 
@@ -1834,23 +1742,6 @@ function AddCategory({
               />
             </div>
 
-            <div className="flex items-center justify-between border rounded-md p-3">
-              <div>
-                <Label htmlFor="categoryStatus">{intl.formatMessage({ id: "categories.active" })}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {intl.formatMessage({ id: "categories.toggle_status" })}
-                </p>
-              </div>
-              <Switch
-                id="categoryStatus"
-                checked={form.categoryStatus}
-                onCheckedChange={(checked) =>
-                  setForm((f) => ({ ...f, categoryStatus: checked }))
-                }
-                disabled={isFormLoading}
-              />
-            </div>
-
             {/* ✅ SubCategories Management Section */}
             <div className="space-y-4">
               <Separator />
@@ -1935,19 +1826,7 @@ function AddCategory({
                           />
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id={`subCategoryStatus_${index}`}
-                              checked={editSubCategoryForm.subCategoryStatus}
-                              onCheckedChange={(checked) =>
-                                setEditSubCategoryForm((f) => ({ ...f, subCategoryStatus: checked }))
-                              }
-                              disabled={isFormLoading}
-                            />
-                            <Label htmlFor={`subCategoryStatus_${index}`} className="text-sm">
-                              {intl.formatMessage({ id: "categories.active" })}
-                            </Label>
-                          </div>
+                          <div />
                           <div className="flex gap-2">
                             <Button
                               type="button"
@@ -2008,16 +1887,7 @@ function AddCategory({
                             )}
                           </div>
                         )}
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              subCategory.subCategoryStatus
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {subCategory.subCategoryStatus ? intl.formatMessage({ id: "categories.active" }) : intl.formatMessage({ id: "categories.inactive" })}
-                          </span>
+                        <div className="flex items-center justify-end">
                           <div className="flex gap-2">
                             <Button
                               type="button"

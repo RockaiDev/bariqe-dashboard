@@ -24,6 +24,7 @@ import {
   Trash2,
   ShoppingCart,
   Info,
+  CreditCard,
 } from "lucide-react";
 import { TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,11 @@ interface Order {
     city?: string; };
   };
   products: OrderProduct[];
+  payment?: {
+    method?: "cod" | "card" | "online";
+    status?: "pending" | "paid" | "failed" | "refunded";
+    paidAt?: string;
+  };
   orderQuantity: string;
   orderDiscount: number;
   orderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -260,6 +266,31 @@ export default function OrdersPage() {
         return "bg-red-100 text-red-700 border border-red-300 rounded-lg";
       default:
         return "bg-gray-100 text-gray-700 border border-gray-300 rounded-lg";
+    }
+  };
+
+  const getPaymentMethodText = (method?: string) => {
+    if (method === "card" || method === "online") {
+      return intl.formatMessage({ id: "orders.payment_method_online" });
+    }
+    return intl.formatMessage({ id: "orders.payment_method_cod" });
+  };
+
+  const getPaymentStatusText = (status?: string) => {
+    const value = status || "pending";
+    return intl.formatMessage({ id: `orders.payment_status_${value}` });
+  };
+
+  const getPaymentStatusStyle = (status?: string) => {
+    switch (status) {
+      case "paid":
+        return "bg-green-100 text-green-700 border border-green-300";
+      case "failed":
+        return "bg-red-100 text-red-700 border border-red-300";
+      case "refunded":
+        return "bg-gray-100 text-gray-700 border border-gray-300";
+      default:
+        return "bg-yellow-100 text-yellow-700 border border-yellow-300";
     }
   };
 
@@ -770,13 +801,13 @@ export default function OrdersPage() {
             {intl.formatMessage({ id: "orders.export_orders" })}
           </Button>
 
-          <Button
+          {/* <Button
             onClick={() => setAddOpen(true)}
             className="flex items-center gap-2 text-white"
           >
             <Plus className="w-4 h-4" />
             {intl.formatMessage({ id: "orders.add_order" })}
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -785,7 +816,7 @@ export default function OrdersPage() {
         icon={Package}
         loading={list.isLoading}
         isEmpty={!orders?.length}
-        columnCount={10}
+        columnCount={12}
         pagination={pagination}
         dateFilterAble={true}
         sort={currentSort}
@@ -865,6 +896,12 @@ export default function OrdersPage() {
               onSortChange={onSortChange}
               className="px-4 py-2"
             />
+            <TableHead className="px-4 py-2">
+              {intl.formatMessage({ id: "orders.payment_method" })}
+            </TableHead>
+            <TableHead className="px-4 py-2">
+              {intl.formatMessage({ id: "orders.payment_status" })}
+            </TableHead>
             <SortableTH
               sortKey="createdAt"
               label={intl.formatMessage({ id: "orders.date" })}
@@ -996,6 +1033,20 @@ export default function OrdersPage() {
                         <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
                       </div>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {getPaymentMethodText(order.payment?.method)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium capitalize ${getPaymentStatusStyle(
+                        order.payment?.status
+                      )}`}
+                    >
+                      {getPaymentStatusText(order.payment?.status)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
                     {order.createdAt
@@ -2013,6 +2064,48 @@ export default function OrdersPage() {
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  {intl.formatMessage({ id: "orders.payment_details" })}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-600">
+                      {intl.formatMessage({ id: "orders.payment_method" })}
+                    </Label>
+                    <Badge variant="outline">
+                      {getPaymentMethodText(viewing.payment?.method)}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-600">
+                      {intl.formatMessage({ id: "orders.payment_status" })}
+                    </Label>
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-xs font-medium capitalize ${getPaymentStatusStyle(
+                        viewing.payment?.status
+                      )}`}
+                    >
+                      {getPaymentStatusText(viewing.payment?.status)}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-600">
+                      {intl.formatMessage({ id: "orders.payment_paid_at" })}
+                    </Label>
+                    <p className="text-sm">
+                      {viewing.payment?.paidAt
+                        ? new Date(viewing.payment.paidAt).toLocaleString(
+                            isRTL ? "ar-EG" : "en-US"
+                          )
+                        : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
