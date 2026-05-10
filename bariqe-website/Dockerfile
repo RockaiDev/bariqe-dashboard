@@ -32,4 +32,4 @@ COPY --from=builder --chown=nodeuser:nodebusers /app/.next/static ./.next/static
 USER nodeuser
 EXPOSE 3000
 ENV PORT=3000
-CMD ["node", "server.js"]
+CMD ["node", "server.js"] 
